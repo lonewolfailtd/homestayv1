@@ -211,17 +211,17 @@ export async function POST(request: NextRequest) {
       dogSex: dog.sex,
       vaccinated: dog.vaccinated,
       neutered: dog.neutered,
-      vetClinic: dog.vetClinic,
-      vetPhone: dog.vetPhone,
-      medications: dog.medications,
-      medicalConditions: dog.medicalConditions,
+      vetClinic: dog.vetClinic || '',
+      vetPhone: dog.vetPhone || '',
+      medications: dog.medications || '',
+      medicalConditions: dog.medicalConditions || '',
       crateTrained: dog.crateTrained,
       socialLevel: dog.socialLevel,
       peopleBehavior: dog.peopleBehavior,
       behavioralIssues: dog.behavioralIssues,
       farmAnimalReactive: dog.farmAnimalReactive,
       biteHistory: dog.biteHistory,
-      additionalNotes: dog.additionalNotes,
+      additionalNotes: dog.additionalNotes || '',
     });
 
     // Create Xero invoice (non-blocking)
