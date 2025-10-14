@@ -1,4 +1,4 @@
-import { XeroClient } from 'xero-node';
+import { XeroClient, Invoice, LineItem, Contact } from 'xero-node';
 
 let xeroClient: XeroClient | null = null;
 
@@ -42,38 +42,45 @@ export async function createXeroInvoice(booking: {
     }
 
     // Create invoice
+    const lineItems: LineItem[] = [
+      {
+        description: `${booking.boardingType.charAt(0).toUpperCase() + booking.boardingType.slice(1)} boarding for ${booking.dogName}`,
+        quantity: booking.totalDays,
+        unitAmount: booking.dailyRate,
+        accountCode: '200', // Revenue account
+        taxType: LineItem.TaxTypeEnum.NONE,
+        lineAmount: booking.totalDays * booking.dailyRate,
+      }
+    ];
+
+    if (booking.serviceCharges > 0) {
+      lineItems.push({
+        description: 'Additional services',
+        quantity: 1,
+        unitAmount: booking.serviceCharges,
+        accountCode: '200',
+        taxType: LineItem.TaxTypeEnum.NONE,
+        lineAmount: booking.serviceCharges,
+      });
+    }
+
+    const contact: Contact = {
+      name: booking.customerName,
+      emailAddress: booking.customerEmail,
+    };
+
+    const invoiceData: Invoice = {
+      type: Invoice.TypeEnum.ACCREC,
+      contact: contact,
+      lineItems: lineItems,
+      date: new Date().toISOString().split('T')[0],
+      dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 7 days from now
+      reference: `Boarding: ${booking.dogName}`,
+      status: Invoice.StatusEnum.AUTHORISED,
+    };
+
     const invoice = {
-      invoices: [
-        {
-          type: 'ACCREC' as const,
-          contact: {
-            name: booking.customerName,
-            emailAddress: booking.customerEmail,
-          },
-          lineItems: [
-            {
-              description: `${booking.boardingType.charAt(0).toUpperCase() + booking.boardingType.slice(1)} boarding for ${booking.dogName}`,
-              quantity: booking.totalDays,
-              unitAmount: booking.dailyRate,
-              accountCode: '200', // Revenue account
-              taxType: 'NONE',
-              lineAmount: booking.totalDays * booking.dailyRate,
-            },
-            ...(booking.serviceCharges > 0 ? [{
-              description: 'Additional services',
-              quantity: 1,
-              unitAmount: booking.serviceCharges,
-              accountCode: '200',
-              taxType: 'NONE',
-              lineAmount: booking.serviceCharges,
-            }] : [])
-          ],
-          date: new Date().toISOString().split('T')[0],
-          dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 7 days from now
-          reference: `Boarding: ${booking.dogName}`,
-          status: 'AUTHORISED' as const,
-        }
-      ]
+      invoices: [invoiceData]
     };
 
     const response = await xero.accountingApi.createInvoices(activeTenantId, invoice);
