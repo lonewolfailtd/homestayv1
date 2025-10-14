@@ -48,7 +48,7 @@ export async function createXeroInvoice(booking: {
         quantity: booking.totalDays,
         unitAmount: booking.dailyRate,
         accountCode: '200', // Revenue account
-        taxType: LineItem.TaxTypeEnum.NONE,
+        taxType: 'NONE',
         lineAmount: booking.totalDays * booking.dailyRate,
       }
     ];
@@ -59,7 +59,7 @@ export async function createXeroInvoice(booking: {
         quantity: 1,
         unitAmount: booking.serviceCharges,
         accountCode: '200',
-        taxType: LineItem.TaxTypeEnum.NONE,
+        taxType: 'NONE',
         lineAmount: booking.serviceCharges,
       });
     }
@@ -70,13 +70,13 @@ export async function createXeroInvoice(booking: {
     };
 
     const invoiceData: Invoice = {
-      type: Invoice.TypeEnum.ACCREC,
+      type: 'ACCREC' as any,
       contact: contact,
       lineItems: lineItems,
       date: new Date().toISOString().split('T')[0],
       dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 7 days from now
       reference: `Boarding: ${booking.dogName}`,
-      status: Invoice.StatusEnum.AUTHORISED,
+      status: 'AUTHORISED' as any,
     };
 
     const invoice = {
