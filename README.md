@@ -1,6 +1,6 @@
 # Dog Boarding Booking System
 
-A Next.js web application for managing dog boarding bookings with integrated GoHighLevel CRM and Xero invoicing.
+A Next.js web application for managing dog boarding bookings with integrated GoHighLevel CRM and Xero invoicing. Live at booking.100percentk9.co.nz
 
 ## Features
 
