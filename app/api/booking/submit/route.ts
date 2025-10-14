@@ -3,6 +3,8 @@ import { prisma } from '@/lib/db';
 import { createOrUpdateGHLContact } from '@/lib/gohighlevel';
 import { createXeroInvoice } from '@/lib/xero';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.json();
