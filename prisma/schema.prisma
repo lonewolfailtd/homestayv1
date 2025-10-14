@@ -1,0 +1,98 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Customer {
+  id              String   @id @default(cuid())
+  email           String   @unique
+  firstName       String
+  lastName        String?
+  phone           String
+  address         String
+  city            String
+  postalCode      String
+  emergencyName   String
+  emergencyPhone  String
+  emergencyRelation String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  dogs            Dog[]
+  bookings        Booking[]
+  
+  @@map("customers")
+}
+
+model Dog {
+  id                String   @id @default(cuid())
+  customerId        String
+  name              String
+  age               Int
+  sex               String
+  breed             String
+  vaccinated        String
+  neutered          String
+  vetClinic         String?
+  vetPhone          String?
+  medications       String?
+  medicalConditions String?
+  crateTrained      String
+  socialLevel       String
+  peopleBehavior    String
+  behavioralIssues  String
+  farmAnimalReactive String
+  biteHistory       String
+  additionalNotes   String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  customer          Customer @relation(fields: [customerId], references: [id])
+  bookings          Booking[]
+  
+  @@map("dogs")
+}
+
+model Booking {
+  id              String   @id @default(cuid())
+  customerId      String
+  dogId           String
+  checkIn         DateTime
+  checkOut        DateTime
+  boardingType    String   @default("standard")
+  services        String[]
+  totalDays       Int
+  dailyRate       Decimal  @db.Decimal(10, 2)
+  serviceCharges  Decimal  @db.Decimal(10, 2) @default(0)
+  totalPrice      Decimal  @db.Decimal(10, 2)
+  specialNotes    String?
+  invoiceId       String?
+  xeroInvoiceId   String?
+  status          String   @default("pending")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  customer        Customer @relation(fields: [customerId], references: [id])
+  dog             Dog      @relation(fields: [dogId], references: [id])
+  
+  @@map("bookings")
+}
+
+model PricingRule {
+  id              String  @id @default(cuid())
+  boardingType    String  @unique
+  dailyRate       Decimal @db.Decimal(10, 2)
+  description     String?
+  isActive        Boolean @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@map("pricing_rules")
+}
