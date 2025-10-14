@@ -196,7 +196,7 @@ export async function POST(request: NextRequest) {
     // Create/Update GoHighLevel contact (non-blocking)
     const ghlPromise = createOrUpdateGHLContact({
       firstName: customer.firstName,
-      lastName: customer.lastName,
+      lastName: customer.lastName || '',
       email: customer.email,
       phone: customer.phone,
       address: customer.address,
