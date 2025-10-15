@@ -78,6 +78,12 @@ GOHIGHLEVEL_LOCATION_ID=your_ghl_location_id
 - Use `console.log` in API routes for debugging
 - Use Prisma Studio to inspect database: `npx prisma studio`
 
+### Troubleshooting Database Issues
+- If Prisma can't connect to Neon database, check if environment variables are cached
+- Close terminal completely and open fresh one to clear cached environment variables
+- Verify DATABASE_URL in `.env.local` matches Neon dashboard connection string
+- Ensure Neon database is awake (databases sleep after inactivity)
+
 ### Testing Integrations
 - Xero: Use `/api/xero/auth` to authenticate
 - GoHighLevel: Test webhook endpoint with sample data
@@ -88,3 +94,7 @@ GOHIGHLEVEL_LOCATION_ID=your_ghl_location_id
 - Ensure PostgreSQL database is accessible
 - Run `npm run build` to verify production build
 - Consider using Vercel, Railway, or similar for easy deployment
+
+## Domain Configuration
+- **Production URL**: https://booking.100percentk9.co.nz/
+- **DNS Setup**: CNAME record pointing `booking.100percentk9.co.nz` to `cname.vercel-dns.com`
