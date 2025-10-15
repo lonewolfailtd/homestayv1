@@ -61,30 +61,125 @@ model Dog {
 }
 
 model Booking {
-  id              String   @id @default(cuid())
-  customerId      String
-  dogId           String
-  checkIn         DateTime
-  checkOut        DateTime
-  boardingType    String   @default("standard")
-  services        String[]
-  totalDays       Int
-  dailyRate       Decimal  @db.Decimal(10, 2)
-  serviceCharges  Decimal  @db.Decimal(10, 2) @default(0)
-  totalPrice      Decimal  @db.Decimal(10, 2)
-  specialNotes    String?
-  invoiceId       String?
-  xeroInvoiceId   String?
-  status          String   @default("pending")
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id                  String   @id @default(cuid())
+  customerId          String
+  dogId               String
+  checkIn             DateTime
+  checkOut            DateTime
+  boardingType        String   @default("standard")
+  services            String[]
+  totalDays           Int
+  dailyRate           Decimal  @db.Decimal(10, 2)
+  serviceCharges      Decimal  @db.Decimal(10, 2) @default(0)
+  totalPrice          Decimal  @db.Decimal(10, 2)
   
-  customer        Customer @relation(fields: [customerId], references: [id])
-  dog             Dog      @relation(fields: [dogId], references: [id])
+  // Enhanced pricing fields
+  baseDailyRate       Decimal  @db.Decimal(10, 2) @default(0)
+  peakSurcharge       Decimal  @db.Decimal(10, 2) @default(0)
+  dogSurcharges       Decimal  @db.Decimal(10, 2) @default(0)
+  isPeakPeriod        Boolean  @default(false)
+  peakPeriodName      String?
+  selectedServices    Json?    // Store selected additional services
+  
+  // Deposit payment fields
+  depositAmount       Decimal  @db.Decimal(10, 2) @default(0)
+  balanceAmount       Decimal  @db.Decimal(10, 2) @default(0)
+  depositPaid         Boolean  @default(false)
+  balancePaid         Boolean  @default(false)
+  depositInvoiceId    String?
+  balanceInvoiceId    String?
+  balanceDueDate      DateTime?
+  
+  specialNotes        String?
+  invoiceId           String?  // Legacy field - keeping for compatibility
+  xeroInvoiceId       String?  // Legacy field - keeping for compatibility
+  status              String   @default("pending")
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  
+  customer            Customer @relation(fields: [customerId], references: [id])
+  dog                 Dog      @relation(fields: [dogId], references: [id])
   
   @@map("bookings")
 }
 
+// Enhanced pricing system models
+model PricingTier {
+  id              String  @id @default(cuid())
+  name            String  @unique // "short_stay", "standard_stay", "long_stay"
+  minDays         Int     // Minimum days for this tier
+  maxDays         Int?    // Maximum days (null for unlimited)
+  dailyRate       Decimal @db.Decimal(10, 2)
+  description     String
+  isActive        Boolean @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@map("pricing_tiers")
+}
+
+model PeakPeriod {
+  id              String   @id @default(cuid())
+  name            String   // "New Year", "Easter", "Christmas", etc.
+  startDate       DateTime
+  endDate         DateTime
+  surchargePercent Decimal @db.Decimal(5, 2) // e.g., 20.00 for 20%
+  minDays         Int?     // Minimum stay requirement (e.g., 7 for Christmas)
+  year            Int      // 2025, 2026, etc.
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@map("peak_periods")
+}
+
+model ServiceCategory {
+  id              String  @id @default(cuid())
+  name            String  @unique // "grooming", "training", "walks", "food"
+  description     String?
+  isActive        Boolean @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  services        Service[]
+  
+  @@map("service_categories")
+}
+
+model Service {
+  id              String  @id @default(cuid())
+  categoryId      String
+  name            String  // "Full Wash & Conditioner", "Recall Training", etc.
+  price           Decimal @db.Decimal(10, 2)
+  unit            String  // "per_service", "per_day", "per_meal", "per_walk"
+  description     String?
+  requiresPrereq  Boolean @default(false) // Does this service require a prerequisite?
+  prerequisiteId  String? // ID of the prerequisite service
+  xeroItemCode    String? // Xero item code for invoicing
+  isActive        Boolean @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  category        ServiceCategory @relation(fields: [categoryId], references: [id])
+  prerequisite    Service? @relation("ServicePrerequisite", fields: [prerequisiteId], references: [id])
+  dependentServices Service[] @relation("ServicePrerequisite")
+  
+  @@map("services")
+}
+
+model DogSurcharge {
+  id              String  @id @default(cuid())
+  condition       String  @unique // "entire_dog", "large_breed", etc.
+  dailyRate       Decimal @db.Decimal(10, 2)
+  description     String
+  isActive        Boolean @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@map("dog_surcharges")
+}
+
+// Legacy model - keeping for backward compatibility
 model PricingRule {
   id              String  @id @default(cuid())
   boardingType    String  @unique

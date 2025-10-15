@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { createOrUpdateGHLContact } from '@/lib/gohighlevel';
-import { createXeroInvoice } from '@/lib/xero';
+import { createDepositInvoice, createBalanceInvoice } from '@/lib/xero';
 import { sendBookingConfirmation } from '@/lib/email';
 
 export const dynamic = 'force-dynamic';
@@ -270,32 +270,143 @@ export async function POST(request: NextRequest) {
       additionalNotes: dog.additionalNotes || '',
     });
 
-    // Create Xero invoice (non-blocking)
-    const xeroPromise = createXeroInvoice({
-      customerEmail: customer.email,
-      customerName: `${customer.firstName} ${customer.lastName}`.trim(),
-      dogName: dog.name,
-      checkIn: checkInDate,
-      checkOut: checkOutDate,
-      totalDays,
-      dailyRate,
-      serviceCharges,
-      totalPrice,
-      boardingType,
+    // Determine if booking is within 3 weeks of check-in date
+    const now = new Date();
+    const daysDifference = Math.floor((checkInDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    const isLastMinuteBooking = daysDifference <= 21; // 3 weeks or less
+
+    let depositResult: any, balanceResult: any, fullInvoiceResult: any;
+
+    if (isLastMinuteBooking) {
+      // Create single full invoice for last-minute bookings
+      const { createXeroInvoice } = await import('@/lib/xero');
+      const fullInvoicePromise = createXeroInvoice({
+        customerEmail: customer.email,
+        customerName: `${customer.firstName} ${customer.lastName}`.trim(),
+        dogName: dog.name,
+        checkIn: checkInDate,
+        checkOut: checkOutDate,
+        totalDays,
+        dailyRate,
+        serviceCharges,
+        totalPrice,
+        boardingType,
+      });
+
+      // Wait for all external integrations
+      const [ghlResult_temp, fullInvoiceResult_temp] = await Promise.allSettled([
+        ghlPromise, 
+        fullInvoicePromise
+      ]);
+      
+      ghlResult = ghlResult_temp;
+      fullInvoiceResult = fullInvoiceResult_temp;
+      console.log(`Last-minute booking (${daysDifference} days): Creating single full invoice`);
+      
+    } else {
+      // Create deposit and balance invoices for advance bookings
+      const depositPromise = createDepositInvoice({
+        customerEmail: customer.email,
+        customerName: `${customer.firstName} ${customer.lastName}`.trim(),
+        dogName: dog.name,
+        checkIn: checkInDate,
+        checkOut: checkOutDate,
+        totalDays,
+        dailyRate,
+        serviceCharges,
+        totalPrice,
+        boardingType,
+      });
+
+      const balancePromise = createBalanceInvoice({
+        customerEmail: customer.email,
+        customerName: `${customer.firstName} ${customer.lastName}`.trim(),
+        dogName: dog.name,
+        checkIn: checkInDate,
+        checkOut: checkOutDate,
+        totalDays,
+        dailyRate,
+        serviceCharges,
+        totalPrice,
+        boardingType,
+      });
+
+      // Wait for all external integrations
+      const [ghlResult_temp, depositResult_temp, balanceResult_temp] = await Promise.allSettled([
+        ghlPromise, 
+        depositPromise, 
+        balancePromise
+      ]);
+      
+      ghlResult = ghlResult_temp;
+      depositResult = depositResult_temp;
+      balanceResult = balanceResult_temp;
+      console.log(`Advance booking (${daysDifference} days): Creating deposit + balance invoices`);
+    }
+
+    // Update booking with appropriate invoice info
+    const updateData: any = {};
+
+    if (isLastMinuteBooking) {
+      // Last-minute booking: full payment required immediately
+      updateData.depositAmount = totalPrice; // Full amount as "deposit"
+      updateData.balanceAmount = 0; // No balance
+      updateData.depositPaid = false; // Will be updated when payment received
+      updateData.balancePaid = true; // No balance to pay
+      updateData.balanceDueDate = null; // No balance due date
+
+      // Add full invoice info if successful
+      if (fullInvoiceResult.status === 'fulfilled' && fullInvoiceResult.value.success) {
+        updateData.depositInvoiceId = fullInvoiceResult.value.invoiceId;
+        updateData.xeroInvoiceId = fullInvoiceResult.value.invoiceId; // Legacy field
+        updateData.invoiceId = fullInvoiceResult.value.invoiceNumber; // Legacy field
+      }
+    } else {
+      // Advance booking: deposit + balance system
+      const depositAmount = totalPrice * 0.5;
+      const balanceAmount = totalPrice * 0.5;
+      const balanceDueDate = new Date(checkInDate);
+      balanceDueDate.setDate(balanceDueDate.getDate() - 21); // 3 weeks before check-in
+
+      updateData.depositAmount = depositAmount;
+      updateData.balanceAmount = balanceAmount;
+      updateData.balanceDueDate = balanceDueDate;
+      updateData.depositPaid = false;
+      updateData.balancePaid = false;
+
+      // Add deposit invoice info if successful
+      if (depositResult && depositResult.status === 'fulfilled' && depositResult.value.success) {
+        updateData.depositInvoiceId = depositResult.value.invoiceId;
+        updateData.xeroInvoiceId = depositResult.value.invoiceId; // Legacy field
+        updateData.invoiceId = depositResult.value.invoiceNumber; // Legacy field
+      }
+
+      // Add balance invoice info if successful
+      if (balanceResult && balanceResult.status === 'fulfilled' && balanceResult.value.success) {
+        updateData.balanceInvoiceId = balanceResult.value.invoiceId;
+      }
+    }
+
+    await prisma.booking.update({
+      where: { id: booking.id },
+      data: updateData,
     });
 
-    // Wait for both external integrations
-    const [ghlResult, xeroResult] = await Promise.allSettled([ghlPromise, xeroPromise]);
+    // Determine invoice URL and success status based on booking type
+    let invoiceUrl: string | undefined;
+    let xeroSuccess: boolean;
 
-    // Update booking with invoice info if Xero succeeded
-    if (xeroResult.status === 'fulfilled' && xeroResult.value.success) {
-      await prisma.booking.update({
-        where: { id: booking.id },
-        data: {
-          xeroInvoiceId: xeroResult.value.invoiceId,
-          invoiceId: xeroResult.value.invoiceNumber,
-        },
-      });
+    if (isLastMinuteBooking) {
+      invoiceUrl = fullInvoiceResult.status === 'fulfilled' && fullInvoiceResult.value.success 
+        ? fullInvoiceResult.value.invoiceUrl 
+        : undefined;
+      xeroSuccess = fullInvoiceResult.status === 'fulfilled' && fullInvoiceResult.value.success;
+    } else {
+      invoiceUrl = depositResult && depositResult.status === 'fulfilled' && depositResult.value.success 
+        ? depositResult.value.invoiceUrl 
+        : undefined;
+      xeroSuccess = (depositResult && depositResult.status === 'fulfilled' && depositResult.value.success) || 
+                   (balanceResult && balanceResult.status === 'fulfilled' && balanceResult.value.success);
     }
 
     // Send email confirmation to customer and owner
@@ -306,11 +417,9 @@ export async function POST(request: NextRequest) {
       checkIn: checkInDate.toLocaleDateString(),
       checkOut: checkOutDate.toLocaleDateString(),
       totalPrice: `$${totalPrice.toFixed(2)}`,
-      invoiceUrl: xeroResult.status === 'fulfilled' && xeroResult.value.success 
-        ? xeroResult.value.invoiceUrl 
-        : undefined,
+      invoiceUrl: invoiceUrl,
       ghlSuccess: ghlResult.status === 'fulfilled' ? ghlResult.value.success : false,
-      xeroSuccess: xeroResult.status === 'fulfilled' ? xeroResult.value.success : false,
+      xeroSuccess: xeroSuccess,
     });
 
     console.log('Email notification result:', emailResult);

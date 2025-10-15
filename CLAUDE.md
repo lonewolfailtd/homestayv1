@@ -74,7 +74,13 @@ GOHIGHLEVEL_LOCATION_ID=your_ghl_location_id
 
 ## Current Working Configuration
 - **Database**: Neon PostgreSQL (✅ Connected)
-- **Xero**: OAuth integrated with invoicing to account 228 (✅ Working)
+- **Xero**: OAuth integrated with Smart Item Code Selection (✅ Working)
+  - Short Stay (1-4 days): Item Code `4010-01`
+  - Standard Stay (5-30 days): Item Code `4010-02` 
+  - Long-Term Stay (31+ days): Item Code `4010-03`
+  - Additional Services: Item Code `4010-08`
+  - Account 228 (Homestays), 15% GST (OUTPUT2)
+  - Automatic invoice email via Xero
 - **GoHighLevel**: V2 API with Private Integration token (✅ Working)
 - **Email**: Notification system with HTML templates (✅ Working)
 
@@ -108,11 +114,45 @@ GOHIGHLEVEL_LOCATION_ID=your_ghl_location_id
 
 ## Recent Fixes Completed (Oct 2025)
 - ✅ **Multiple Bookings**: Fixed database constraints to allow repeat customers
-- ✅ **GoHighLevel Integration**: Fixed V2 API contact search and update
-- ✅ **Xero Integration**: Automated invoice creation with correct account codes
-- ✅ **Email System**: Professional HTML notifications with booking details
+- ✅ **GoHighLevel Integration**: Fixed V2 API contact search and update (contact ID: klHqwVP94twjcZDHn0nt)
+- ✅ **Xero Integration**: Smart item code selection based on stay duration with 15% GST
+  - Proper item codes: 4010-01 (Short), 4010-02 (Standard), 4010-03 (Long-term), 4010-08 (Services)
+  - Automatic invoice email sending via Xero API
+  - Account 228 (Homestays) with OUTPUT2 tax type
+- ✅ **Email System**: Professional HTML notifications with booking details and invoice links
 - ✅ **Environment Variables**: Resolved caching issues with proper credential loading
 - ✅ **Contact Management**: Smart customer/dog record updates for existing users
+
+## Advanced Pricing System (Oct 2025)
+- ✅ **Comprehensive Database Schema**: Peak periods, pricing tiers, services with prerequisites
+- ✅ **NZ Public Holiday Calendar**: All 2025 holidays with 20% surcharges automatically applied
+- ✅ **Dynamic Pricing Engine**: Smart rate calculation based on stay duration and peak periods
+- ✅ **Deposit Payment System**: 50% upfront, balance 3 weeks before check-in with smart timing
+- ✅ **Enhanced Xero Integration**: GST, correct item codes, automatic invoice emails
+- ✅ **Business Logic Implementation**: Christmas 7-day minimum, last-minute full payment
+
+## Peak Periods 2025 (20% Surcharge)
+- New Year's Period: Dec 28, 2024 – Jan 5, 2025
+- Auckland Anniversary: Jan 25-27, 2025
+- Waitangi Day: Feb 7-9, 2025  
+- Easter Weekend: Apr 18-21, 2025
+- ANZAC Day: Apr 25-27, 2025
+- King's Birthday: May 31-Jun 2, 2025
+- Matariki: Jun 20-22, 2025
+- Labour Day: Oct 25-27, 2025
+- Christmas/Boxing Day: Dec 20-28, 2025 (7-day minimum)
+
+## Pricing Tiers
+- Short Stay (1-4 days): $85/day
+- Standard Stay (5-30 days): $80/day  
+- Long Stay (31+ days): $75/day
+
+## Test Results (Latest)
+- Advanced pricing system: ✅ All NZ holidays and tiers loaded in database
+- Deposit payment logic: ✅ Smart timing based on booking date
+- Peak period detection: ✅ Automatic 20% surcharge calculation
+- Multiple dog bookings: ✅ Same customer, different dogs (Max, Buddy, Charlie, Luna, Rex, Bella, Item Code Test)
+- Xero integration: ✅ GST, item codes, automatic emails working
 
 ## Deployment Notes
 - Configure environment variables on hosting platform

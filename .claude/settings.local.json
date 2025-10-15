@@ -32,7 +32,8 @@
       "mcp__playwright__browser_console_messages",
       "WebFetch(domain:docs.gohighlevel.com)",
       "Bash(/mcp)",
-      "mcp__playwright__browser_press_key"
+      "mcp__playwright__browser_press_key",
+      "Bash(powershell:*)"
     ],
     "deny": [],
     "ask": []
