@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { createOrUpdateGHLContact } from '@/lib/gohighlevel';
 import { createXeroInvoice } from '@/lib/xero';
+import { sendBookingConfirmation } from '@/lib/email';
 
 export const dynamic = 'force-dynamic';
 
@@ -92,18 +93,34 @@ export async function POST(request: NextRequest) {
       let customer;
       let dog;
 
-      if (customerType === 'existing') {
-        // Find existing customer
-        customer = await tx.customer.findUnique({
-          where: { email },
-          include: { dogs: true },
-        });
+      // Always check if customer exists first (regardless of customerType)
+      customer = await tx.customer.findUnique({
+        where: { email },
+        include: { dogs: true },
+      });
 
-        if (!customer) {
-          throw new Error('Existing customer not found');
+      if (customer) {
+        // Existing customer found - update their info if needed
+        if (customerType === 'new') {
+          // Update customer info with new data provided
+          customer = await tx.customer.update({
+            where: { id: customer.id },
+            data: {
+              firstName: firstName || customer.firstName,
+              lastName: lastName || customer.lastName,
+              phone: phone || customer.phone,
+              address: address || customer.address,
+              city: city || customer.city,
+              postalCode: postalCode || customer.postalCode,
+              emergencyName: emergencyName || customer.emergencyName,
+              emergencyPhone: emergencyPhone || customer.emergencyPhone,
+              emergencyRelation: emergencyRelation || customer.emergencyRelation,
+            },
+            include: { dogs: true },
+          });
         }
 
-        // Find or create dog
+        // Find or create dog for existing customer
         dog = customer.dogs.find(d => d.name.toLowerCase() === dogName.toLowerCase());
         
         if (!dog) {
@@ -129,9 +146,36 @@ export async function POST(request: NextRequest) {
               additionalNotes: additionalNotes || '',
             },
           });
+        } else {
+          // Update existing dog info
+          dog = await tx.dog.update({
+            where: { id: dog.id },
+            data: {
+              age: dogAge || dog.age,
+              sex: dogSex || dog.sex,
+              breed: dogBreed || dog.breed,
+              vaccinated: vaccinated || dog.vaccinated,
+              neutered: neutered || dog.neutered,
+              vetClinic: vetClinic || dog.vetClinic,
+              vetPhone: vetPhone || dog.vetPhone,
+              medications: medications || dog.medications,
+              medicalConditions: medicalConditions || dog.medicalConditions,
+              crateTrained: crateTrained || dog.crateTrained,
+              socialLevel: socialLevel || dog.socialLevel,
+              peopleBehavior: peopleBehavior || dog.peopleBehavior,
+              behavioralIssues: behavioralIssues || dog.behavioralIssues,
+              farmAnimalReactive: farmAnimalReactive || dog.farmAnimalReactive,
+              biteHistory: biteHistory || dog.biteHistory,
+              additionalNotes: additionalNotes || dog.additionalNotes,
+            },
+          });
         }
       } else {
-        // Create new customer
+        // No existing customer - create new one
+        if (customerType === 'existing') {
+          throw new Error('Existing customer not found');
+        }
+
         customer = await tx.customer.create({
           data: {
             email,
@@ -253,6 +297,23 @@ export async function POST(request: NextRequest) {
         },
       });
     }
+
+    // Send email confirmation to customer and owner
+    const emailResult = await sendBookingConfirmation({
+      customerName: `${customer.firstName} ${customer.lastName}`.trim(),
+      customerEmail: customer.email,
+      dogName: dog.name,
+      checkIn: checkInDate.toLocaleDateString(),
+      checkOut: checkOutDate.toLocaleDateString(),
+      totalPrice: `$${totalPrice.toFixed(2)}`,
+      invoiceUrl: xeroResult.status === 'fulfilled' && xeroResult.value.success 
+        ? xeroResult.value.invoiceUrl 
+        : undefined,
+      ghlSuccess: ghlResult.status === 'fulfilled' ? ghlResult.value.success : false,
+      xeroSuccess: xeroResult.status === 'fulfilled' ? xeroResult.value.success : false,
+    });
+
+    console.log('Email notification result:', emailResult);
 
     return NextResponse.json({
       success: true,

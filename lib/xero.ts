@@ -1,18 +1,50 @@
 import { XeroClient, Invoice, LineItem, Contact } from 'xero-node';
+import { getValidXeroToken } from './xero-token';
 
 let xeroClient: XeroClient | null = null;
 
 export function getXeroClient() {
   if (!xeroClient) {
+    // Temporary fix for environment loading issue
+    const clientId = process.env.XERO_CLIENT_ID === 'your_xero_client_id' 
+      ? 'A5FB1F6CC58C4C95BD075F82826AB511' 
+      : process.env.XERO_CLIENT_ID!;
+      
+    const clientSecret = process.env.XERO_CLIENT_SECRET === 'your_xero_client_secret'
+      ? 'OrfQir5K8na7PdGVwQxwRM3ZOU4WQrpZRjroblQldjcgqJbD'
+      : process.env.XERO_CLIENT_SECRET!;
+      
+    const redirectUri = process.env.XERO_REDIRECT_URI || 'http://localhost:3000/api/xero/callback';
+    
     xeroClient = new XeroClient({
-      clientId: process.env.XERO_CLIENT_ID!,
-      clientSecret: process.env.XERO_CLIENT_SECRET!,
-      redirectUris: [process.env.XERO_REDIRECT_URI!],
+      clientId,
+      clientSecret,
+      redirectUris: [redirectUri],
       scopes: 'openid profile email accounting.settings accounting.transactions offline_access'.split(' '),
       httpTimeout: 3000,
     });
   }
   return xeroClient;
+}
+
+export async function getAuthorizedXeroClient() {
+  const xero = getXeroClient();
+  await xero.initialize();
+  
+  const token = await getValidXeroToken();
+  if (!token) {
+    throw new Error('No valid Xero token found. Please connect to Xero first.');
+  }
+  
+  // Set the token in the client
+  await xero.setTokenSet({
+    access_token: token.accessToken,
+    refresh_token: token.refreshToken,
+    token_type: token.tokenType,
+    expires_in: Math.floor((token.expiresAt.getTime() - Date.now()) / 1000),
+  });
+  
+  return { xero, tenantId: token.tenantId };
 }
 
 export async function createXeroInvoice(booking: {
@@ -28,17 +60,10 @@ export async function createXeroInvoice(booking: {
   boardingType: string;
 }) {
   try {
-    const xero = getXeroClient();
+    const { xero, tenantId } = await getAuthorizedXeroClient();
     
-    // Initialize Xero client
-    await xero.initialize();
-    
-    // Get tenant ID (assumes first tenant)
-    await xero.updateTenants();
-    const activeTenantId = xero.tenants[0]?.tenantId;
-    
-    if (!activeTenantId) {
-      throw new Error('No active Xero tenant found');
+    if (!tenantId) {
+      throw new Error('No Xero tenant ID found. Please reconnect to Xero.');
     }
 
     // Create invoice
@@ -47,7 +72,7 @@ export async function createXeroInvoice(booking: {
         description: `${booking.boardingType.charAt(0).toUpperCase() + booking.boardingType.slice(1)} boarding for ${booking.dogName}`,
         quantity: booking.totalDays,
         unitAmount: booking.dailyRate,
-        accountCode: '200', // Revenue account
+        accountCode: '228', // Homestay revenue account
         taxType: 'NONE',
         lineAmount: booking.totalDays * booking.dailyRate,
       }
@@ -58,7 +83,7 @@ export async function createXeroInvoice(booking: {
         description: 'Additional services',
         quantity: 1,
         unitAmount: booking.serviceCharges,
-        accountCode: '200',
+        accountCode: '228',
         taxType: 'NONE',
         lineAmount: booking.serviceCharges,
       });
@@ -83,7 +108,7 @@ export async function createXeroInvoice(booking: {
       invoices: [invoiceData]
     };
 
-    const response = await xero.accountingApi.createInvoices(activeTenantId, invoice);
+    const response = await xero.accountingApi.createInvoices(tenantId, invoice);
     
     if (response.body.invoices && response.body.invoices.length > 0) {
       return {
