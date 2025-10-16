@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 export async function GET(request: NextRequest) {
   try {
     // Check authentication
-    const { userId: clerkUserId } = auth();
+    const { userId: clerkUserId } = await auth();
     
     if (!clerkUserId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     // Check authentication
-    const { userId: clerkUserId } = auth();
+    const { userId: clerkUserId } = await auth();
     
     if (!clerkUserId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -167,7 +167,7 @@ export async function POST(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     // Check authentication
-    const { userId: clerkUserId } = auth();
+    const { userId: clerkUserId } = await auth();
     
     if (!clerkUserId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

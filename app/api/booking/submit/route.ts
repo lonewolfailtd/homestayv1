@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: NextRequest) {
   try {
     // Check if user is authenticated
-    const { userId: clerkUserId } = auth();
+    const { userId: clerkUserId } = await auth();
     let authenticatedUser = null;
     
     if (clerkUserId) {
@@ -191,7 +191,6 @@ export async function POST(request: NextRequest) {
 
         customer = await tx.customer.create({
           data: {
-            userId: authenticatedUser?.id || null, // Link to authenticated user
             email,
             firstName,
             lastName: lastName || '',
@@ -235,7 +234,6 @@ export async function POST(request: NextRequest) {
         data: {
           customerId: customer.id,
           dogId: dog.id,
-          userId: authenticatedUser?.id || null, // Link to authenticated user
           checkIn: checkInDate,
           checkOut: checkOutDate,
           boardingType,
@@ -251,7 +249,7 @@ export async function POST(request: NextRequest) {
           peakSurcharge: peakSurcharge || 0,
           dogSurcharges: dogSurcharges || 0,
           isPeakPeriod: isPeakPeriod || false,
-          peakPeriodName: peakPeriodName || null,
+          peakPeriodName: peakPeriodName || undefined,
           selectedServices: JSON.stringify(breakdown?.services || []),
         },
       });
@@ -338,7 +336,7 @@ export async function POST(request: NextRequest) {
         peakSurcharge: peakSurcharge || 0,
         dogSurcharges: dogSurcharges || 0,
         isPeakPeriod: isPeakPeriod || false,
-        peakPeriodName: peakPeriodName || null,
+        peakPeriodName: peakPeriodName || undefined,
         selectedServices: breakdown?.services || [],
       });
 
@@ -370,7 +368,7 @@ export async function POST(request: NextRequest) {
         peakSurcharge: peakSurcharge || 0,
         dogSurcharges: dogSurcharges || 0,
         isPeakPeriod: isPeakPeriod || false,
-        peakPeriodName: peakPeriodName || null,
+        peakPeriodName: peakPeriodName || undefined,
         selectedServices: breakdown?.services || [],
       });
 
@@ -390,7 +388,7 @@ export async function POST(request: NextRequest) {
         peakSurcharge: peakSurcharge || 0,
         dogSurcharges: dogSurcharges || 0,
         isPeakPeriod: isPeakPeriod || false,
-        peakPeriodName: peakPeriodName || null,
+        peakPeriodName: peakPeriodName || undefined,
         selectedServices: breakdown?.services || [],
       });
 

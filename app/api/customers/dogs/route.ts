@@ -4,7 +4,7 @@ import { prisma } from '@/lib/db';
 
 export async function GET(request: NextRequest) {
   try {
-    const { userId } = auth();
+    const { userId } = await auth();
     
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -32,10 +32,12 @@ export async function GET(request: NextRequest) {
       name: dog.name,
       breed: dog.breed,
       age: dog.age,
-      weight: dog.weight,
-      temperament: dog.temperament,
-      medicalNeeds: dog.medicalNeeds || '',
-      specialInstructions: dog.specialInstructions || ''
+      sex: dog.sex,
+      vaccinated: dog.vaccinated,
+      neutered: dog.neutered,
+      socialLevel: dog.socialLevel,
+      medicalConditions: dog.medicalConditions || '',
+      additionalNotes: dog.additionalNotes || ''
     }));
 
     return NextResponse.json(dogs);

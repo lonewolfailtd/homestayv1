@@ -14,7 +14,7 @@ const rebookSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId } = auth();
+    const { userId } = await auth();
     
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -52,31 +52,19 @@ export async function POST(request: NextRequest) {
       data: {
         customerId: customer.id,
         dogId: validatedData.dogId,
-        checkInDate: checkIn,
-        checkOutDate: checkOut,
+        checkIn: checkIn,
+        checkOut: checkOut,
         totalDays: nights,
         totalPrice: validatedData.totalPrice,
-        depositAmount: Math.round(validatedData.totalPrice * 0.5),
-        balanceAmount: Math.round(validatedData.totalPrice * 0.5),
-        specialRequests: validatedData.specialRequests || '',
-        status: 'confirmed',
-        paymentStatus: 'pending',
-        // Create individual service bookings
-        serviceBookings: {
-          create: Object.entries(validatedData.services)
-            .filter(([_, quantity]) => quantity > 0)
-            .map(([serviceId, quantity]) => ({
-              serviceId,
-              quantity,
-              pricePerUnit: getServicePrice(serviceId),
-              totalPrice: getServicePrice(serviceId) * quantity
-            }))
-        }
+        dailyRate: 80, // Default rate
+        serviceCharges: 0,
+        boardingType: 'standard',
+        services: Object.keys(validatedData.services).filter(serviceId => validatedData.services[serviceId] > 0),
+        status: 'confirmed'
       },
       include: {
         customer: true,
-        dog: true,
-        serviceBookings: true
+        dog: true
       }
     });
 
@@ -95,7 +83,7 @@ export async function POST(request: NextRequest) {
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Invalid request data', details: error.errors },
+        { error: 'Invalid request data', details: error.issues },
         { status: 400 }
       );
     }

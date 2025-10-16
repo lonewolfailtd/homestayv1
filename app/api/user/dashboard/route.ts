@@ -7,19 +7,19 @@ const prisma = new PrismaClient();
 export async function GET(request: NextRequest) {
   try {
     // Check authentication
-    const { userId: clerkUserId } = auth();
+    const { userId: clerkUserId } = await auth();
     
     if (!clerkUserId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get user from database
-    const user = await prisma.user.findUnique({
-      where: { clerkId: clerkUserId }
+    // Get customer from database
+    const customer = await prisma.customer.findFirst({
+      where: { clerkUserId: clerkUserId }
     });
 
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    if (!customer) {
+      return NextResponse.json({ error: 'Customer not found' }, { status: 404 });
     }
 
     const now = new Date();
@@ -38,13 +38,13 @@ export async function GET(request: NextRequest) {
     ] = await Promise.all([
       // Total bookings count
       prisma.booking.count({
-        where: { userId: user.id }
+        where: { customerId: customer.id }
       }),
       
       // Upcoming bookings
       prisma.booking.findMany({
         where: {
-          userId: user.id,
+          customerId: customer.id,
           checkIn: { gte: now }
         },
         include: {
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
       // Active bookings (currently happening)
       prisma.booking.findMany({
         where: {
-          userId: user.id,
+          customerId: customer.id,
           AND: [
             { checkIn: { lte: now } },
             { checkOut: { gte: now } }
@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
       // This year's bookings count
       prisma.booking.count({
         where: {
-          userId: user.id,
+          customerId: customer.id,
           checkIn: { gte: startOfYear }
         }
       }),
@@ -83,7 +83,7 @@ export async function GET(request: NextRequest) {
       // Total amount spent (sum of paid bookings)
       prisma.booking.aggregate({
         where: { 
-          userId: user.id,
+          customerId: customer.id,
           OR: [
             { depositPaid: true },
             { balancePaid: true }
@@ -92,14 +92,14 @@ export async function GET(request: NextRequest) {
         _sum: { totalPrice: true }
       }),
       
-      // Saved dogs count
-      prisma.savedDog.count({
-        where: { userId: user.id }
+      // Saved dogs count (use customer's dogs)
+      prisma.dog.count({
+        where: { customerId: customer.id }
       }),
       
       // Recent activity (last 5 bookings)
       prisma.booking.findMany({
-        where: { userId: user.id },
+        where: { customerId: customer.id },
         include: {
           dog: {
             select: { name: true, breed: true }
@@ -112,7 +112,7 @@ export async function GET(request: NextRequest) {
 
     // Calculate average stay duration
     const allBookings = await prisma.booking.findMany({
-      where: { userId: user.id },
+      where: { customerId: customer.id },
       select: { totalDays: true }
     });
     
@@ -156,7 +156,7 @@ export async function GET(request: NextRequest) {
     // Calculate next payment due
     const nextPaymentDue = await prisma.booking.findFirst({
       where: {
-        userId: user.id,
+        customerId: customer.id,
         balanceDueDate: { gte: now },
         balancePaid: false
       },

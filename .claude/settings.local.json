@@ -37,7 +37,8 @@
       "mcp__playwright__browser_close",
       "WebFetch(domain:developer.xero.com)",
       "mcp__playwright__browser_tabs",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(findstr:*)"
     ],
     "deny": [],
     "ask": []

@@ -80,10 +80,11 @@ export async function POST(req: Request) {
 }
 
 async function handleUserCreated(evt: WebhookEvent) {
-  const { id, email_addresses, first_name, last_name, phone_numbers } = evt.data
+  const userData = evt.data as any
+  const { id, email_addresses, first_name, last_name, phone_numbers } = userData
 
-  const primaryEmail = email_addresses.find((email: any) => email.id === evt.data.primary_email_address_id)
-  const primaryPhone = phone_numbers.find((phone: any) => phone.id === evt.data.primary_phone_number_id)
+  const primaryEmail = email_addresses?.find((email: any) => email.id === userData.primary_email_address_id)
+  const primaryPhone = phone_numbers?.find((phone: any) => phone.id === userData.primary_phone_number_id)
 
   if (!primaryEmail) {
     throw new Error('No primary email found for user')
@@ -104,10 +105,11 @@ async function handleUserCreated(evt: WebhookEvent) {
 }
 
 async function handleUserUpdated(evt: WebhookEvent) {
-  const { id, email_addresses, first_name, last_name, phone_numbers } = evt.data
+  const userData = evt.data as any
+  const { id, email_addresses, first_name, last_name, phone_numbers } = userData
 
-  const primaryEmail = email_addresses.find((email: any) => email.id === evt.data.primary_email_address_id)
-  const primaryPhone = phone_numbers.find((phone: any) => phone.id === evt.data.primary_phone_number_id)
+  const primaryEmail = email_addresses?.find((email: any) => email.id === userData.primary_email_address_id)
+  const primaryPhone = phone_numbers?.find((phone: any) => phone.id === userData.primary_phone_number_id)
 
   if (!primaryEmail) {
     throw new Error('No primary email found for user')
@@ -128,7 +130,8 @@ async function handleUserUpdated(evt: WebhookEvent) {
 }
 
 async function handleUserDeleted(evt: WebhookEvent) {
-  const { id } = evt.data
+  const userData = evt.data as any
+  const { id } = userData
 
   // Delete user from our database
   await prisma.user.delete({
