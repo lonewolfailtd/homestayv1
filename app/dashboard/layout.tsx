@@ -3,6 +3,7 @@
 import { UserButton, useUser } from '@clerk/nextjs';
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { 
   Home, 
@@ -61,12 +62,16 @@ export default function DashboardLayout({
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
-            <div className="flex items-center">
-              <div className="h-8 w-8 bg-black rounded-lg flex items-center justify-center mr-3">
-                <span className="text-white font-heading text-sm font-bold">K9</span>
-              </div>
-              <h1 className="font-heading text-xl text-black">100% K9</h1>
-            </div>
+            <Link href="/" className="flex items-center">
+              <Image
+                src="/images/100%K9 on Transparent HORIZONTAL.png"
+                alt="100% K9 Dog Boarding"
+                width={140}
+                height={32}
+                className="h-8 w-auto"
+                priority
+              />
+            </Link>
             <button
               onClick={() => setSidebarOpen(false)}
               className="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-600 active:bg-gray-100 touch-manipulation"

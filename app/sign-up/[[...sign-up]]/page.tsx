@@ -1,6 +1,7 @@
 'use client';
 
 import { SignUp } from '@clerk/nextjs';
+import Image from 'next/image';
 
 export default function SignUpPage() {
   return (
@@ -8,8 +9,15 @@ export default function SignUpPage() {
       <div className="max-w-md w-full space-y-8">
         {/* Header */}
         <div className="text-center">
-          <div className="mx-auto h-16 w-16 bg-black rounded-xl flex items-center justify-center">
-            <span className="text-white font-heading text-xl">K9</span>
+          <div className="mx-auto flex justify-center mb-4">
+            <Image
+              src="/images/100%K9 on Transparent HORIZONTAL.png"
+              alt="100% K9 Dog Boarding"
+              width={200}
+              height={50}
+              className="h-12 w-auto"
+              priority
+            />
           </div>
           <h2 className="mt-6 text-3xl font-heading text-black">
             Join 100% K9
