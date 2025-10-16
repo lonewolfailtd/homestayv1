@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { DayPicker } from 'react-day-picker';
 import { format, addMonths, startOfDay, isBefore, isAfter, addDays } from 'date-fns';
-import { ChevronLeft, ChevronRight, Calendar, Clock } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar, Clock, Menu, X } from 'lucide-react';
 import 'react-day-picker/dist/style.css';
 
 interface InteractiveCalendarProps {
@@ -35,9 +35,22 @@ export default function InteractiveCalendar({ selectedDates, onDateChange }: Int
   const [mode, setMode] = useState<'single' | 'range'>('range');
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [isSelectingCheckOut, setIsSelectingCheckOut] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [showQuickFilters, setShowQuickFilters] = useState(false);
 
   const today = startOfDay(new Date());
   const minDate = today;
+
+  // Check for mobile screen size
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Convert string dates to Date objects
   const checkInDate = selectedDates.checkIn ? new Date(selectedDates.checkIn) : undefined;
@@ -150,8 +163,8 @@ export default function InteractiveCalendar({ selectedDates, onDateChange }: Int
     <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
       {/* Header */}
       <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
-        <div className="flex items-center justify-between">
-          <div>
+        <div className="flex items-center justify-between flex-wrap">
+          <div className="mb-2 md:mb-0">
             <h3 className="font-button font-semibold text-black">Select Your Dates</h3>
             <p className="text-sm text-gray-600 font-body">
               {mode === 'range' ? 'Choose check-in and check-out dates' : 'Choose a single date'}
@@ -159,6 +172,15 @@ export default function InteractiveCalendar({ selectedDates, onDateChange }: Int
           </div>
           
           <div className="flex items-center space-x-2">
+            {isMobile && (
+              <button
+                onClick={() => setShowQuickFilters(!showQuickFilters)}
+                className="p-2 rounded-lg border border-gray-200 bg-white text-gray-600 md:hidden"
+              >
+                {showQuickFilters ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+              </button>
+            )}
+            
             <button
               onClick={() => setMode('single')}
               className={`px-3 py-1 rounded-lg text-sm font-button transition-colors ${
@@ -183,9 +205,9 @@ export default function InteractiveCalendar({ selectedDates, onDateChange }: Int
         </div>
       </div>
 
-      <div className="flex">
+      <div className={`${isMobile ? 'block' : 'flex'}`}>
         {/* Quick Filters Sidebar */}
-        <div className="w-48 bg-gray-50 border-r border-gray-200 p-4">
+        <div className={`${isMobile ? 'w-full' : 'w-48'} bg-gray-50 ${isMobile ? 'border-b' : 'border-r'} border-gray-200 p-4 ${isMobile && !showQuickFilters ? 'hidden' : ''}`}>
           <div className="space-y-2">
             <div className="text-sm font-button font-medium text-gray-700 mb-3">Quick Select</div>
             {quickFilters.map((filter, index) => (
@@ -233,7 +255,7 @@ export default function InteractiveCalendar({ selectedDates, onDateChange }: Int
         </div>
 
         {/* Calendar */}
-        <div className="flex-1 p-6">
+        <div className={`flex-1 ${isMobile ? 'p-4' : 'p-6'}`}>
           <style jsx global>{`
             .rdp {
               --rdp-cell-size: 44px;
@@ -316,13 +338,58 @@ export default function InteractiveCalendar({ selectedDates, onDateChange }: Int
             .rdp-nav_button:hover {
               background-color: #F3F4F6;
             }
+            
+            /* Mobile-specific styles */
+            @media (max-width: 768px) {
+              .rdp {
+                --rdp-cell-size: 48px;
+              }
+              .rdp-months {
+                flex-direction: column;
+                gap: 1rem;
+              }
+              .rdp-button {
+                width: var(--rdp-cell-size);
+                height: var(--rdp-cell-size);
+                font-size: 1rem;
+              }
+              .rdp-nav_button {
+                width: 2.5rem;
+                height: 2.5rem;
+              }
+              .rdp-caption_label {
+                font-size: 1rem;
+              }
+              .rdp-head_cell {
+                font-size: 0.75rem;
+                padding: 0.25rem;
+              }
+            }
+            
+            /* Touch-friendly interactions */
+            @media (hover: none) and (pointer: coarse) {
+              .rdp-button:hover {
+                background-color: transparent;
+              }
+              .rdp-button:active {
+                background-color: #F3F4F6;
+                transform: scale(0.95);
+              }
+              .rdp-nav_button:hover {
+                background-color: white;
+              }
+              .rdp-nav_button:active {
+                background-color: #F3F4F6;
+                transform: scale(0.95);
+              }
+            }
           `}</style>
           
           <DayPicker
             mode="single"
             selected={checkInDate}
             onSelect={handleDayClick}
-            numberOfMonths={2}
+            numberOfMonths={isMobile ? 1 : 2}
             month={currentMonth}
             onMonthChange={setCurrentMonth}
             fromDate={minDate}
@@ -330,15 +397,16 @@ export default function InteractiveCalendar({ selectedDates, onDateChange }: Int
             modifiersStyles={modifiersStyles}
             showOutsideDays
             fixedWeeks
+            className={isMobile ? 'rdp-mobile' : ''}
           />
         </div>
       </div>
 
       {/* Selection Summary */}
       {(checkInDate || checkOutDate) && (
-        <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-6">
+        <div className={`bg-gray-50 ${isMobile ? 'px-4 py-3' : 'px-6 py-4'} border-t border-gray-200`}>
+          <div className={`${isMobile ? 'block space-y-3' : 'flex items-center justify-between'}`}>
+            <div className={`${isMobile ? 'grid grid-cols-2 gap-3' : 'flex items-center space-x-6'}`}>
               {checkInDate && (
                 <div className="flex items-center">
                   <Calendar className="h-4 w-4 text-purple-600 mr-2" />

@@ -4,11 +4,23 @@ import { createOrUpdateGHLContact } from '@/lib/gohighlevel';
 import { createDepositInvoice, createBalanceInvoice } from '@/lib/xero';
 import { sendBookingConfirmation } from '@/lib/email';
 import { calculateAdvancedPricing } from '@/lib/pricing-engine';
+import { auth } from '@clerk/nextjs/server';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if user is authenticated
+    const { userId: clerkUserId } = auth();
+    let authenticatedUser = null;
+    
+    if (clerkUserId) {
+      // Get user from our database
+      authenticatedUser = await prisma.user.findUnique({
+        where: { clerkId: clerkUserId }
+      });
+    }
+
     const formData = await request.json();
     
     const {
@@ -179,6 +191,7 @@ export async function POST(request: NextRequest) {
 
         customer = await tx.customer.create({
           data: {
+            userId: authenticatedUser?.id || null, // Link to authenticated user
             email,
             firstName,
             lastName: lastName || '',
@@ -222,6 +235,7 @@ export async function POST(request: NextRequest) {
         data: {
           customerId: customer.id,
           dogId: dog.id,
+          userId: authenticatedUser?.id || null, // Link to authenticated user
           checkIn: checkInDate,
           checkOut: checkOutDate,
           boardingType,
@@ -241,6 +255,26 @@ export async function POST(request: NextRequest) {
           selectedServices: JSON.stringify(breakdown?.services || []),
         },
       });
+
+      // If user is authenticated, save this dog to their profile for quick rebooking
+      if (authenticatedUser) {
+        await tx.savedDog.upsert({
+          where: {
+            userId_dogId: {
+              userId: authenticatedUser.id,
+              dogId: dog.id,
+            },
+          },
+          update: {
+            // Update last interaction
+          },
+          create: {
+            userId: authenticatedUser.id,
+            dogId: dog.id,
+            isDefault: false,
+          },
+        });
+      }
 
       return { customer, dog, booking };
     });

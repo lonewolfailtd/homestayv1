@@ -32,11 +32,39 @@ export default function CustomerStep({ formData, updateFormData, nextStep }: Cus
         firstName: user.firstName || '',
         lastName: user.lastName || '',
         email: user.emailAddresses?.[0]?.emailAddress || '',
+        phone: user.phoneNumbers?.[0]?.phoneNumber || '',
       };
       setCustomerData(prev => ({ ...prev, ...userData }));
       updateFormData(userData);
     }
   }, [user, formData.firstName, updateFormData]);
+
+  // Fetch user preferences for emergency contact
+  useEffect(() => {
+    const fetchUserPreferences = async () => {
+      if (user && !formData.emergencyName) {
+        try {
+          const response = await fetch('/api/user/profile');
+          if (response.ok) {
+            const data = await response.json();
+            if (data.preferences?.default_emergency_contact) {
+              const emergencyData = {
+                emergencyName: data.preferences.default_emergency_contact.name || '',
+                emergencyPhone: data.preferences.default_emergency_contact.phone || '',
+                emergencyRelation: data.preferences.default_emergency_contact.relation || 'Partner',
+              };
+              setCustomerData(prev => ({ ...prev, ...emergencyData }));
+              updateFormData(emergencyData);
+            }
+          }
+        } catch (error) {
+          console.log('Could not fetch user preferences:', error);
+        }
+      }
+    };
+
+    fetchUserPreferences();
+  }, [user, formData.emergencyName, updateFormData]);
 
   const handleInputChange = (field: string, value: string) => {
     const newData = { ...customerData, [field]: value };

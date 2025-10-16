@@ -1,7 +1,6 @@
 'use client';
 
 import { useUser } from '@clerk/nextjs';
-import { redirect } from 'next/navigation';
 import MultiStepBookingForm from '@/components/booking/MultiStepBookingForm';
 
 export default function BookPage() {
@@ -13,10 +12,6 @@ export default function BookPage() {
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
       </div>
     );
-  }
-
-  if (!isSignedIn) {
-    redirect('/sign-up');
   }
 
   return (

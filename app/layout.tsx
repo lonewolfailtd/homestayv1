@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Inter, Jacques_Francois, DM_Sans, Poppins } from 'next/font/google'
 import { ClerkProvider } from '@clerk/nextjs'
 import { Toaster } from 'sonner'
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 import './globals.css'
 
 // 100% K9 Brand Fonts
@@ -38,7 +39,9 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <body className={`${inter.className} ${jacquesFrancois.variable} ${dmSans.variable} ${poppins.variable}`}>
-          {children}
+          <ErrorBoundary>
+            {children}
+          </ErrorBoundary>
           <Toaster position="top-right" />
         </body>
       </html>

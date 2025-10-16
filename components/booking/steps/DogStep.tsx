@@ -1,7 +1,35 @@
 'use client';
 
-import { useState } from 'react';
-import { Dog, Heart, Shield, Activity, AlertTriangle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useAuth } from '@clerk/nextjs';
+import { Dog, Heart, Shield, Activity, AlertTriangle, Star, Plus } from 'lucide-react';
+
+interface SavedDog {
+  id: string;
+  isDefault: boolean;
+  nickname?: string;
+  notes?: string;
+  dog: {
+    id: string;
+    name: string;
+    age: number;
+    sex: string;
+    breed: string;
+    vaccinated: string;
+    neutered: string;
+    vetClinic?: string;
+    vetPhone?: string;
+    medications?: string;
+    medicalConditions?: string;
+    crateTrained: string;
+    socialLevel: string;
+    peopleBehavior: string;
+    behavioralIssues: string;
+    farmAnimalReactive: string;
+    biteHistory: string;
+    additionalNotes?: string;
+  };
+}
 
 interface DogStepProps {
   formData: any;
@@ -10,6 +38,12 @@ interface DogStepProps {
 }
 
 export default function DogStep({ formData, updateFormData, nextStep }: DogStepProps) {
+  const { isSignedIn } = useAuth();
+  const [savedDogs, setSavedDogs] = useState<SavedDog[]>([]);
+  const [loadingSavedDogs, setLoadingSavedDogs] = useState(false);
+  const [selectedSavedDog, setSelectedSavedDog] = useState<string | null>(null);
+  const [showNewDogForm, setShowNewDogForm] = useState(!isSignedIn);
+
   const [dogData, setDogData] = useState({
     dogName: formData.dogName || '',
     dogAge: formData.dogAge || '',
@@ -31,6 +65,97 @@ export default function DogStep({ formData, updateFormData, nextStep }: DogStepP
     biteHistory: formData.biteHistory || 'No',
     additionalNotes: formData.additionalNotes || '',
   });
+
+  // Fetch saved dogs when component mounts
+  useEffect(() => {
+    if (isSignedIn) {
+      fetchSavedDogs();
+    }
+  }, [isSignedIn]);
+
+  const fetchSavedDogs = async () => {
+    if (!isSignedIn) return;
+    
+    try {
+      setLoadingSavedDogs(true);
+      const response = await fetch('/api/user/dogs');
+      if (response.ok) {
+        const data = await response.json();
+        setSavedDogs(data.dogs);
+        
+        // Auto-select default dog if exists and no dog is already selected
+        const defaultDog = data.dogs.find((savedDog: SavedDog) => savedDog.isDefault);
+        if (defaultDog && !formData.dogName) {
+          handleSelectSavedDog(defaultDog);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching saved dogs:', error);
+    } finally {
+      setLoadingSavedDogs(false);
+    }
+  };
+
+  const handleSelectSavedDog = (savedDog: SavedDog) => {
+    const dog = savedDog.dog;
+    const newData = {
+      dogName: savedDog.nickname || dog.name,
+      dogAge: dog.age.toString(),
+      dogSex: dog.sex,
+      dogBreed: dog.breed,
+      dogWeight: '',
+      isEntireDog: dog.neutered === 'No',
+      vaccinated: dog.vaccinated,
+      neutered: dog.neutered,
+      vetClinic: dog.vetClinic || '',
+      vetPhone: dog.vetPhone || '',
+      medications: dog.medications || '',
+      medicalConditions: dog.medicalConditions || '',
+      crateTrained: dog.crateTrained,
+      socialLevel: dog.socialLevel,
+      peopleBehavior: dog.peopleBehavior,
+      behavioralIssues: dog.behavioralIssues,
+      farmAnimalReactive: dog.farmAnimalReactive,
+      biteHistory: dog.biteHistory,
+      additionalNotes: dog.additionalNotes || '',
+      selectedDogId: dog.id, // Store the original dog ID for backend reference
+    };
+    
+    setDogData(newData);
+    updateFormData(newData);
+    setSelectedSavedDog(savedDog.id);
+    setShowNewDogForm(false);
+  };
+
+  const handleNewDogClick = () => {
+    setSelectedSavedDog(null);
+    setShowNewDogForm(true);
+    // Reset form to empty state
+    const emptyData = {
+      dogName: '',
+      dogAge: '',
+      dogSex: 'Male',
+      dogBreed: '',
+      dogWeight: '',
+      isEntireDog: false,
+      vaccinated: 'Yes',
+      neutered: 'Yes',
+      vetClinic: '',
+      vetPhone: '',
+      medications: '',
+      medicalConditions: '',
+      crateTrained: 'Yes',
+      socialLevel: 'Great with dogs',
+      peopleBehavior: '',
+      behavioralIssues: 'None',
+      farmAnimalReactive: 'No',
+      biteHistory: 'No',
+      additionalNotes: '',
+      selectedDogId: undefined,
+    };
+    setDogData(emptyData);
+    updateFormData(emptyData);
+  };
 
   const handleInputChange = (field: string, value: any) => {
     const newData = { ...dogData, [field]: value };
@@ -65,7 +190,92 @@ export default function DogStep({ formData, updateFormData, nextStep }: DogStepP
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">
-        {/* Basic Information */}
+        {/* Saved Dogs Selection - Only show for authenticated users */}
+        {isSignedIn && (
+          <div className="form-section">
+            <h3 className="text-lg font-button font-semibold text-black mb-4 flex items-center">
+              <Heart className="h-5 w-5 mr-2 text-purple-600" />
+              Your Saved Dogs
+            </h3>
+            
+            {loadingSavedDogs ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="card animate-pulse">
+                    <div className="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
+                    <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+                  </div>
+                ))}
+              </div>
+            ) : savedDogs.length > 0 ? (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {savedDogs.map((savedDog) => (
+                    <div
+                      key={savedDog.id}
+                      className={`card cursor-pointer transition-all ${
+                        selectedSavedDog === savedDog.id
+                          ? 'ring-2 ring-purple-500 bg-purple-50'
+                          : 'hover:shadow-md'
+                      }`}
+                      onClick={() => handleSelectSavedDog(savedDog)}
+                    >
+                      <div className="flex items-start justify-between mb-2">
+                        <div>
+                          <div className="flex items-center space-x-2">
+                            <h4 className="font-button font-semibold text-black">
+                              {savedDog.nickname || savedDog.dog.name}
+                            </h4>
+                            {savedDog.isDefault && (
+                              <Star className="h-4 w-4 text-yellow-500 fill-current" />
+                            )}
+                          </div>
+                          {savedDog.nickname && savedDog.nickname !== savedDog.dog.name && (
+                            <p className="text-xs text-gray-500 font-body">
+                              Real name: {savedDog.dog.name}
+                            </p>
+                          )}
+                        </div>
+                        {selectedSavedDog === savedDog.id && (
+                          <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                        )}
+                      </div>
+                      <div className="text-sm text-gray-600 font-body">
+                        <p>{savedDog.dog.breed} • {savedDog.dog.age} years • {savedDog.dog.sex}</p>
+                        <p className="text-xs mt-1">Social: {savedDog.dog.socialLevel}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                <div className="flex items-center justify-center pt-4">
+                  <button
+                    type="button"
+                    onClick={handleNewDogClick}
+                    className={`btn-secondary flex items-center ${
+                      showNewDogForm ? 'bg-purple-100 text-purple-700' : ''
+                    }`}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add New Dog
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-6 bg-gray-50 rounded-xl">
+                <Dog className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                <p className="text-gray-600 font-body text-sm">
+                  No saved dogs yet. Your dogs will be saved automatically after booking.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Show form only if user is not signed in or has chosen to add a new dog */}
+        {(!isSignedIn || showNewDogForm) && (
+          <>
+            {/* Basic Information */}
         <div className="form-section">
           <h3 className="text-lg font-button font-semibold text-black mb-4 flex items-center">
             <Dog className="h-5 w-5 mr-2 text-purple-600" />
@@ -418,6 +628,8 @@ export default function DogStep({ formData, updateFormData, nextStep }: DogStepP
 
         {/* Hidden submit button for form submission */}
         <button type="submit" className="hidden" />
+          </>
+        )}
       </form>
     </div>
   );

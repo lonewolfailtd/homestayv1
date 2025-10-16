@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { CheckCircle, User, Dog, Calendar, CreditCard, AlertTriangle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -8,11 +8,50 @@ interface SummaryStepProps {
   formData: any;
   isSubmitting: boolean;
   setIsSubmitting: (isSubmitting: boolean) => void;
+  updateFormData?: (data: any) => void;
 }
 
-export default function SummaryStep({ formData, isSubmitting, setIsSubmitting }: SummaryStepProps) {
+export default function SummaryStep({ formData, isSubmitting, setIsSubmitting, updateFormData }: SummaryStepProps) {
   const [agreed, setAgreed] = useState(false);
   const [submitResult, setSubmitResult] = useState<any>(null);
+  const [pricingLoading, setPricingLoading] = useState(false);
+
+  // Calculate pricing when component mounts or service selections change
+  useEffect(() => {
+    const calculatePricing = async () => {
+      if (!formData.checkIn || !formData.checkOut || !updateFormData) return;
+      
+      setPricingLoading(true);
+      try {
+        const response = await fetch('/api/pricing/calculate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            checkIn: formData.checkIn,
+            checkOut: formData.checkOut,
+            isEntireDog: formData.isEntireDog || false,
+            selectedServices: Object.keys(formData.selectedServices || {}),
+            numberOfMeals: formData.selectedServices?.RAW_MEAL || 0,
+            numberOfWalks: formData.selectedServices?.PACK_WALK || 0,
+          }),
+        });
+
+        const result = await response.json();
+        if (result.success) {
+          updateFormData({ pricing: result });
+        }
+      } catch (error) {
+        console.error('Error calculating pricing:', error);
+      } finally {
+        setPricingLoading(false);
+      }
+    };
+
+    // Only calculate if we don't already have pricing data
+    if (!formData.pricing) {
+      calculatePricing();
+    }
+  }, [formData.checkIn, formData.checkOut, formData.selectedServices, formData.isEntireDog, formData.pricing]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-NZ', {
@@ -335,7 +374,18 @@ export default function SummaryStep({ formData, isSubmitting, setIsSubmitting }:
         )}
 
         {/* Pricing Summary */}
-        {formData.pricing && (
+        {pricingLoading ? (
+          <div className="form-section">
+            <h3 className="text-lg font-button font-semibold text-black mb-4 flex items-center">
+              <CreditCard className="h-5 w-5 mr-2 text-purple-600" />
+              Pricing Summary
+            </h3>
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-purple-600 mr-2" />
+              <span className="font-body text-gray-600">Calculating final pricing...</span>
+            </div>
+          </div>
+        ) : formData.pricing && (
           <div className="form-section">
             <h3 className="text-lg font-button font-semibold text-black mb-4 flex items-center">
               <CreditCard className="h-5 w-5 mr-2 text-purple-600" />

@@ -69,7 +69,7 @@ export default function DashboardLayout({
             </div>
             <button
               onClick={() => setSidebarOpen(false)}
-              className="lg:hidden p-1 rounded-md text-gray-400 hover:text-gray-600"
+              className="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-600 active:bg-gray-100 touch-manipulation"
             >
               <X className="h-5 w-5" />
             </button>
@@ -84,10 +84,10 @@ export default function DashboardLayout({
                   key={item.name}
                   href={item.href}
                   className={`
-                    flex items-center px-3 py-2 rounded-xl text-sm font-button transition-colors
+                    flex items-center px-3 py-3 rounded-xl text-sm font-button transition-colors touch-manipulation
                     ${isActive 
                       ? 'bg-purple-100 text-purple-700 border border-purple-200' 
-                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 active:bg-gray-200'
                     }
                   `}
                   onClick={() => setSidebarOpen(false)}
@@ -129,7 +129,7 @@ export default function DashboardLayout({
           <div className="flex items-center justify-between h-16 px-4">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="p-2 rounded-md text-gray-400 hover:text-gray-600"
+              className="p-3 rounded-md text-gray-400 hover:text-gray-600 active:bg-gray-100 touch-manipulation"
             >
               <Menu className="h-5 w-5" />
             </button>

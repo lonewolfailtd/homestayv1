@@ -36,7 +36,8 @@
       "Bash(powershell:*)",
       "mcp__playwright__browser_close",
       "WebFetch(domain:developer.xero.com)",
-      "mcp__playwright__browser_tabs"
+      "mcp__playwright__browser_tabs",
+      "Bash(mkdir:*)"
     ],
     "deny": [],
     "ask": []
