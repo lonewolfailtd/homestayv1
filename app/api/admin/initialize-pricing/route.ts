@@ -3,7 +3,7 @@ import { initializePeakPeriods, initializePricingTiers } from '@/lib/pricing-eng
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     // Initialize peak periods and pricing tiers
     await Promise.all([
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
 }
 
 // GET route to check current pricing configuration
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const { prisma } = await import('@/lib/db');
     

@@ -1,4 +1,4 @@
-import nodemailer from 'nodemailer';
+// import nodemailer from 'nodemailer'; // Future email implementation
 
 interface BookingEmailData {
   customerName: string;

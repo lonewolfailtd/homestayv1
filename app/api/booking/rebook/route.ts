@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-function getServicePrice(serviceId: string): number {
+function _getServicePrice(serviceId: string): number {
   const servicePrices: { [key: string]: number } = {
     'grooming': 85,
     'training': 120,

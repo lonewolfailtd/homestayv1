@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
     const {
       totalDays,
       baseDailyRate,
-      baseSubtotal,
+      baseSubtotal: _baseSubtotal,
       peakSurcharge,
       dogSurcharges,
       serviceCharges,

@@ -4,7 +4,7 @@ import { useUser } from '@clerk/nextjs';
 import MultiStepBookingForm from '@/components/booking/MultiStepBookingForm';
 
 export default function BookPage() {
-  const { isSignedIn, isLoaded } = useUser();
+  const { isLoaded } = useUser();
 
   if (!isLoaded) {
     return (

@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const code = searchParams.get('code');
-    const state = searchParams.get('state');
+    const _state = searchParams.get('state');
 
     if (!code) {
       return NextResponse.json({ error: 'Authorization code missing' }, { status: 400 });

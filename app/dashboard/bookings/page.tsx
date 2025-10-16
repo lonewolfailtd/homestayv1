@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Calendar, Clock, User, Dog, CreditCard, MapPin, Filter, Search, RefreshCw } from 'lucide-react';
+import { Calendar, Clock, Dog, CreditCard, Filter, Search, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Booking {
