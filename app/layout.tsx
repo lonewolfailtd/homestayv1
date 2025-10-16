@@ -1,12 +1,32 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Inter, Jacques_Francois, DM_Sans, Poppins } from 'next/font/google'
+import { ClerkProvider } from '@clerk/nextjs'
+import { Toaster } from 'sonner'
 import './globals.css'
+
+// 100% K9 Brand Fonts
+const jacquesFrancois = Jacques_Francois({ 
+  weight: '400',
+  subsets: ['latin'],
+  variable: '--font-heading'
+})
+
+const dmSans = DM_Sans({ 
+  subsets: ['latin'],
+  variable: '--font-body'
+})
+
+const poppins = Poppins({ 
+  weight: ['400', '500', '600', '700'],
+  subsets: ['latin'],
+  variable: '--font-button'
+})
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Dog Boarding Booking Form',
-  description: 'Book your dog\'s stay with us',
+  title: '100% K9 Dog Boarding & Homestay',
+  description: 'Professional dog boarding and homestay services with premium care',
 }
 
 export default function RootLayout({
@@ -15,8 +35,13 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>{children}</body>
-    </html>
+    <ClerkProvider>
+      <html lang="en">
+        <body className={`${inter.className} ${jacquesFrancois.variable} ${dmSans.variable} ${poppins.variable}`}>
+          {children}
+          <Toaster position="top-right" />
+        </body>
+      </html>
+    </ClerkProvider>
   )
 }
