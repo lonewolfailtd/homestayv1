@@ -59,6 +59,18 @@ export async function createDepositInvoice(booking: {
   serviceCharges: number;
   totalPrice: number;
   boardingType: string;
+  // Enhanced pricing data
+  baseDailyRate?: number;
+  peakSurcharge?: number;
+  dogSurcharges?: number;
+  isPeakPeriod?: boolean;
+  peakPeriodName?: string;
+  selectedServices?: Array<{
+    name: string;
+    quantity: number;
+    unitPrice: number;
+    total: number;
+  }>;
 }) {
   try {
     const { xero, tenantId } = await getAuthorizedXeroClient();
@@ -106,6 +118,7 @@ export async function createDepositInvoice(booking: {
       type: 'ACCREC' as any,
       contact: contact,
       lineItems: lineItems,
+      lineAmountTypes: 'Inclusive' as any,
       date: new Date().toISOString().split('T')[0],
       dueDate: new Date().toISOString().split('T')[0], // Due immediately
       reference: `DEPOSIT - Boarding: ${booking.dogName}`,
@@ -167,6 +180,18 @@ export async function createBalanceInvoice(booking: {
   serviceCharges: number;
   totalPrice: number;
   boardingType: string;
+  // Enhanced pricing data
+  baseDailyRate?: number;
+  peakSurcharge?: number;
+  dogSurcharges?: number;
+  isPeakPeriod?: boolean;
+  peakPeriodName?: string;
+  selectedServices?: Array<{
+    name: string;
+    quantity: number;
+    unitPrice: number;
+    total: number;
+  }>;
 }) {
   try {
     const { xero, tenantId } = await getAuthorizedXeroClient();
@@ -210,17 +235,37 @@ export async function createBalanceInvoice(booking: {
       }
     ];
 
-    // Add service charges to balance invoice if any
-    if (booking.serviceCharges > 0) {
-      lineItems.push({
-        description: 'Additional services (grooming, training, walks, medication)',
-        quantity: 1,
-        unitAmount: booking.serviceCharges,
-        accountCode: '228',
-        taxType: 'OUTPUT2', // 15% GST for New Zealand
-        itemCode: '4010-08', // Adventure Walk Homestay for additional services
-        lineAmount: booking.serviceCharges,
-      });
+    // Add individual service line items if any
+    if (booking.selectedServices && booking.selectedServices.length > 0) {
+      for (const service of booking.selectedServices) {
+        // Import service item code mapping
+        const { getServiceItemCode } = await import('./pricing-engine');
+        
+        // Map service name to service key for item code lookup
+        const serviceKeyMap: { [key: string]: string } = {
+          'Full Wash & Conditioner': 'GROOMING_MEDIUM', // Default to medium, could be refined
+          'Nails Clipped': 'NAIL_CLIP',
+          'Adventure Pack Walks': 'PACK_WALK',
+          'Pre Walk Assessment x 2': 'WALK_ASSESSMENT',
+          'Recall Training': 'RECALL_TRAINING',
+          'Obedience Training': 'OBEDIENCE_TRAINING',
+          'Balanced Raw Meal': 'RAW_MEAL',
+          'Entire Dog Surcharge': 'INTACT_DOG',
+        };
+        
+        const serviceKey = serviceKeyMap[service.name] || 'PACK_WALK'; // Default fallback
+        const serviceItemCode = getServiceItemCode(serviceKey);
+        
+        lineItems.push({
+          description: service.name,
+          quantity: service.quantity,
+          unitAmount: service.unitPrice,
+          accountCode: '228',
+          taxType: 'OUTPUT2', // 15% GST for New Zealand
+          itemCode: serviceItemCode,
+          lineAmount: service.total,
+        });
+      }
     }
 
     const contact: Contact = {
@@ -232,6 +277,7 @@ export async function createBalanceInvoice(booking: {
       type: 'ACCREC' as any,
       contact: contact,
       lineItems: lineItems,
+      lineAmountTypes: 'Inclusive' as any,
       date: new Date().toISOString().split('T')[0],
       dueDate: balanceDueDate.toISOString().split('T')[0], // Due 3 weeks before check-in
       reference: `BALANCE - Boarding: ${booking.dogName}`,
@@ -305,6 +351,18 @@ export async function createXeroInvoice(booking: {
   serviceCharges: number;
   totalPrice: number;
   boardingType: string;
+  // Enhanced pricing data
+  baseDailyRate?: number;
+  peakSurcharge?: number;
+  dogSurcharges?: number;
+  isPeakPeriod?: boolean;
+  peakPeriodName?: string;
+  selectedServices?: Array<{
+    name: string;
+    quantity: number;
+    unitPrice: number;
+    total: number;
+  }>;
 }) {
   try {
     const { xero, tenantId } = await getAuthorizedXeroClient();
@@ -341,16 +399,37 @@ export async function createXeroInvoice(booking: {
       }
     ];
 
-    if (booking.serviceCharges > 0) {
-      lineItems.push({
-        description: 'Additional services (grooming, training, walks, medication)',
-        quantity: 1,
-        unitAmount: booking.serviceCharges,
-        accountCode: '228',
-        taxType: 'OUTPUT2', // 15% GST for New Zealand
-        itemCode: '4010-08', // Adventure Walk Homestay for additional services
-        lineAmount: booking.serviceCharges,
-      });
+    // Add individual service line items if any
+    if (booking.selectedServices && booking.selectedServices.length > 0) {
+      for (const service of booking.selectedServices) {
+        // Import service item code mapping
+        const { getServiceItemCode } = await import('./pricing-engine');
+        
+        // Map service name to service key for item code lookup
+        const serviceKeyMap: { [key: string]: string } = {
+          'Full Wash & Conditioner': 'GROOMING_MEDIUM', // Default to medium, could be refined
+          'Nails Clipped': 'NAIL_CLIP',
+          'Adventure Pack Walks': 'PACK_WALK',
+          'Pre Walk Assessment x 2': 'WALK_ASSESSMENT',
+          'Recall Training': 'RECALL_TRAINING',
+          'Obedience Training': 'OBEDIENCE_TRAINING',
+          'Balanced Raw Meal': 'RAW_MEAL',
+          'Entire Dog Surcharge': 'INTACT_DOG',
+        };
+        
+        const serviceKey = serviceKeyMap[service.name] || 'PACK_WALK'; // Default fallback
+        const serviceItemCode = getServiceItemCode(serviceKey);
+        
+        lineItems.push({
+          description: service.name,
+          quantity: service.quantity,
+          unitAmount: service.unitPrice,
+          accountCode: '228',
+          taxType: 'OUTPUT2', // 15% GST for New Zealand
+          itemCode: serviceItemCode,
+          lineAmount: service.total,
+        });
+      }
     }
 
     const contact: Contact = {
@@ -362,6 +441,7 @@ export async function createXeroInvoice(booking: {
       type: 'ACCREC' as any,
       contact: contact,
       lineItems: lineItems,
+      lineAmountTypes: 'Inclusive' as any,
       date: new Date().toISOString().split('T')[0],
       dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 7 days from now
       reference: `Boarding: ${booking.dogName}`,

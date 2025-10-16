@@ -39,6 +39,11 @@ interface FormData {
   boardingType: string;
   services: string[];
   specialInstructions: string;
+  // Enhanced pricing fields
+  isEntireDog: boolean;
+  selectedServices: string[];
+  numberOfMeals: number;
+  numberOfWalks: number;
 }
 
 export default function BookingForm() {
@@ -76,6 +81,10 @@ export default function BookingForm() {
     boardingType: 'standard',
     services: [],
     specialInstructions: '',
+    isEntireDog: false,
+    selectedServices: [],
+    numberOfMeals: 0,
+    numberOfWalks: 0,
   });
 
   const [existingCustomer, setExistingCustomer] = useState<any>(null);
@@ -123,8 +132,10 @@ export default function BookingForm() {
         body: JSON.stringify({
           checkIn: formData.checkIn,
           checkOut: formData.checkOut,
-          boardingType: formData.boardingType,
-          services: formData.services,
+          isEntireDog: formData.isEntireDog,
+          selectedServices: formData.selectedServices,
+          numberOfMeals: formData.numberOfMeals,
+          numberOfWalks: formData.numberOfWalks,
         }),
       });
       
@@ -681,6 +692,7 @@ export default function BookingForm() {
             <input
               type="date"
               required
+              min={new Date().toISOString().split('T')[0]}
               value={formData.checkIn}
               onChange={(e) => {
                 handleInputChange('checkIn', e.target.value);
@@ -699,6 +711,11 @@ export default function BookingForm() {
             <input
               type="date"
               required
+              min={formData.checkIn ? (() => {
+                const checkInDate = new Date(formData.checkIn);
+                checkInDate.setDate(checkInDate.getDate() + 1);
+                return checkInDate.toISOString().split('T')[0];
+              })() : new Date().toISOString().split('T')[0]}
               value={formData.checkOut}
               onChange={(e) => {
                 handleInputChange('checkOut', e.target.value);
@@ -728,30 +745,177 @@ export default function BookingForm() {
             </select>
           </div>
           
-          <div>
+          <div className="md:col-span-2">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Additional Services
+              Entire Dog Surcharge
             </label>
-            <div className="space-y-2">
-              {[
-                { value: 'grooming', label: 'Grooming (+$30)' },
-                { value: 'training', label: 'Training Session (+$25)' },
-                { value: 'extraWalks', label: 'Extra Walks (+$15)' },
-                { value: 'medicationAdmin', label: 'Medication Administration (+$10)' },
-              ].map((service) => (
-                <label key={service.value} className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={formData.services.includes(service.value)}
-                    onChange={(e) => {
-                      handleServiceChange(service.value, e.target.checked);
-                      setTimeout(calculatePricing, 100);
-                    }}
-                    className="mr-2"
-                  />
-                  {service.label}
-                </label>
-              ))}
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="isEntireDog"
+                checked={formData.isEntireDog}
+                onChange={(e) => {
+                  handleInputChange('isEntireDog', e.target.checked);
+                  setTimeout(calculatePricing, 100);
+                }}
+                className="mr-2"
+              />
+              <label htmlFor="isEntireDog">Entire Dog (+$5/day)</label>
+            </div>
+          </div>
+
+          <div className="md:col-span-2">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Additional Services</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Grooming Services */}
+              <div>
+                <h4 className="font-medium text-gray-800 mb-3">Grooming Services</h4>
+                <div className="space-y-2">
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={formData.selectedServices.includes('FULL_WASH')}
+                      onChange={(e) => {
+                        const services = e.target.checked 
+                          ? [...formData.selectedServices, 'FULL_WASH']
+                          : formData.selectedServices.filter(s => s !== 'FULL_WASH');
+                        handleInputChange('selectedServices', services);
+                        setTimeout(calculatePricing, 100);
+                      }}
+                      className="mr-2"
+                    />
+                    Full Wash & Conditioner ($40 per service)
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={formData.selectedServices.includes('NAIL_CLIP')}
+                      onChange={(e) => {
+                        const services = e.target.checked 
+                          ? [...formData.selectedServices, 'NAIL_CLIP']
+                          : formData.selectedServices.filter(s => s !== 'NAIL_CLIP');
+                        handleInputChange('selectedServices', services);
+                        setTimeout(calculatePricing, 100);
+                      }}
+                      className="mr-2"
+                    />
+                    Nail Clipping ($10 per service)
+                  </label>
+                </div>
+              </div>
+
+              {/* Training Services */}
+              <div>
+                <h4 className="font-medium text-gray-800 mb-3">Training Services</h4>
+                <div className="space-y-2">
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={formData.selectedServices.includes('RECALL_TRAINING')}
+                      onChange={(e) => {
+                        const services = e.target.checked 
+                          ? [...formData.selectedServices, 'RECALL_TRAINING']
+                          : formData.selectedServices.filter(s => s !== 'RECALL_TRAINING');
+                        handleInputChange('selectedServices', services);
+                        setTimeout(calculatePricing, 100);
+                      }}
+                      className="mr-2"
+                    />
+                    Recall Training ($150 per service)
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={formData.selectedServices.includes('OBEDIENCE_TRAINING')}
+                      onChange={(e) => {
+                        const services = e.target.checked 
+                          ? [...formData.selectedServices, 'OBEDIENCE_TRAINING']
+                          : formData.selectedServices.filter(s => s !== 'OBEDIENCE_TRAINING');
+                        handleInputChange('selectedServices', services);
+                        setTimeout(calculatePricing, 100);
+                      }}
+                      className="mr-2"
+                    />
+                    Obedience Training ($150 per service)
+                  </label>
+                </div>
+              </div>
+
+              {/* Walk Services */}
+              <div>
+                <h4 className="font-medium text-gray-800 mb-3">Walk Services</h4>
+                <div className="space-y-2">
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={formData.selectedServices.includes('PACK_WALK')}
+                      onChange={(e) => {
+                        const services = e.target.checked 
+                          ? [...formData.selectedServices, 'PACK_WALK']
+                          : formData.selectedServices.filter(s => s !== 'PACK_WALK');
+                        handleInputChange('selectedServices', services);
+                        setTimeout(calculatePricing, 100);
+                      }}
+                      className="mr-2"
+                    />
+                    Adventure Pack Walks ($30 per walk)
+                  </label>
+                  <div className="ml-6">
+                    <label className="block text-sm text-gray-600 mb-1">Number of Adventure Walks</label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="20"
+                      value={formData.numberOfWalks}
+                      onChange={(e) => {
+                        handleInputChange('numberOfWalks', parseInt(e.target.value) || 0);
+                        setTimeout(calculatePricing, 100);
+                      }}
+                      className="w-20 p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  {formData.selectedServices.includes('PACK_WALK') && (
+                    <p className="text-sm text-orange-600 ml-6">⚠️ Pre Walk Assessment required</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Food Services */}
+              <div>
+                <h4 className="font-medium text-gray-800 mb-3">Food Services</h4>
+                <div className="space-y-2">
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={formData.selectedServices.includes('RAW_MEAL')}
+                      onChange={(e) => {
+                        const services = e.target.checked 
+                          ? [...formData.selectedServices, 'RAW_MEAL']
+                          : formData.selectedServices.filter(s => s !== 'RAW_MEAL');
+                        handleInputChange('selectedServices', services);
+                        setTimeout(calculatePricing, 100);
+                      }}
+                      className="mr-2"
+                    />
+                    Balanced Raw Meal ($5 per meal)
+                  </label>
+                  <div className="ml-6">
+                    <label className="block text-sm text-gray-600 mb-1">Number of Raw Meals</label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="50"
+                      value={formData.numberOfMeals}
+                      onChange={(e) => {
+                        handleInputChange('numberOfMeals', parseInt(e.target.value) || 0);
+                        setTimeout(calculatePricing, 100);
+                      }}
+                      className="w-20 p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
           
@@ -770,17 +934,34 @@ export default function BookingForm() {
         </div>
       </div>
 
-      {/* Pricing Summary */}
+      {/* Enhanced Pricing Summary */}
       {pricing && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
           <h3 className="text-lg font-semibold text-blue-900 mb-4">Pricing Summary</h3>
           <div className="space-y-2 text-blue-800">
-            <p><strong>Duration:</strong> {pricing.totalDays} days</p>
-            <p><strong>{pricing.breakdown.boarding}</strong></p>
-            {pricing.breakdown.services && <p><strong>{pricing.breakdown.services}</strong></p>}
+            <div>Base Stay: {pricing.totalDays} days × ${pricing.baseDailyRate} = ${pricing.baseSubtotal}</div>
+            {pricing.isPeakPeriod && (
+              <div className="text-orange-600">
+                Peak Period Surcharge ({pricing.peakPeriodName}): +${pricing.peakSurcharge}
+              </div>
+            )}
+            {pricing.dogSurcharges > 0 && (
+              <div>Entire Dog Surcharge: +${pricing.dogSurcharges}</div>
+            )}
+            {pricing.serviceCharges > 0 && (
+              <div>Additional Services: +${pricing.serviceCharges}</div>
+            )}
             <div className="border-t border-blue-300 pt-2 mt-3">
               <p className="text-xl font-bold">Total: ${pricing.totalPrice}</p>
             </div>
+            
+            {pricing.warnings && pricing.warnings.length > 0 && (
+              <div className="bg-yellow-50 border border-yellow-200 p-3 rounded mt-2">
+                {pricing.warnings.map((warning: string, index: number) => (
+                  <div key={index} className="text-yellow-800 text-sm">⚠️ {warning}</div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}

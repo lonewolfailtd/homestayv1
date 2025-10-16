@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db';
 import { createOrUpdateGHLContact } from '@/lib/gohighlevel';
 import { createDepositInvoice, createBalanceInvoice } from '@/lib/xero';
 import { sendBookingConfirmation } from '@/lib/email';
+import { calculateAdvancedPricing } from '@/lib/pricing-engine';
 
 export const dynamic = 'force-dynamic';
 
@@ -47,6 +48,11 @@ export async function POST(request: NextRequest) {
       boardingType,
       services,
       specialInstructions,
+      // Enhanced pricing fields
+      isEntireDog,
+      selectedServices,
+      numberOfMeals,
+      numberOfWalks,
     } = formData;
 
     // Validate required fields
@@ -57,36 +63,31 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Calculate pricing
+    // Calculate pricing using advanced pricing engine
     const checkInDate = new Date(checkIn);
     const checkOutDate = new Date(checkOut);
-    const timeDiff = checkOutDate.getTime() - checkInDate.getTime();
-    const totalDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
 
-    const rates = {
-      standard: parseFloat(process.env.DAILY_BOARDING_RATE || '50'),
-      luxury: parseFloat(process.env.LUXURY_BOARDING_RATE || '75'),
-    };
-    
-    const dailyRate = rates[boardingType as keyof typeof rates] || rates.standard;
-    
-    const serviceRates = {
-      grooming: 30,
-      training: 25,
-      extraWalks: 15,
-      medicationAdmin: 10,
-    };
+    const pricingResult = await calculateAdvancedPricing({
+      checkInDate,
+      checkOutDate,
+      isEntireDog: isEntireDog || false,
+      selectedServices: selectedServices || [],
+      numberOfMeals: numberOfMeals || 0,
+      numberOfWalks: numberOfWalks || 0,
+    });
 
-    let serviceCharges = 0;
-    if (services && Array.isArray(services)) {
-      services.forEach((service: string) => {
-        if (service in serviceRates) {
-          serviceCharges += serviceRates[service as keyof typeof serviceRates];
-        }
-      });
-    }
-
-    const totalPrice = (totalDays * dailyRate) + serviceCharges;
+    const {
+      totalDays,
+      baseDailyRate,
+      baseSubtotal,
+      peakSurcharge,
+      dogSurcharges,
+      serviceCharges,
+      totalPrice,
+      isPeakPeriod,
+      peakPeriodName,
+      breakdown
+    } = pricingResult;
 
     // Start database transaction
     const result = await prisma.$transaction(async (tx) => {
@@ -216,7 +217,7 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      // Create booking
+      // Create booking with enhanced pricing data
       const booking = await tx.booking.create({
         data: {
           customerId: customer.id,
@@ -226,11 +227,18 @@ export async function POST(request: NextRequest) {
           boardingType,
           services: services || [],
           totalDays,
-          dailyRate,
+          dailyRate: baseDailyRate,
           serviceCharges,
           totalPrice,
           specialNotes: specialInstructions || '',
           status: 'confirmed',
+          // Enhanced pricing fields
+          baseDailyRate,
+          peakSurcharge: peakSurcharge || 0,
+          dogSurcharges: dogSurcharges || 0,
+          isPeakPeriod: isPeakPeriod || false,
+          peakPeriodName: peakPeriodName || null,
+          selectedServices: JSON.stringify(breakdown?.services || []),
         },
       });
 
@@ -275,7 +283,7 @@ export async function POST(request: NextRequest) {
     const daysDifference = Math.floor((checkInDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
     const isLastMinuteBooking = daysDifference <= 21; // 3 weeks or less
 
-    let depositResult: any, balanceResult: any, fullInvoiceResult: any;
+    let depositResult: any, balanceResult: any, fullInvoiceResult: any, ghlResult: any;
 
     if (isLastMinuteBooking) {
       // Create single full invoice for last-minute bookings
@@ -287,10 +295,17 @@ export async function POST(request: NextRequest) {
         checkIn: checkInDate,
         checkOut: checkOutDate,
         totalDays,
-        dailyRate,
+        dailyRate: baseDailyRate,
         serviceCharges,
         totalPrice,
         boardingType,
+        // Enhanced pricing data
+        baseDailyRate,
+        peakSurcharge: peakSurcharge || 0,
+        dogSurcharges: dogSurcharges || 0,
+        isPeakPeriod: isPeakPeriod || false,
+        peakPeriodName: peakPeriodName || null,
+        selectedServices: breakdown?.services || [],
       });
 
       // Wait for all external integrations
@@ -312,10 +327,17 @@ export async function POST(request: NextRequest) {
         checkIn: checkInDate,
         checkOut: checkOutDate,
         totalDays,
-        dailyRate,
+        dailyRate: baseDailyRate,
         serviceCharges,
         totalPrice,
         boardingType,
+        // Enhanced pricing data
+        baseDailyRate,
+        peakSurcharge: peakSurcharge || 0,
+        dogSurcharges: dogSurcharges || 0,
+        isPeakPeriod: isPeakPeriod || false,
+        peakPeriodName: peakPeriodName || null,
+        selectedServices: breakdown?.services || [],
       });
 
       const balancePromise = createBalanceInvoice({
@@ -325,10 +347,17 @@ export async function POST(request: NextRequest) {
         checkIn: checkInDate,
         checkOut: checkOutDate,
         totalDays,
-        dailyRate,
+        dailyRate: baseDailyRate,
         serviceCharges,
         totalPrice,
         boardingType,
+        // Enhanced pricing data
+        baseDailyRate,
+        peakSurcharge: peakSurcharge || 0,
+        dogSurcharges: dogSurcharges || 0,
+        isPeakPeriod: isPeakPeriod || false,
+        peakPeriodName: peakPeriodName || null,
+        selectedServices: breakdown?.services || [],
       });
 
       // Wait for all external integrations
@@ -442,10 +471,8 @@ export async function POST(request: NextRequest) {
       },
       integrations: {
         gohighlevel: ghlResult.status === 'fulfilled' ? ghlResult.value.success : false,
-        xero: xeroResult.status === 'fulfilled' ? xeroResult.value.success : false,
-        invoiceUrl: xeroResult.status === 'fulfilled' && xeroResult.value.success 
-          ? xeroResult.value.invoiceUrl 
-          : null,
+        xero: xeroSuccess,
+        invoiceUrl: invoiceUrl || null,
       },
     });
 

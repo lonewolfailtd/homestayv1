@@ -1,5 +1,57 @@
 import { prisma } from './db';
 
+// Xero Item Code Mapping for Invoice Generation
+export const XERO_ITEM_CODES = {
+  // Accommodation
+  'short_stay': '4010-01',           // Homestay (Short Stay) - $85/day
+  'standard_stay': '4010-02',        // Homestay (Standard Stay) - $80/day  
+  'long_stay': '4010-03',            // Homestay (Long-Term Stay) - $75/day
+  
+  // Grooming Services
+  'GROOMING_SMALL': '4010-04-1',    // Grooming(Wash) Small Dog - $49
+  'GROOMING_MEDIUM': '4010-04-2',   // Grooming(Wash) Medium Dog - $59
+  'GROOMING_LARGE': '4010-04-3',    // Grooming(Wash) Large Dog - $69
+  'NAIL_CLIP': '4010-05',           // Grooming(Nail Clipping) - $10
+  
+  // Food & Special Care
+  'RAW_MEAL': '4010-06',            // Raw Balanced Meal - $5
+  'INTACT_DOG': '4010-07',          // Intact Dog - $5/day
+  
+  // Walk & Training Services
+  'PACK_WALK': '4010-08',           // Adventure Walk Homestay - $30
+  'TRIAL_STAY': '4010-09',          // Trial Stay - Day Rate - $85
+  'OBEDIENCE_TRAINING': '4010-10',  // Obedience Training Homestay - $150
+  'WALK_ASSESSMENT': '4010-11',     // Pre Walk Assessment Homestay - $60
+  'RECALL_TRAINING': '4010-12',     // Recall Training Homestay - $150
+};
+
+// Service Pricing (updated to match your pricing)
+export const SERVICE_PRICING = {
+  'GROOMING_SMALL': 49,
+  'GROOMING_MEDIUM': 59,
+  'GROOMING_LARGE': 69,
+  'NAIL_CLIP': 10,
+  'RAW_MEAL': 5,
+  'INTACT_DOG': 5,        // per day
+  'PACK_WALK': 30,
+  'TRIAL_STAY': 85,       // per day
+  'OBEDIENCE_TRAINING': 150,
+  'WALK_ASSESSMENT': 60,
+  'RECALL_TRAINING': 150,
+};
+
+// Helper function to get item code based on stay duration
+export function getAccommodationItemCode(totalDays: number): string {
+  if (totalDays <= 4) return XERO_ITEM_CODES.short_stay;
+  if (totalDays <= 30) return XERO_ITEM_CODES.standard_stay;
+  return XERO_ITEM_CODES.long_stay;
+}
+
+// Helper function to get service item code
+export function getServiceItemCode(serviceId: string): string {
+  return XERO_ITEM_CODES[serviceId as keyof typeof XERO_ITEM_CODES] || '4010-08';
+}
+
 // NZ Public Holiday Peak Periods 2025
 export const PEAK_PERIODS_2025 = [
   {

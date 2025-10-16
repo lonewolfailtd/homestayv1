@@ -115,13 +115,22 @@ GOHIGHLEVEL_LOCATION_ID=your_ghl_location_id
 ## Recent Fixes Completed (Oct 2025)
 - ✅ **Multiple Bookings**: Fixed database constraints to allow repeat customers
 - ✅ **GoHighLevel Integration**: Fixed V2 API contact search and update (contact ID: klHqwVP94twjcZDHn0nt)
-- ✅ **Xero Integration**: Smart item code selection based on stay duration with 15% GST
+- ✅ **Xero Integration**: Smart item code selection based on stay duration with GST-inclusive pricing
   - Proper item codes: 4010-01 (Short), 4010-02 (Standard), 4010-03 (Long-term), 4010-08 (Services)
   - Automatic invoice email sending via Xero API
   - Account 228 (Homestays) with OUTPUT2 tax type
+  - **NEW**: GST-inclusive pricing (lineAmountTypes: 'Inclusive') - prices include 15% GST
 - ✅ **Email System**: Professional HTML notifications with booking details and invoice links
 - ✅ **Environment Variables**: Resolved caching issues with proper credential loading
 - ✅ **Contact Management**: Smart customer/dog record updates for existing users
+- ✅ **Date Validation**: Prevents past date selection in booking form (Oct 16, 2025)
+  - Check-in date minimum: today's date
+  - Check-out date minimum: day after check-in
+  - Fixes last-minute booking calculation bug
+- ✅ **Individual Service Line Items**: Separate Xero invoice lines for each service (Oct 16, 2025)
+  - Instead of grouped "Additional services", each service gets its own line
+  - Proper item codes and quantities for grooming, training, walks, meals
+  - Works for both deposit and balance invoices
 
 ## Advanced Pricing System (Oct 2025)
 - ✅ **Comprehensive Database Schema**: Peak periods, pricing tiers, services with prerequisites
@@ -147,12 +156,15 @@ GOHIGHLEVEL_LOCATION_ID=your_ghl_location_id
 - Standard Stay (5-30 days): $80/day  
 - Long Stay (31+ days): $75/day
 
-## Test Results (Latest)
+## Test Results (Latest - Oct 16, 2025)
 - Advanced pricing system: ✅ All NZ holidays and tiers loaded in database
-- Deposit payment logic: ✅ Smart timing based on booking date
-- Peak period detection: ✅ Automatic 20% surcharge calculation
+- Deposit payment logic: ✅ Smart timing based on booking date (59+ days = 2 invoices)
+- Peak period detection: ✅ Automatic 20% surcharge calculation (Christmas detected)
 - Multiple dog bookings: ✅ Same customer, different dogs (Max, Buddy, Charlie, Luna, Rex, Bella, Item Code Test)
-- Xero integration: ✅ GST, item codes, automatic emails working
+- Xero integration: ✅ GST-inclusive pricing, separate service line items, automatic emails
+- Date validation: ✅ Prevents past dates, enforces check-out > check-in
+- Service line items: ✅ Individual lines for grooming, training, walks (no more grouping)
+- Two-invoice system: ✅ Deposit (immediate) + Balance (5 weeks before check-in)
 
 ## Deployment Notes
 - Configure environment variables on hosting platform

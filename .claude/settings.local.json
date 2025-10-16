@@ -33,7 +33,10 @@
       "WebFetch(domain:docs.gohighlevel.com)",
       "Bash(/mcp)",
       "mcp__playwright__browser_press_key",
-      "Bash(powershell:*)"
+      "Bash(powershell:*)",
+      "mcp__playwright__browser_close",
+      "WebFetch(domain:developer.xero.com)",
+      "mcp__playwright__browser_tabs"
     ],
     "deny": [],
     "ask": []
