@@ -59,7 +59,7 @@ export default function Home() {
   if (!isLoaded) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500"></div>
       </div>
     );
   }
@@ -108,13 +108,13 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-purple-600 via-purple-700 to-purple-800 text-white py-20">
+      <section className="bg-gradient-to-br from-black via-gray-800 to-gray-900 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-5xl md:text-6xl font-heading mb-6">
               Premium Dog Boarding & Homestay
             </h1>
-            <p className="text-xl md:text-2xl text-purple-100 mb-8 max-w-3xl mx-auto font-body">
+            <p className="text-xl md:text-2xl text-gray-200 mb-8 max-w-3xl mx-auto font-body">
               Professional overnight care with full structure, enrichment, and daily exercise on our farm. 
               Your dog's home away from home.
             </p>
@@ -123,7 +123,7 @@ export default function Home() {
               {isSignedIn ? (
                 <Link
                   href="/book"
-                  className="bg-white text-purple-600 px-8 py-4 rounded-xl font-button font-semibold text-lg hover:bg-purple-50 transition-colors flex items-center"
+                  className="bg-white text-black px-8 py-4 rounded-xl font-button font-semibold text-lg hover:bg-gray-50 transition-colors flex items-center"
                 >
                   Book Now
                   <ArrowRight className="ml-2 h-5 w-5" />
@@ -131,7 +131,7 @@ export default function Home() {
               ) : (
                 <Link
                   href="/sign-up"
-                  className="bg-white text-purple-600 px-8 py-4 rounded-xl font-button font-semibold text-lg hover:bg-purple-50 transition-colors flex items-center"
+                  className="bg-white text-black px-8 py-4 rounded-xl font-button font-semibold text-lg hover:bg-gray-50 transition-colors flex items-center"
                 >
                   Start Booking
                   <ArrowRight className="ml-2 h-5 w-5" />
@@ -139,7 +139,7 @@ export default function Home() {
               )}
               <Link
                 href="#features"
-                className="border-2 border-white text-white px-8 py-4 rounded-xl font-button font-semibold text-lg hover:bg-white hover:text-purple-600 transition-colors"
+                className="border-2 border-white text-white px-8 py-4 rounded-xl font-button font-semibold text-lg hover:bg-white hover:text-black transition-colors"
               >
                 Learn More
               </Link>
@@ -149,15 +149,15 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16 max-w-3xl mx-auto">
               <div className="text-center">
                 <div className="text-3xl font-heading mb-2">500+</div>
-                <div className="text-purple-200 font-body">Happy Dogs</div>
+                <div className="text-gray-300 font-body">Happy Dogs</div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-heading mb-2">5★</div>
-                <div className="text-purple-200 font-body">Average Rating</div>
+                <div className="text-gray-300 font-body">Average Rating</div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-heading mb-2">24/7</div>
-                <div className="text-purple-200 font-body">Care & Monitoring</div>
+                <div className="text-gray-300 font-body">Care & Monitoring</div>
               </div>
             </div>
           </div>
@@ -179,8 +179,8 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, index) => (
               <div key={index} className="text-center">
-                <div className="bg-purple-100 rounded-2xl p-4 w-16 h-16 mx-auto mb-6 flex items-center justify-center">
-                  <feature.icon className="h-8 w-8 text-purple-600" />
+                <div className="bg-gray-100 rounded-2xl p-4 w-16 h-16 mx-auto mb-6 flex items-center justify-center">
+                  <feature.icon className="h-8 w-8 text-black" />
                 </div>
                 <h3 className="text-xl font-heading text-black mb-3">{feature.title}</h3>
                 <p className="text-gray-600 font-body">{feature.description}</p>
@@ -204,7 +204,7 @@ export default function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="card p-8 text-center">
-              <Dog className="h-12 w-12 text-purple-600 mx-auto mb-4" />
+              <Dog className="h-12 w-12 text-black mx-auto mb-4" />
               <h3 className="text-xl font-heading text-black mb-3">Homestay Boarding</h3>
               <p className="text-gray-600 font-body mb-4">
                 Overnight care in a family environment with daily exercise and enrichment.
@@ -254,8 +254,8 @@ export default function Home() {
                   "{testimonial.text}"
                 </p>
                 <div className="flex items-center">
-                  <div className="bg-purple-100 rounded-full p-2 mr-3">
-                    <Dog className="h-5 w-5 text-purple-600" />
+                  <div className="bg-gray-100 rounded-full p-2 mr-3">
+                    <Dog className="h-5 w-5 text-black" />
                   </div>
                   <div>
                     <div className="font-button font-medium text-black">
@@ -273,12 +273,12 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-purple-600 to-purple-700 text-white">
+      <section className="py-20 bg-gradient-to-r from-black to-gray-800 text-white">
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
           <h2 className="text-4xl font-heading mb-4">
             Ready to Book Your Dog's Stay?
           </h2>
-          <p className="text-xl text-purple-100 mb-8 font-body">
+          <p className="text-xl text-gray-200 mb-8 font-body">
             {isSignedIn 
               ? "Welcome back! Book your next adventure in just a few clicks."
               : "Join hundreds of happy pet parents who trust us with their furry family members."
@@ -288,7 +288,7 @@ export default function Home() {
           {isSignedIn ? (
             <Link
               href="/book"
-              className="bg-white text-purple-600 px-8 py-4 rounded-xl font-button font-semibold text-lg hover:bg-purple-50 transition-colors inline-flex items-center"
+              className="bg-white text-black px-8 py-4 rounded-xl font-button font-semibold text-lg hover:bg-gray-50 transition-colors inline-flex items-center"
             >
               Book Your Stay
               <ArrowRight className="ml-2 h-5 w-5" />
@@ -297,13 +297,13 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 href="/sign-up"
-                className="bg-white text-purple-600 px-8 py-4 rounded-xl font-button font-semibold text-lg hover:bg-purple-50 transition-colors inline-flex items-center"
+                className="bg-white text-black px-8 py-4 rounded-xl font-button font-semibold text-lg hover:bg-gray-50 transition-colors inline-flex items-center"
               >
                 Create Account
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
               <SignInButton mode="modal">
-                <button className="border-2 border-white text-white px-8 py-4 rounded-xl font-button font-semibold text-lg hover:bg-white hover:text-purple-600 transition-colors">
+                <button className="border-2 border-white text-white px-8 py-4 rounded-xl font-button font-semibold text-lg hover:bg-white hover:text-black transition-colors">
                   Sign In
                 </button>
               </SignInButton>

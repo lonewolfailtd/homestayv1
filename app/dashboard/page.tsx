@@ -106,7 +106,7 @@ export default function DashboardPage() {
       case 'pending':
         return 'bg-amber-100 text-amber-700 border-amber-200';
       case 'completed':
-        return 'bg-purple-100 text-purple-700 border-purple-200';
+        return 'bg-cyan-100 text-cyan-700 border-cyan-200';
       default:
         return 'bg-gray-100 text-gray-700 border-gray-200';
     }
@@ -124,7 +124,7 @@ export default function DashboardPage() {
     return (
       <div className="space-y-8">
         {/* Welcome Header Skeleton */}
-        <div className="bg-gradient-to-r from-purple-600 to-purple-700 rounded-2xl p-8 text-white animate-pulse">
+        <div className="bg-gradient-to-r from-black to-gray-800 rounded-2xl p-8 text-white animate-pulse">
           <div className="h-8 bg-white bg-opacity-20 rounded w-1/3 mb-2"></div>
           <div className="h-4 bg-white bg-opacity-20 rounded w-1/2"></div>
         </div>
@@ -161,13 +161,13 @@ export default function DashboardPage() {
     <DashboardErrorBoundary>
       <div className="space-y-8">
       {/* Welcome Header */}
-      <div className="bg-gradient-to-r from-purple-600 to-purple-700 rounded-2xl p-8 text-white">
+      <div className="bg-gradient-to-r from-black to-gray-800 rounded-2xl p-8 text-white">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-heading mb-2">
               Welcome back, {user?.firstName}! 👋
             </h1>
-            <p className="text-purple-100 font-body">
+            <p className="text-gray-200 font-body">
               Manage your dog's boarding, view upcoming stays, and book new adventures.
             </p>
             {dashboardData?.nextPaymentDue && (
@@ -184,7 +184,7 @@ export default function DashboardPage() {
           </div>
           <div className="hidden lg:block">
             <div className="bg-white bg-opacity-20 rounded-xl p-4">
-              <Heart className="h-12 w-12 text-purple-200" />
+              <Heart className="h-12 w-12 text-gray-200" />
             </div>
           </div>
         </div>
@@ -193,10 +193,18 @@ export default function DashboardPage() {
         <div className="flex items-center space-x-4 mt-6">
           <Link
             href="/book"
-            className="inline-flex items-center bg-white text-purple-600 px-6 py-3 rounded-xl font-button font-medium hover:bg-purple-50 transition-colors"
+            className="inline-flex items-center bg-white text-black px-6 py-3 rounded-xl font-button font-medium hover:bg-gray-50 transition-colors"
           >
             <Plus className="h-5 w-5 mr-2" />
             Book New Stay
+          </Link>
+          
+          <Link
+            href="/dashboard/rebook"
+            className="inline-flex items-center bg-cyan-500 text-white px-6 py-3 rounded-xl font-button font-medium hover:bg-cyan-600 transition-colors"
+          >
+            <RefreshCw className="h-5 w-5 mr-2" />
+            Quick Rebook
           </Link>
           
           <button
@@ -214,8 +222,8 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         <div className="card p-6">
           <div className="flex items-center">
-            <div className="bg-purple-100 rounded-xl p-3">
-              <Calendar className="h-6 w-6 text-purple-600" />
+            <div className="bg-gray-100 rounded-xl p-3">
+              <Calendar className="h-6 w-6 text-black" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-body text-gray-600">Total Bookings</p>
@@ -281,7 +289,7 @@ export default function DashboardPage() {
               <h2 className="text-xl font-heading text-black">Upcoming Stays</h2>
               <Link
                 href="/dashboard/bookings"
-                className="text-purple-600 hover:text-purple-700 text-sm font-button flex items-center"
+                className="text-cyan-600 hover:text-cyan-700 text-sm font-button flex items-center"
               >
                 View all
                 <ArrowRight className="h-4 w-4 ml-1" />
@@ -296,8 +304,8 @@ export default function DashboardPage() {
                   <div key={booking.id} className="border border-gray-200 rounded-xl p-4">
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center">
-                        <div className="bg-purple-100 rounded-lg p-2 mr-3">
-                          <Dog className="h-5 w-5 text-purple-600" />
+                        <div className="bg-gray-100 rounded-lg p-2 mr-3">
+                          <Dog className="h-5 w-5 text-black" />
                         </div>
                         <div>
                           <h3 className="font-button font-medium text-black">{booking.dogName}</h3>
@@ -322,7 +330,7 @@ export default function DashboardPage() {
                 <p className="text-gray-500 font-body">No upcoming bookings</p>
                 <Link
                   href="/book"
-                  className="inline-flex items-center mt-4 text-purple-600 hover:text-purple-700 font-button text-sm"
+                  className="inline-flex items-center mt-4 text-cyan-600 hover:text-cyan-700 font-button text-sm"
                 >
                   <Plus className="h-4 w-4 mr-1" />
                   Book your first stay
@@ -339,7 +347,7 @@ export default function DashboardPage() {
               <h2 className="text-xl font-heading text-black">Recent Stays</h2>
               <Link
                 href="/dashboard/history"
-                className="text-purple-600 hover:text-purple-700 text-sm font-button flex items-center"
+                className="text-cyan-600 hover:text-cyan-700 text-sm font-button flex items-center"
               >
                 View all
                 <ArrowRight className="h-4 w-4 ml-1" />
@@ -390,10 +398,10 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Link
             href="/book"
-            className="flex items-center p-4 border border-gray-200 rounded-xl hover:border-purple-300 hover:bg-purple-50 transition-colors group"
+            className="flex items-center p-4 border border-gray-200 rounded-xl hover:border-cyan-300 hover:bg-cyan-50 transition-colors group"
           >
-            <div className="bg-purple-100 group-hover:bg-purple-200 rounded-lg p-3 mr-4">
-              <Plus className="h-6 w-6 text-purple-600" />
+            <div className="bg-gray-100 group-hover:bg-gray-200 rounded-lg p-3 mr-4">
+              <Plus className="h-6 w-6 text-black" />
             </div>
             <div>
               <h3 className="font-button font-medium text-black">Book New Stay</h3>

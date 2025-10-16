@@ -1,7 +1,7 @@
 # Dog Boarding Booking System - Development Guide
 
 ## Project Overview
-A modern Next.js web application for managing dog boarding bookings with user authentication, multi-step booking form, dashboard management, integrated GoHighLevel CRM, and Xero invoicing. **PHASE 1 COMPLETE - Enhanced UI/UX Ready for Phase 2!**
+A modern Next.js web application for managing dog boarding bookings with user authentication, multi-step booking form, dashboard management, integrated GoHighLevel CRM, and Xero invoicing. **PHASE 2 COMPLETE - Enhanced Customer Journey & File Management!**
 
 ### Key Features - Phase 1 (COMPLETED Oct 16, 2025)
 - ✅ **User Authentication**: Clerk-based sign-up/sign-in with branded UI
@@ -16,6 +16,16 @@ A modern Next.js web application for managing dog boarding bookings with user au
 - ✅ **Email Notifications**: Professional HTML confirmations with invoice links
 - ✅ **Multi-Dog Management**: Track multiple dogs per customer
 - ✅ **Dynamic Pricing**: Automatic calculation with additional services
+
+### Key Features - Phase 2 (COMPLETED Oct 17, 2025)
+- ✅ **Quick Rebooking**: Streamlined booking for existing customers with saved dogs
+- ✅ **File Upload System**: Upload vet records, vaccination photos, and dog photos
+- ✅ **Storage Management**: Secure file storage with user-specific directories
+- ✅ **Profile Management**: Update personal details and dog information
+- ✅ **Onboarding Wizard**: 4-step guided setup for new users
+- ✅ **Service Showcase**: Comprehensive service discovery pages
+- ✅ **Brand Color Update**: Removed purple, implemented 100% K9 brand colors
+- ✅ **Document Management**: File categorization and deletion capabilities
 
 ## Tech Stack
 - **Framework**: Next.js 14 with App Router
@@ -67,10 +77,24 @@ npx prisma studio    # Open database GUI
 - `lib/gohighlevel.ts` - GoHighLevel integration (✅ Working)
 - `lib/email.ts` - Email notification system (✅ Working)
 
+### New Components - Phase 2 Complete
+- `app/dashboard/rebook/page.tsx` - Quick rebooking for existing customers
+- `app/dashboard/dogs/[id]/edit/page.tsx` - Dog profile editing with file uploads
+- `app/onboarding/page.tsx` - 4-step onboarding wizard for new users
+- `app/services/page.tsx` - Service showcase and discovery page
+- `components/ui/FileUpload.tsx` - Reusable file upload component
+- `public/images/` - Brand asset storage directory
+
 ### API Routes
 - `app/api/customers/route.ts` - Customer lookup
+- `app/api/customers/dogs/route.ts` - Fetch user's saved dogs
 - `app/api/pricing/calculate/route.ts` - Price calculation
 - `app/api/booking/submit/route.ts` - Booking submission
+- `app/api/booking/rebook/route.ts` - Quick rebooking for existing customers
+- `app/api/dogs/[id]/route.ts` - Dog profile management (GET/PUT)
+- `app/api/dogs/[id]/files/[fileId]/route.ts` - File deletion
+- `app/api/upload/route.ts` - File upload handling
+- `app/api/user/profile/route.ts` - User profile management
 - `app/api/xero/auth/route.ts` - Xero OAuth
 - `app/api/gohighlevel/webhook/route.ts` - GHL webhooks
 
@@ -275,6 +299,56 @@ app/
 - Repeat customers: 40% → 70%
 - User registration: 80% of bookings
 
+## Phase 2 - Customer Journey Implementation (Oct 17, 2025)
+
+### What Was Accomplished
+- ✅ **Enhanced Color Scheme**: Completely removed purple, implemented proper 100% K9 brand colors (black, gray, cyan accents)
+- ✅ **Quick Rebooking System**: Streamlined booking flow for returning customers with saved dog profiles
+- ✅ **File Management System**: Complete upload/storage solution for vet records, vaccination photos, and dog images
+- ✅ **Profile Management**: Enhanced user and dog profile editing with document attachment capabilities
+- ✅ **Onboarding Experience**: 4-step wizard for new user setup and service discovery
+- ✅ **Service Discovery**: Professional service showcase pages with pricing and testimonials
+- ✅ **Brand Asset Management**: Proper folder structure for logos and brand materials
+
+### New Customer Journey Flow
+1. **Landing Page** → Professional homepage with clear CTAs for login/signup
+2. **Registration** → Clerk authentication with branded styling  
+3. **Onboarding** → 4-step guided setup (Welcome → Profile → Tour → Complete)
+4. **Dashboard Hub** → Central location with quick actions and rebooking
+5. **Service Discovery** → `/services` page for exploring offerings before booking
+6. **Full Booking** → Multi-step form for first-time bookings
+7. **Quick Rebooking** → Simplified flow using saved dog profiles
+8. **Profile Management** → Update details and upload important documents
+
+### File Management Features
+- **Upload Types**: Images (JPG, PNG, GIF), PDF, Word documents
+- **File Categories**: Vaccination records, vet certificates, dog photos, general documents  
+- **Storage**: User-specific directories with secure access
+- **Management**: View, download, and delete uploaded files
+- **Integration**: Seamlessly integrated into dog profile editing
+
+### Database Enhancements
+- **DogFile Model**: Complete file metadata storage with categorization
+- **User-Dog Relationships**: Enhanced linking for quick rebooking
+- **File Security**: User-scoped access and proper cleanup on deletion
+
+### API Endpoints Added
+- `/api/upload` - File upload handling with validation
+- `/api/booking/rebook` - Quick rebooking for existing customers
+- `/api/customers/dogs` - Fetch user's saved dog profiles
+- `/api/dogs/[id]` - Dog profile management (view/edit)
+- `/api/dogs/[id]/files/[fileId]` - File management operations
+
 ## Domain Configuration
 - **Production URL**: https://booking.100percentk9.co.nz/
 - **DNS Setup**: CNAME record pointing `booking.100percentk9.co.nz` to `cname.vercel-dns.com`
+
+## Recent Updates (Oct 17, 2025)
+- 🎨 **Brand Consistency**: All purple references removed, proper K9 colors implemented
+- 🚀 **Quick Rebooking**: Repeat customers can book in 3 clicks with saved dogs
+- 📁 **File Uploads**: Secure document management for vet records and photos
+- 👤 **Profile Management**: Enhanced user and dog profile editing capabilities
+- 🎯 **Onboarding**: Guided setup for new users with service discovery
+- 🏪 **Service Pages**: Professional showcase of all boarding and additional services
+- 💾 **File Storage**: Organized user-specific file storage with proper cleanup
+- 🔗 **Enhanced APIs**: New endpoints for rebooking, file management, and profiles

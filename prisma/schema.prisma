@@ -79,6 +79,7 @@ model Dog {
   customer          Customer @relation(fields: [customerId], references: [id])
   bookings          Booking[]
   savedByUsers      SavedDog[]
+  files             DogFile[]
   
   @@map("dogs")
 }
@@ -268,4 +269,24 @@ model BookingView {
   
   @@unique([userId, bookingId])
   @@map("booking_views")
+}
+
+// DogFile model for storing uploaded files related to dogs
+model DogFile {
+  id              String   @id @default(cuid())
+  dogId           String
+  fileName        String   // Original filename
+  storedFileName  String   // Unique filename on disk
+  filePath        String   // Full path to file
+  fileType        String   // MIME type
+  fileSize        Int      // Size in bytes
+  fileCategory    String   // "photo", "vaccination", "vet_record", "other"
+  description     String?  // User description of the file
+  uploadedBy      String?  // User ID who uploaded
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  dog             Dog      @relation(fields: [dogId], references: [id], onDelete: Cascade)
+  
+  @@map("dog_files")
 }

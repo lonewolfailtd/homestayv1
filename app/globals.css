@@ -7,7 +7,7 @@
   /* Brand Colors */
   --primary: 0 0% 0%;              /* #000000 - Black */
   --secondary: 0 0% 100%;          /* #ffffff - White */
-  --accent: 263 69% 42%;           /* #6B46C1 - Purple */
+  --accent: 190 90% 50%;           /* #00CED1 - Dark Turquoise */
   --text-primary: 0 0% 10%;        /* #1a1a1a - Dark gray */
   --text-secondary: 0 0% 40%;      /* #666666 - Medium gray */
   --border: 0 0% 90%;              /* #e5e5e5 - Light gray */
@@ -48,7 +48,7 @@
   }
   
   .btn-accent {
-    @apply bg-purple-600 text-white hover:bg-purple-700 font-button font-medium px-6 py-3 rounded-xl transition-colors;
+    @apply bg-cyan-500 text-white hover:bg-cyan-600 font-button font-medium px-6 py-3 rounded-xl transition-colors;
   }
   
   .card {
@@ -56,7 +56,7 @@
   }
   
   .input-field {
-    @apply w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 font-body;
+    @apply w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 font-body;
   }
   
   .form-section {
@@ -68,7 +68,7 @@
   }
   
   .step-active {
-    @apply bg-purple-600 text-white;
+    @apply bg-cyan-500 text-white;
   }
   
   .step-completed {
