@@ -101,14 +101,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Dog ID is required' }, { status: 400 });
     }
 
-    // Check if dog exists and user has access (through bookings)
+    // Check if dog exists and user has access (through customer relationship)
     const dog = await prisma.dog.findFirst({
       where: {
         id: dogId,
-        bookings: {
-          some: {
-            userId: user.id
-          }
+        customer: {
+          clerkUserId: user.clerkId
         }
       }
     });

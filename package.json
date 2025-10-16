@@ -7,7 +7,12 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "pre-commit": "npm run type-check && npm run lint && npm run db-check",
+    "type-check": "tsc --noEmit",
+    "db-check": "npx prisma validate && npx prisma generate",
+    "full-check": "npm run pre-commit && npm run build",
+    "dev-reset": "npx prisma db push --force-reset && npx prisma generate && npm run dev"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.33.5",

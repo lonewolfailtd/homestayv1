@@ -67,8 +67,8 @@ export default function InteractiveCalendar({ selectedDates, onDateChange }: Int
     return false;
   };
 
-  const handleDayClick = (date: Date) => {
-    if (isBefore(date, minDate)) return;
+  const handleDayClick = (date: Date | undefined) => {
+    if (!date || isBefore(date, minDate)) return;
 
     if (mode === 'single' || !checkInDate || (checkInDate && checkOutDate)) {
       // Start new selection
@@ -387,6 +387,7 @@ export default function InteractiveCalendar({ selectedDates, onDateChange }: Int
           
           <DayPicker
             mode="single"
+            required={false}
             selected={checkInDate}
             onSelect={handleDayClick}
             numberOfMonths={isMobile ? 1 : 2}

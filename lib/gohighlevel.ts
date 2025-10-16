@@ -93,7 +93,7 @@ export async function createOrUpdateGHLContact(contactData: ContactData) {
         
         // Search for our email in the contacts array
         if (searchResult.contacts && Array.isArray(searchResult.contacts)) {
-          const foundContact = searchResult.contacts.find(contact => 
+          const foundContact = searchResult.contacts.find((contact: any) => 
             contact.email && contact.email.toLowerCase() === contactData.email.toLowerCase()
           );
           if (foundContact) {

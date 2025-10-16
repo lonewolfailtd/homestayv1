@@ -137,12 +137,7 @@ export async function createDepositInvoice(booking: {
       
       // Automatically send deposit invoice via email
       try {
-        await xero.accountingApi.emailInvoice(tenantId, invoiceId!, {
-          requestBody: {
-            subject: `Deposit Invoice ${createdInvoice.invoiceNumber} - Secure Your Booking for ${booking.dogName}`,
-            body: `Hi ${booking.customerName},\n\nThank you for booking with 100% K9 Dog Boarding!\n\nPlease find attached your deposit invoice (50% of total booking) to secure ${booking.dogName}'s stay from ${booking.checkIn.toLocaleDateString()} to ${booking.checkOut.toLocaleDateString()}.\n\nOnce this deposit is paid, your booking will be confirmed and we'll send you the balance invoice 3 weeks before your booking date.\n\nTotal Booking: $${booking.totalPrice.toFixed(2)}\nDeposit Due: $${depositAmount.toFixed(2)}\nBalance Due 3 weeks before stay: $${(booking.totalPrice - depositAmount).toFixed(2)}\n\nThank you for choosing 100% K9 Dog Boarding!\n\nBest regards,\n100% K9 Team`,
-          }
-        });
+        await xero.accountingApi.emailInvoice(tenantId, invoiceId!, {});
         console.log('Deposit invoice emailed successfully to:', booking.customerEmail);
       } catch (emailError) {
         console.error('Failed to email deposit invoice:', emailError);
@@ -302,12 +297,7 @@ export async function createBalanceInvoice(booking: {
       // If booking is within 5 weeks (35 days), send balance invoice immediately
       if (daysDifference <= 35) {
         try {
-          await xero.accountingApi.emailInvoice(tenantId, invoiceId!, {
-            requestBody: {
-              subject: `Balance Payment Due - ${booking.dogName}'s Boarding (Due ${balanceDueDate.toLocaleDateString()})`,
-              body: `Hi ${booking.customerName},\n\nYour balance payment for ${booking.dogName}'s boarding is now due.\n\nBooking Details:\n- Check-in: ${booking.checkIn.toLocaleDateString()}\n- Check-out: ${booking.checkOut.toLocaleDateString()}\n- Balance Amount: $${(balanceAmount + booking.serviceCharges).toFixed(2)}\n- Payment Due: ${balanceDueDate.toLocaleDateString()}\n\nPlease ensure payment is completed by the due date to secure your booking.\n\nThank you for choosing 100% K9 Dog Boarding!\n\nBest regards,\n100% K9 Team`,
-            }
-          });
+          await xero.accountingApi.emailInvoice(tenantId, invoiceId!, {});
           console.log('Balance invoice emailed immediately to:', booking.customerEmail);
           emailSent = true;
         } catch (emailError) {
@@ -460,12 +450,7 @@ export async function createXeroInvoice(booking: {
       
       // Automatically send invoice via email
       try {
-        await xero.accountingApi.emailInvoice(tenantId, invoiceId!, {
-          requestBody: {
-            subject: `Invoice ${createdInvoice.invoiceNumber} - Dog Boarding for ${booking.dogName}`,
-            body: `Hi ${booking.customerName},\n\nPlease find attached your invoice for ${booking.dogName}'s boarding from ${booking.checkIn.toLocaleDateString()} to ${booking.checkOut.toLocaleDateString()}.\n\nThank you for choosing 100% K9 Dog Boarding!\n\nBest regards,\n100% K9 Team`,
-          }
-        });
+        await xero.accountingApi.emailInvoice(tenantId, invoiceId!, {});
         console.log('Invoice emailed successfully to:', booking.customerEmail);
       } catch (emailError) {
         console.error('Failed to email invoice automatically:', emailError);
