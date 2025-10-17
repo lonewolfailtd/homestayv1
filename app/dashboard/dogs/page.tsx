@@ -347,6 +347,7 @@ export default function DogsPage() {
                   </button>
                 )}
                 
+                <div className="flex-1">
                   <div className="flex items-center space-x-3">
                     <div className="bg-cyan-100 p-2 rounded-lg">
                       <Dog className="h-5 w-5 text-cyan-600" />

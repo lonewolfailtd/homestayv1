@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Dog, Calendar, ArrowRight, Users } from 'lucide-react';
 import Link from 'next/link';
@@ -15,7 +15,7 @@ interface DogProfile {
   socialLevel: string;
 }
 
-export default function MultiDogBookingPage() {
+function MultiDogBookingContent() {
   const searchParams = useSearchParams();
   const [selectedDogs, setSelectedDogs] = useState<DogProfile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -212,5 +212,22 @@ export default function MultiDogBookingPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function MultiDogBookingPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 py-12">
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading...</p>
+          </div>
+        </div>
+      </div>
+    }>
+      <MultiDogBookingContent />
+    </Suspense>
   );
 }
