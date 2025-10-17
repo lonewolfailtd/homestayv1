@@ -56,21 +56,21 @@ export default function MultiStepBookingForm() {
     <FormProvider value={{ formData, updateFormData, user }}>
       <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
         {/* Header with Logo and Progress */}
-        <div className="bg-gradient-to-r from-purple-600 to-purple-700 px-8 py-6">
+        <div className="bg-gradient-to-r from-gray-800 to-black px-8 py-6">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center">
               <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center mr-4">
-                <span className="text-purple-600 font-heading text-lg font-bold">K9</span>
+                <span className="text-cyan-600 font-heading text-lg font-bold">K9</span>
               </div>
               <div>
                 <h1 className="text-2xl font-heading text-white">Book Your Stay</h1>
-                <p className="text-purple-100 text-sm font-body">
+                <p className="text-gray-300 text-sm font-body">
                   Professional dog boarding & homestay
                 </p>
               </div>
             </div>
             <div className="text-right text-white">
-              <div className="text-sm font-body text-purple-100">Step {currentStep + 1} of {STEPS.length}</div>
+              <div className="text-sm font-body text-gray-300">Step {currentStep + 1} of {STEPS.length}</div>
               <div className="text-lg font-button">{STEPS[currentStep].title}</div>
             </div>
           </div>

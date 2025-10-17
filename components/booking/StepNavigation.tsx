@@ -44,37 +44,23 @@ export default function StepNavigation({
         Step {currentStep + 1} of {totalSteps}
       </div>
 
-      <button
-        type="button"
-        onClick={onNext}
-        disabled={!canProceed || isSubmitting}
-        className={`
-          flex items-center px-6 py-4 rounded-xl font-button font-medium transition-colors touch-manipulation min-w-[140px]
-          ${!canProceed || isSubmitting
-            ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-            : isLastStep
-              ? 'bg-green-600 text-white hover:bg-green-700 active:bg-green-800'
-              : 'bg-purple-600 text-white hover:bg-purple-700 active:bg-purple-800'
-          }
-        `}
-      >
-        {isSubmitting ? (
-          <>
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            Processing...
-          </>
-        ) : isLastStep ? (
-          <>
-            Complete Booking
-            <ArrowRight className="h-4 w-4 ml-2" />
-          </>
-        ) : (
-          <>
-            Next
-            <ArrowRight className="h-4 w-4 ml-2" />
-          </>
-        )}
-      </button>
+{!isLastStep && (
+        <button
+          type="button"
+          onClick={onNext}
+          disabled={!canProceed || isSubmitting}
+          className={`
+            flex items-center px-6 py-4 rounded-xl font-button font-medium transition-colors touch-manipulation min-w-[140px]
+            ${!canProceed || isSubmitting
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              : 'bg-cyan-600 text-white hover:bg-cyan-700 active:bg-cyan-800'
+            }
+          `}
+        >
+          Next
+          <ArrowRight className="h-4 w-4 ml-2" />
+        </button>
+      )}
     </div>
   );
 }

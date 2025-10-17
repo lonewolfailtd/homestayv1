@@ -108,41 +108,44 @@ export default function SummaryStep({ formData, isSubmitting, setIsSubmitting, u
         total: service.total,
       }));
 
+      // Debug: log form data to identify missing fields
+      console.log('Form data before submission:', formData);
+      
       const bookingData = {
         // Customer info
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        phone: formData.phone,
-        address: formData.address,
-        city: formData.city,
-        postalCode: formData.postalCode,
-        emergencyName: formData.emergencyName,
-        emergencyPhone: formData.emergencyPhone,
-        emergencyRelation: formData.emergencyRelation,
+        firstName: formData.firstName || '',
+        lastName: formData.lastName || '',
+        email: formData.email || '',
+        phone: formData.phone || '',
+        address: formData.address || '',
+        city: formData.city || '',
+        postalCode: formData.postalCode || '',
+        emergencyName: formData.emergencyName || '',
+        emergencyPhone: formData.emergencyPhone || '',
+        emergencyRelation: formData.emergencyRelation || '',
         
-        // Dog info
-        dogName: formData.dogName,
-        dogAge: parseInt(formData.dogAge),
-        dogSex: formData.dogSex,
-        dogBreed: formData.dogBreed,
-        vaccinated: formData.vaccinated,
-        neutered: formData.neutered,
-        vetClinic: formData.vetClinic,
-        vetPhone: formData.vetPhone,
-        medications: formData.medications,
-        medicalConditions: formData.medicalConditions,
-        crateTrained: formData.crateTrained,
-        socialLevel: formData.socialLevel,
-        peopleBehavior: formData.peopleBehavior,
-        behavioralIssues: formData.behavioralIssues,
-        farmAnimalReactive: formData.farmAnimalReactive,
-        biteHistory: formData.biteHistory,
-        additionalNotes: formData.additionalNotes,
+        // Dog info - ensure required fields are not empty
+        dogName: formData.dogName || '',
+        dogAge: formData.dogAge ? parseInt(formData.dogAge) : 0,
+        dogSex: formData.dogSex || '',
+        dogBreed: formData.dogBreed || '',
+        vaccinated: formData.vaccinated || 'yes',
+        neutered: formData.neutered || 'yes',
+        vetClinic: formData.vetClinic || '',
+        vetPhone: formData.vetPhone || '',
+        medications: formData.medications || '',
+        medicalConditions: formData.medicalConditions || '',
+        crateTrained: formData.crateTrained || 'yes',
+        socialLevel: formData.socialLevel || 'social',
+        peopleBehavior: formData.peopleBehavior || 'friendly',
+        behavioralIssues: formData.behavioralIssues || '',
+        farmAnimalReactive: formData.farmAnimalReactive || 'no',
+        biteHistory: formData.biteHistory || 'no',
+        additionalNotes: formData.additionalNotes || '',
         
-        // Booking details
-        checkIn: formData.checkIn,
-        checkOut: formData.checkOut,
+        // Booking details - ensure required fields are not empty
+        checkIn: formData.checkIn || '',
+        checkOut: formData.checkOut || '',
         boardingType: 'standard',
         isEntireDog: formData.isEntireDog || false,
         selectedServices: Object.keys(formData.selectedServices || {}),
@@ -154,6 +157,8 @@ export default function SummaryStep({ formData, isSubmitting, setIsSubmitting, u
         // Special instructions
         specialInstructions: formData.additionalNotes || '',
       };
+      
+      console.log('Booking data being sent:', bookingData);
 
       const response = await fetch('/api/booking/submit', {
         method: 'POST',
@@ -248,8 +253,8 @@ export default function SummaryStep({ formData, isSubmitting, setIsSubmitting, u
   return (
     <div className="max-w-3xl mx-auto">
       <div className="text-center mb-8">
-        <div className="bg-purple-100 rounded-full p-3 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-          <CheckCircle className="h-8 w-8 text-purple-600" />
+        <div className="bg-cyan-100 rounded-full p-3 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+          <CheckCircle className="h-8 w-8 text-cyan-600" />
         </div>
         <h2 className="text-2xl font-heading text-black mb-2">Review & Confirm</h2>
         <p className="text-gray-600 font-body">
@@ -261,7 +266,7 @@ export default function SummaryStep({ formData, isSubmitting, setIsSubmitting, u
         {/* Customer Details */}
         <div className="form-section">
           <h3 className="text-lg font-button font-semibold text-black mb-4 flex items-center">
-            <User className="h-5 w-5 mr-2 text-purple-600" />
+            <User className="h-5 w-5 mr-2 text-cyan-600" />
             Customer Details
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm font-body">
@@ -287,7 +292,7 @@ export default function SummaryStep({ formData, isSubmitting, setIsSubmitting, u
         {/* Dog Details */}
         <div className="form-section">
           <h3 className="text-lg font-button font-semibold text-black mb-4 flex items-center">
-            <Dog className="h-5 w-5 mr-2 text-purple-600" />
+            <Dog className="h-5 w-5 mr-2 text-cyan-600" />
             Dog Profile
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm font-body">
@@ -326,7 +331,7 @@ export default function SummaryStep({ formData, isSubmitting, setIsSubmitting, u
         {/* Booking Details */}
         <div className="form-section">
           <h3 className="text-lg font-button font-semibold text-black mb-4 flex items-center">
-            <Calendar className="h-5 w-5 mr-2 text-purple-600" />
+            <Calendar className="h-5 w-5 mr-2 text-cyan-600" />
             Booking Details
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -344,9 +349,9 @@ export default function SummaryStep({ formData, isSubmitting, setIsSubmitting, u
                 </div>
               </div>
             </div>
-            <div className="bg-purple-50 rounded-lg p-4">
+            <div className="bg-cyan-50 rounded-lg p-4">
               <div className="text-sm text-gray-600 font-body">Total Stay</div>
-              <div className="font-button font-medium text-purple-600 text-2xl">
+              <div className="font-button font-medium text-cyan-600 text-2xl">
                 {getTotalDays()} {getTotalDays() === 1 ? 'day' : 'days'}
               </div>
             </div>
@@ -377,18 +382,18 @@ export default function SummaryStep({ formData, isSubmitting, setIsSubmitting, u
         {pricingLoading ? (
           <div className="form-section">
             <h3 className="text-lg font-button font-semibold text-black mb-4 flex items-center">
-              <CreditCard className="h-5 w-5 mr-2 text-purple-600" />
+              <CreditCard className="h-5 w-5 mr-2 text-cyan-600" />
               Pricing Summary
             </h3>
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-6 w-6 animate-spin text-purple-600 mr-2" />
+              <Loader2 className="h-6 w-6 animate-spin text-cyan-600 mr-2" />
               <span className="font-body text-gray-600">Calculating final pricing...</span>
             </div>
           </div>
         ) : formData.pricing && (
           <div className="form-section">
             <h3 className="text-lg font-button font-semibold text-black mb-4 flex items-center">
-              <CreditCard className="h-5 w-5 mr-2 text-purple-600" />
+              <CreditCard className="h-5 w-5 mr-2 text-cyan-600" />
               Pricing Summary
             </h3>
             <div className="space-y-3">
@@ -473,7 +478,7 @@ export default function SummaryStep({ formData, isSubmitting, setIsSubmitting, u
                 id="terms"
                 checked={agreed}
                 onChange={(e) => setAgreed(e.target.checked)}
-                className="mt-1 mr-3 h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                className="mt-1 mr-3 h-4 w-4 text-cyan-600 focus:ring-cyan-500 border-gray-300 rounded"
               />
               <label htmlFor="terms" className="text-sm font-body text-gray-700">
                 I agree to the terms and conditions, cancellation policy, and understand that a deposit is required to secure this booking.
