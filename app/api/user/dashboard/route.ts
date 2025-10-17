@@ -15,13 +15,28 @@ export async function GET(_request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get user from database first
-    const user = await prisma.user.findUnique({
+    // Get user from database first, create if doesn't exist
+    let user = await prisma.user.findUnique({
       where: { clerkId: clerkUserId }
     });
 
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      // Create user record if it doesn't exist (webhook might have failed)
+      try {
+        user = await prisma.user.create({
+          data: {
+            clerkId: clerkUserId,
+            email: 'temp@example.com', // Will be updated when user completes profile
+            firstName: null,
+            lastName: null,
+            phone: null,
+          }
+        });
+        console.log('Created missing user record for:', clerkUserId);
+      } catch (error) {
+        console.error('Error creating user record:', error);
+        return NextResponse.json({ error: 'Failed to create user record' }, { status: 500 });
+      }
     }
 
     // Get customer record (might not exist if user hasn't made bookings yet)
