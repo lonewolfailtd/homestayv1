@@ -107,15 +107,15 @@ export default function RebookPage() {
     
     const checkIn = new Date(formData.checkInDate);
     const checkOut = new Date(formData.checkOutDate);
-    const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
+    const totalDays = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24)) + 1;
     
-    if (nights <= 0) return;
+    if (totalDays <= 0) return;
 
     let baseRate = 85; // Default short stay rate
-    if (nights >= 31) baseRate = 75; // Long stay
-    else if (nights >= 5) baseRate = 80; // Standard stay
+    if (totalDays >= 31) baseRate = 75; // Long stay
+    else if (totalDays >= 5) baseRate = 80; // Standard stay
 
-    let total = nights * baseRate;
+    let total = totalDays * baseRate;
 
     // Add services
     Object.entries(formData.services).forEach(([serviceId, quantity]) => {

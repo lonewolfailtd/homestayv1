@@ -159,19 +159,19 @@ export default function DashboardPage() {
 
   return (
     <DashboardErrorBoundary>
-      <div className="space-y-8">
-      {/* Welcome Header */}
-      <div className="bg-gradient-to-r from-black to-gray-800 rounded-2xl p-8 text-white">
+      <div className="-mt-[33rem] pb-[30rem] space-y-2">
+      {/* Black Header with White Font */}
+      <div className="bg-gradient-to-r from-black to-gray-800 rounded-2xl p-6 text-white">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-heading mb-2">
+            <h1 className="text-xl font-heading text-white mb-1">
               Welcome back, {user?.firstName}! 👋
             </h1>
-            <p className="text-gray-200 font-body">
+            <p className="text-gray-200 font-body text-sm">
               Manage your dog's boarding, view upcoming stays, and book new adventures.
             </p>
             {dashboardData?.nextPaymentDue && (
-              <div className="mt-4 bg-amber-500 bg-opacity-90 rounded-lg p-3">
+              <div className="mt-3 bg-amber-500 bg-opacity-90 rounded-lg p-2">
                 <div className="flex items-center text-white">
                   <AlertTriangle className="h-4 w-4 mr-2" />
                   <span className="text-sm font-body">
@@ -182,111 +182,105 @@ export default function DashboardPage() {
               </div>
             )}
           </div>
-          <div className="hidden lg:block">
-            <div className="bg-white bg-opacity-20 rounded-xl p-4">
-              <Heart className="h-12 w-12 text-gray-200" />
-            </div>
+          
+          {/* Quick Actions */}
+          <div className="flex items-center space-x-3">
+            <Link
+              href="/book"
+              className="inline-flex items-center bg-white text-black px-4 py-2 rounded-lg font-button font-medium hover:bg-gray-50 transition-colors text-sm"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Book New Stay
+            </Link>
+            
+            <Link
+              href="/dashboard/rebook"
+              className="inline-flex items-center bg-cyan-500 text-white px-4 py-2 rounded-lg font-button font-medium hover:bg-cyan-600 transition-colors text-sm"
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Quick Rebook
+            </Link>
+            
+            <button
+              onClick={fetchDashboardData}
+              disabled={loading}
+              className="inline-flex items-center bg-white bg-opacity-20 text-white px-3 py-2 rounded-lg font-button font-medium hover:bg-opacity-30 transition-colors text-sm"
+            >
+              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            </button>
           </div>
-        </div>
-        
-        {/* Quick Actions */}
-        <div className="flex items-center space-x-4 mt-6">
-          <Link
-            href="/book"
-            className="inline-flex items-center bg-white text-black px-6 py-3 rounded-xl font-button font-medium hover:bg-gray-50 transition-colors"
-          >
-            <Plus className="h-5 w-5 mr-2" />
-            Book New Stay
-          </Link>
-          
-          <Link
-            href="/dashboard/rebook"
-            className="inline-flex items-center bg-cyan-500 text-white px-6 py-3 rounded-xl font-button font-medium hover:bg-cyan-600 transition-colors"
-          >
-            <RefreshCw className="h-5 w-5 mr-2" />
-            Quick Rebook
-          </Link>
-          
-          <button
-            onClick={fetchDashboardData}
-            disabled={loading}
-            className="inline-flex items-center bg-white bg-opacity-20 text-white px-4 py-3 rounded-xl font-button font-medium hover:bg-opacity-30 transition-colors"
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
-          </button>
         </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-        <div className="card p-6">
+      {/* Stats Grid - Moved up and improved spacing */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="card p-4">
           <div className="flex items-center">
-            <div className="bg-gray-100 rounded-xl p-3">
-              <Calendar className="h-6 w-6 text-black" />
+            <div className="bg-cyan-100 rounded-lg p-2">
+              <Calendar className="h-5 w-5 text-cyan-600" />
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-body text-gray-600">Total Bookings</p>
-              <p className="text-2xl font-heading text-black">{dashboardData?.stats.totalBookings || 0}</p>
+            <div className="ml-3">
+              <p className="text-xs font-body text-gray-600">Total Bookings</p>
+              <p className="text-xl font-heading text-black">{dashboardData?.stats.totalBookings || 0}</p>
             </div>
           </div>
         </div>
 
-        <div className="card p-6">
+        <div className="card p-4">
           <div className="flex items-center">
-            <div className="bg-green-100 rounded-xl p-3">
-              <Clock className="h-6 w-6 text-green-600" />
+            <div className="bg-green-100 rounded-lg p-2">
+              <Clock className="h-5 w-5 text-green-600" />
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-body text-gray-600">This Year</p>
-              <p className="text-2xl font-heading text-black">{dashboardData?.stats.thisYearBookings || 0}</p>
+            <div className="ml-3">
+              <p className="text-xs font-body text-gray-600">This Year</p>
+              <p className="text-xl font-heading text-black">{dashboardData?.stats.thisYearBookings || 0}</p>
             </div>
           </div>
         </div>
 
-        <div className="card p-6">
+        <div className="card p-4">
           <div className="flex items-center">
-            <div className="bg-amber-100 rounded-xl p-3">
-              <Dog className="h-6 w-6 text-amber-600" />
+            <div className="bg-amber-100 rounded-lg p-2">
+              <Dog className="h-5 w-5 text-amber-600" />
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-body text-gray-600">My Dogs</p>
-              <p className="text-2xl font-heading text-black">{dashboardData?.stats.savedDogs || 0}</p>
+            <div className="ml-3">
+              <p className="text-xs font-body text-gray-600">My Dogs</p>
+              <p className="text-xl font-heading text-black">{dashboardData?.stats.savedDogs || 0}</p>
             </div>
           </div>
         </div>
 
-        <div className="card p-6">
+        <div className="card p-4">
           <div className="flex items-center">
-            <div className="bg-blue-100 rounded-xl p-3">
-              <DollarSign className="h-6 w-6 text-blue-600" />
+            <div className="bg-cyan-100 rounded-lg p-2">
+              <DollarSign className="h-5 w-5 text-cyan-600" />
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-body text-gray-600">Total Spent</p>
-              <p className="text-2xl font-heading text-black">${dashboardData?.stats.totalSpent || 0}</p>
+            <div className="ml-3">
+              <p className="text-xs font-body text-gray-600">Total Spent</p>
+              <p className="text-xl font-heading text-black">${dashboardData?.stats.totalSpent || 0}</p>
             </div>
           </div>
         </div>
 
-        <div className="card p-6">
+        <div className="card p-4">
           <div className="flex items-center">
-            <div className="bg-indigo-100 rounded-xl p-3">
-              <CheckCircle className="h-6 w-6 text-indigo-600" />
+            <div className="bg-gray-100 rounded-lg p-2">
+              <CheckCircle className="h-5 w-5 text-gray-600" />
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-body text-gray-600">Avg Stay</p>
-              <p className="text-2xl font-heading text-black">{dashboardData?.stats.avgStayDuration || 0} days</p>
+            <div className="ml-3">
+              <p className="text-xs font-body text-gray-600">Avg Stay</p>
+              <p className="text-xl font-heading text-black">{dashboardData?.stats.avgStayDuration || 0} days</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Upcoming Bookings */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="card">
-          <div className="p-6 border-b border-gray-200">
+          <div className="p-4 border-b border-gray-200">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-heading text-black">Upcoming Stays</h2>
+              <h2 className="text-lg font-heading text-black">Upcoming Stays</h2>
               <Link
                 href="/dashboard/bookings"
                 className="text-cyan-600 hover:text-cyan-700 text-sm font-button flex items-center"
@@ -297,7 +291,7 @@ export default function DashboardPage() {
             </div>
           </div>
           
-          <div className="p-6">
+          <div className="p-4">
             {dashboardData?.upcomingBookings && dashboardData.upcomingBookings.length > 0 ? (
               <div className="space-y-4">
                 {dashboardData.upcomingBookings.map((booking) => (
@@ -342,9 +336,9 @@ export default function DashboardPage() {
 
         {/* Recent History */}
         <div className="card">
-          <div className="p-6 border-b border-gray-200">
+          <div className="p-4 border-b border-gray-200">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-heading text-black">Recent Stays</h2>
+              <h2 className="text-lg font-heading text-black">Recent Stays</h2>
               <Link
                 href="/dashboard/history"
                 className="text-cyan-600 hover:text-cyan-700 text-sm font-button flex items-center"
@@ -355,7 +349,7 @@ export default function DashboardPage() {
             </div>
           </div>
           
-          <div className="p-6">
+          <div className="p-4">
             {dashboardData?.recentActivity && dashboardData.recentActivity.length > 0 ? (
               <div className="space-y-4">
                 {dashboardData.recentActivity.map((booking) => (
@@ -392,50 +386,6 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="card p-6">
-        <h2 className="text-xl font-heading text-black mb-6">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Link
-            href="/book"
-            className="flex items-center p-4 border border-gray-200 rounded-xl hover:border-cyan-300 hover:bg-cyan-50 transition-colors group"
-          >
-            <div className="bg-gray-100 group-hover:bg-gray-200 rounded-lg p-3 mr-4">
-              <Plus className="h-6 w-6 text-black" />
-            </div>
-            <div>
-              <h3 className="font-button font-medium text-black">Book New Stay</h3>
-              <p className="text-sm text-gray-600 font-body">Schedule your dog's next adventure</p>
-            </div>
-          </Link>
-
-          <Link
-            href="/dashboard/dogs"
-            className="flex items-center p-4 border border-gray-200 rounded-xl hover:border-green-300 hover:bg-green-50 transition-colors group"
-          >
-            <div className="bg-green-100 group-hover:bg-green-200 rounded-lg p-3 mr-4">
-              <Dog className="h-6 w-6 text-green-600" />
-            </div>
-            <div>
-              <h3 className="font-button font-medium text-black">Manage Dogs</h3>
-              <p className="text-sm text-gray-600 font-body">Update profiles and preferences</p>
-            </div>
-          </Link>
-
-          <Link
-            href="/dashboard/invoices"
-            className="flex items-center p-4 border border-gray-200 rounded-xl hover:border-blue-300 hover:bg-blue-50 transition-colors group"
-          >
-            <div className="bg-blue-100 group-hover:bg-blue-200 rounded-lg p-3 mr-4">
-              <Calendar className="h-6 w-6 text-blue-600" />
-            </div>
-            <div>
-              <h3 className="font-button font-medium text-black">View Invoices</h3>
-              <p className="text-sm text-gray-600 font-body">Download receipts and records</p>
-            </div>
-          </Link>
-        </div>
-      </div>
     </div>
     </DashboardErrorBoundary>
   );

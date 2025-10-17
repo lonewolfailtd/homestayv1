@@ -39,7 +39,7 @@ export default function DashboardLayout({
   if (!isLoaded) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-600"></div>
       </div>
     );
   }
@@ -64,11 +64,11 @@ export default function DashboardLayout({
           <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
             <Link href="/" className="flex items-center">
               <Image
-                src="/images/100%K9 on Transparent HORIZONTAL.png"
+                src="/images/100-K9-logo-horizontal.png"
                 alt="100% K9 Dog Boarding"
-                width={140}
-                height={32}
-                className="h-8 w-auto"
+                width={260}
+                height={60}
+                className="h-16 w-auto"
                 priority
               />
             </Link>
@@ -91,13 +91,13 @@ export default function DashboardLayout({
                   className={`
                     flex items-center px-3 py-3 rounded-xl text-sm font-button transition-colors touch-manipulation
                     ${isActive 
-                      ? 'bg-purple-100 text-purple-700 border border-purple-200' 
+                      ? 'bg-cyan-100 text-cyan-700 border border-cyan-200' 
                       : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 active:bg-gray-200'
                     }
                   `}
                   onClick={() => setSidebarOpen(false)}
                 >
-                  <item.icon className={`mr-3 h-5 w-5 ${isActive ? 'text-purple-600' : 'text-gray-400'}`} />
+                  <item.icon className={`mr-3 h-5 w-5 ${isActive ? 'text-cyan-600' : 'text-gray-400'}`} />
                   {item.name}
                 </Link>
               );
@@ -149,7 +149,7 @@ export default function DashboardLayout({
         </div>
 
         {/* Page content */}
-        <main className="p-6">
+        <main className="px-4 pb-4">
           {children}
         </main>
       </div>

@@ -210,7 +210,7 @@ export default function InvoicesPage() {
                             {invoice.status}
                           </span>
                           <span className={`px-2 py-1 rounded-full text-xs font-medium border ${
-                            invoice.type === 'deposit' ? 'bg-blue-100 text-blue-800 border-blue-200' : 'bg-purple-100 text-purple-800 border-purple-200'
+                            invoice.type === 'deposit' ? 'bg-blue-100 text-blue-800 border-blue-200' : 'bg-green-100 text-green-800 border-green-200'
                           }`}>
                             {invoice.type === 'deposit' ? 'Deposit' : 'Balance'}
                           </span>

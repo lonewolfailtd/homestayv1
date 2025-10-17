@@ -180,8 +180,8 @@ export default function DogStep({ formData, updateFormData, nextStep }: DogStepP
   return (
     <div className="max-w-2xl mx-auto">
       <div className="text-center mb-8">
-        <div className="bg-purple-100 rounded-full p-3 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-          <Dog className="h-8 w-8 text-purple-600" />
+        <div className="bg-cyan-100 rounded-full p-3 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+          <Dog className="h-8 w-8 text-cyan-600" />
         </div>
         <h2 className="text-2xl font-heading text-black mb-2">Tell Us About Your Dog</h2>
         <p className="text-gray-600 font-body">
@@ -194,7 +194,7 @@ export default function DogStep({ formData, updateFormData, nextStep }: DogStepP
         {isSignedIn && (
           <div className="form-section">
             <h3 className="text-lg font-button font-semibold text-black mb-4 flex items-center">
-              <Heart className="h-5 w-5 mr-2 text-purple-600" />
+              <Heart className="h-5 w-5 mr-2 text-cyan-600" />
               Your Saved Dogs
             </h3>
             
@@ -215,7 +215,7 @@ export default function DogStep({ formData, updateFormData, nextStep }: DogStepP
                       key={savedDog.id}
                       className={`card cursor-pointer transition-all ${
                         selectedSavedDog === savedDog.id
-                          ? 'ring-2 ring-purple-500 bg-purple-50'
+                          ? 'ring-2 ring-cyan-500 bg-cyan-50'
                           : 'hover:shadow-md'
                       }`}
                       onClick={() => handleSelectSavedDog(savedDog)}
@@ -237,7 +237,7 @@ export default function DogStep({ formData, updateFormData, nextStep }: DogStepP
                           )}
                         </div>
                         {selectedSavedDog === savedDog.id && (
-                          <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                          <div className="w-2 h-2 bg-cyan-500 rounded-full"></div>
                         )}
                       </div>
                       <div className="text-sm text-gray-600 font-body">
@@ -253,7 +253,7 @@ export default function DogStep({ formData, updateFormData, nextStep }: DogStepP
                     type="button"
                     onClick={handleNewDogClick}
                     className={`btn-secondary flex items-center ${
-                      showNewDogForm ? 'bg-purple-100 text-purple-700' : ''
+                      showNewDogForm ? 'bg-cyan-100 text-cyan-700' : ''
                     }`}
                   >
                     <Plus className="h-4 w-4 mr-2" />
@@ -264,21 +264,29 @@ export default function DogStep({ formData, updateFormData, nextStep }: DogStepP
             ) : (
               <div className="text-center py-6 bg-gray-50 rounded-xl">
                 <Dog className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                <p className="text-gray-600 font-body text-sm">
-                  No saved dogs yet. Your dogs will be saved automatically after booking.
+                <p className="text-gray-600 font-body text-sm mb-4">
+                  No saved dogs yet. Let's add your first dog!
                 </p>
+                <button
+                  type="button"
+                  onClick={handleNewDogClick}
+                  className="btn-primary flex items-center mx-auto"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Your First Dog
+                </button>
               </div>
             )}
           </div>
         )}
 
-        {/* Show form only if user is not signed in or has chosen to add a new dog */}
-        {(!isSignedIn || showNewDogForm) && (
+        {/* Show form only if user is not signed in, has chosen to add a new dog, or has no saved dogs */}
+        {(!isSignedIn || showNewDogForm || (isSignedIn && savedDogs.length === 0)) && (
           <>
             {/* Basic Information */}
         <div className="form-section">
           <h3 className="text-lg font-button font-semibold text-black mb-4 flex items-center">
-            <Dog className="h-5 w-5 mr-2 text-purple-600" />
+            <Dog className="h-5 w-5 mr-2 text-cyan-600" />
             Basic Information
           </h3>
           
@@ -368,7 +376,7 @@ export default function DogStep({ formData, updateFormData, nextStep }: DogStepP
                 id="isEntireDog"
                 checked={dogData.isEntireDog}
                 onChange={(e) => handleInputChange('isEntireDog', e.target.checked)}
-                className="mt-1 mr-3 h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                className="mt-1 mr-3 h-4 w-4 text-cyan-600 focus:ring-cyan-500 border-gray-300 rounded"
               />
               <div>
                 <label htmlFor="isEntireDog" className="font-button font-medium text-amber-800">
@@ -385,7 +393,7 @@ export default function DogStep({ formData, updateFormData, nextStep }: DogStepP
         {/* Health & Safety */}
         <div className="form-section">
           <h3 className="text-lg font-button font-semibold text-black mb-4 flex items-center">
-            <Shield className="h-5 w-5 mr-2 text-purple-600" />
+            <Shield className="h-5 w-5 mr-2 text-cyan-600" />
             Health & Safety
           </h3>
           
@@ -483,7 +491,7 @@ export default function DogStep({ formData, updateFormData, nextStep }: DogStepP
         {/* Behavior Information */}
         <div className="form-section">
           <h3 className="text-lg font-button font-semibold text-black mb-4 flex items-center">
-            <Activity className="h-5 w-5 mr-2 text-purple-600" />
+            <Activity className="h-5 w-5 mr-2 text-cyan-600" />
             Behavior & Temperament
           </h3>
           

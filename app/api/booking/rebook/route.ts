@@ -25,9 +25,9 @@ export async function POST(request: NextRequest) {
 
     const checkIn = new Date(validatedData.checkInDate);
     const checkOut = new Date(validatedData.checkOutDate);
-    const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
+    const totalDays = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24)) + 1;
 
-    if (nights <= 0) {
+    if (totalDays <= 0) {
       return NextResponse.json({ error: 'Invalid date range' }, { status: 400 });
     }
 
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
         dogId: validatedData.dogId,
         checkIn: checkIn,
         checkOut: checkOut,
-        totalDays: nights,
+        totalDays: totalDays,
         totalPrice: validatedData.totalPrice,
         dailyRate: 80, // Default rate
         serviceCharges: 0,

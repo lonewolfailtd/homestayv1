@@ -15,6 +15,11 @@ export async function GET(_request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Get Clerk user to access email
+    const { currentUser } = await import('@clerk/nextjs/server');
+    const clerkUser = await currentUser();
+    const userEmail = clerkUser?.emailAddresses[0]?.emailAddress;
+
     // Get user from database first, create if doesn't exist
     let user = await prisma.user.findUnique({
       where: { clerkId: clerkUserId }
@@ -39,9 +44,14 @@ export async function GET(_request: NextRequest) {
       }
     }
 
-    // Get customer record (might not exist if user hasn't made bookings yet)
+    // Get customer record by email from Clerk user or clerkUserId
     const customer = await prisma.customer.findFirst({
-      where: { clerkUserId: clerkUserId }
+      where: { 
+        OR: [
+          { clerkUserId: clerkUserId },
+          { email: userEmail }
+        ]
+      }
     });
 
     // If no customer exists, return empty dashboard data

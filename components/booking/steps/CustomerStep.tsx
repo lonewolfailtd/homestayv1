@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { User, Phone, Mail, MapPin, UserPlus } from 'lucide-react';
 import { useFormContext } from '../FormContext';
+import GooglePlacesAutocomplete from '@/components/ui/GooglePlacesAutocomplete';
 
 interface CustomerStepProps {
   formData: any;
@@ -72,6 +73,22 @@ export default function CustomerStep({ formData, updateFormData, nextStep }: Cus
     updateFormData(newData);
   };
 
+  const handleAddressChange = (address: string, addressComponents?: {
+    city?: string;
+    postalCode?: string;
+    country?: string;
+  }) => {
+    const newData = { 
+      ...customerData, 
+      address,
+      // Auto-populate city and postal code if provided
+      ...(addressComponents?.city && { city: addressComponents.city }),
+      ...(addressComponents?.postalCode && { postalCode: addressComponents.postalCode })
+    };
+    setCustomerData(newData);
+    updateFormData(newData);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     nextStep();
@@ -90,8 +107,8 @@ export default function CustomerStep({ formData, updateFormData, nextStep }: Cus
   return (
     <div className="max-w-2xl mx-auto">
       <div className="text-center mb-8">
-        <div className="bg-purple-100 rounded-full p-3 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-          <User className="h-8 w-8 text-purple-600" />
+        <div className="bg-cyan-100 rounded-full p-3 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+          <User className="h-8 w-8 text-cyan-600" />
         </div>
         <h2 className="text-2xl font-heading text-black mb-2">Your Contact Details</h2>
         <p className="text-gray-600 font-body">
@@ -103,7 +120,7 @@ export default function CustomerStep({ formData, updateFormData, nextStep }: Cus
         {/* Personal Information */}
         <div className="form-section">
           <h3 className="text-lg font-button font-semibold text-black mb-4 flex items-center">
-            <User className="h-5 w-5 mr-2 text-purple-600" />
+            <User className="h-5 w-5 mr-2 text-cyan-600" />
             Personal Information
           </h3>
           
@@ -176,7 +193,7 @@ export default function CustomerStep({ formData, updateFormData, nextStep }: Cus
         {/* Address Information */}
         <div className="form-section">
           <h3 className="text-lg font-button font-semibold text-black mb-4 flex items-center">
-            <MapPin className="h-5 w-5 mr-2 text-purple-600" />
+            <MapPin className="h-5 w-5 mr-2 text-cyan-600" />
             Address Information
           </h3>
           
@@ -185,12 +202,11 @@ export default function CustomerStep({ formData, updateFormData, nextStep }: Cus
               <label className="block text-sm font-body font-medium text-gray-700 mb-2">
                 Street Address
               </label>
-              <input
-                type="text"
+              <GooglePlacesAutocomplete
                 value={customerData.address}
-                onChange={(e) => handleInputChange('address', e.target.value)}
+                onChange={handleAddressChange}
+                placeholder="Start typing your address..."
                 className="input-field"
-                placeholder="123 Main Street"
               />
             </div>
             
@@ -227,7 +243,7 @@ export default function CustomerStep({ formData, updateFormData, nextStep }: Cus
         {/* Emergency Contact */}
         <div className="form-section">
           <h3 className="text-lg font-button font-semibold text-black mb-4 flex items-center">
-            <UserPlus className="h-5 w-5 mr-2 text-purple-600" />
+            <UserPlus className="h-5 w-5 mr-2 text-cyan-600" />
             Emergency Contact *
           </h3>
           

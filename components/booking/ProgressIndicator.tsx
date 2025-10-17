@@ -34,10 +34,10 @@ export default function ProgressIndicator({
               className={`
                 relative flex items-center justify-center w-8 h-8 rounded-full text-sm font-button font-medium transition-all
                 ${isCompleted 
-                  ? 'bg-white text-purple-600 border-2 border-white' 
+                  ? 'bg-white text-cyan-600 border-2 border-white' 
                   : isCurrent 
-                    ? 'bg-white text-purple-600 border-2 border-white' 
-                    : 'bg-purple-500 text-purple-200 border-2 border-purple-400'
+                    ? 'bg-white text-cyan-600 border-2 border-white' 
+                    : 'bg-cyan-500 text-cyan-200 border-2 border-cyan-400'
                 }
                 ${isClickable ? 'cursor-pointer hover:scale-105' : 'cursor-default'}
               `}
@@ -61,7 +61,7 @@ export default function ProgressIndicator({
               <div className="flex-1 mx-4">
                 <div 
                   className={`h-0.5 transition-colors ${
-                    isCompleted ? 'bg-white' : 'bg-purple-400'
+                    isCompleted ? 'bg-white' : 'bg-cyan-400'
                   }`}
                 />
               </div>

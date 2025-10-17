@@ -226,7 +226,7 @@ export default function HistoryPage() {
       {/* Stats Summary */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="card text-center">
-          <div className="text-2xl font-heading text-purple-600">{stats.totalBookings}</div>
+          <div className="text-2xl font-heading text-cyan-600">{stats.totalBookings}</div>
           <div className="text-sm text-gray-600 font-body">Total Stays</div>
         </div>
         <div className="card text-center">
@@ -329,7 +329,7 @@ export default function HistoryPage() {
                           <p className="text-sm text-gray-600 font-body">
                             {booking.dog.breed} • {booking.dog.age} years • {booking.dog.sex}
                           </p>
-                          <p className="text-sm font-button text-purple-600 mt-1">
+                          <p className="text-sm font-button text-cyan-600 mt-1">
                             {formatDateRange(booking.checkIn, booking.checkOut)} • {booking.totalDays} days
                           </p>
                         </div>

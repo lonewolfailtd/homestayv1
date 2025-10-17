@@ -24,9 +24,9 @@ export async function POST(request: NextRequest) {
       checkInDate,
       checkOutDate,
       isEntireDog: formData.isEntireDog || false,
-      selectedServices: formData.selectedServices || [],
-      numberOfMeals: formData.numberOfMeals || 0,
-      numberOfWalks: formData.numberOfWalks || 0,
+      selectedServices: Array.isArray(formData.selectedServices) ? formData.selectedServices : [],
+      numberOfMeals: parseInt(formData.numberOfMeals) || 0,
+      numberOfWalks: parseInt(formData.numberOfWalks) || 0,
     });
 
     return NextResponse.json({

@@ -30,9 +30,11 @@ export default function SummaryStep({ formData, isSubmitting, setIsSubmitting, u
             checkIn: formData.checkIn,
             checkOut: formData.checkOut,
             isEntireDog: formData.isEntireDog || false,
-            selectedServices: Object.keys(formData.selectedServices || {}),
+            selectedServices: getSelectedServices().map(service => service.id),
             numberOfMeals: formData.selectedServices?.RAW_MEAL || 0,
             numberOfWalks: formData.selectedServices?.PACK_WALK || 0,
+            // Pass the full service data for accurate pricing
+            servicesData: getSelectedServices(),
           }),
         });
 
@@ -66,7 +68,7 @@ export default function SummaryStep({ formData, isSubmitting, setIsSubmitting, u
     if (!formData.checkIn || !formData.checkOut) return 0;
     const checkIn = new Date(formData.checkIn);
     const checkOut = new Date(formData.checkOut);
-    return Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
+    return Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24)) + 1;
   };
 
   const getSelectedServices = () => {
@@ -89,6 +91,17 @@ export default function SummaryStep({ formData, isSubmitting, setIsSubmitting, u
         quantity: formData.selectedServices[service.id],
         total: service.price * formData.selectedServices[service.id],
       }));
+  };
+
+  const getServicesTotal = () => {
+    return getSelectedServices().reduce((total, service) => total + service.total, 0);
+  };
+
+  const getFinalTotal = () => {
+    const baseTotal = formData.pricing?.totalPrice || 0;
+    const servicesTotal = getServicesTotal();
+    const intactDogSurcharge = formData.isEntireDog ? (getTotalDays() * 5) : 0;
+    return baseTotal + servicesTotal + intactDogSurcharge;
   };
 
   const handleSubmit = async () => {
@@ -204,7 +217,7 @@ export default function SummaryStep({ formData, isSubmitting, setIsSubmitting, u
           <div className="space-y-2 text-sm font-body">
             <div className="flex justify-between">
               <span className="text-gray-600">Booking ID:</span>
-              <span className="font-medium">{submitResult.booking?.id}</span>
+              <span className="font-medium">{submitResult.bookingId || submitResult.booking?.id || 'N/A'}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">Dog:</span>
@@ -220,7 +233,7 @@ export default function SummaryStep({ formData, isSubmitting, setIsSubmitting, u
             </div>
             <div className="flex justify-between font-semibold text-base border-t border-gray-200 pt-2 mt-2">
               <span>Total:</span>
-              <span>${formData.pricing?.totalPrice}</span>
+              <span>${getFinalTotal().toFixed(2)}</span>
             </div>
           </div>
         </div>
@@ -429,11 +442,27 @@ export default function SummaryStep({ formData, isSubmitting, setIsSubmitting, u
                 </div>
               )}
               
+              {/* Intact Dog Surcharge */}
+              {formData.isEntireDog && (
+                <div className="flex justify-between">
+                  <span className="font-body text-gray-700">Entire Dog Surcharge ({getTotalDays()} days × $5)</span>
+                  <span className="font-button font-medium">+${(getTotalDays() * 5).toFixed(2)}</span>
+                </div>
+              )}
+
+              {/* Services Total */}
+              {getServicesTotal() > 0 && (
+                <div className="flex justify-between">
+                  <span className="font-body text-gray-700">Total Additional Services</span>
+                  <span className="font-button font-medium">+${getServicesTotal().toFixed(2)}</span>
+                </div>
+              )}
+              
               <div className="border-t border-gray-200 pt-3">
                 <div className="flex justify-between items-center">
                   <span className="font-button font-semibold text-black text-lg">Total</span>
                   <span className="font-button font-semibold text-black text-xl">
-                    ${formData.pricing.totalPrice}
+                    ${getFinalTotal().toFixed(2)}
                   </span>
                 </div>
               </div>
@@ -445,13 +474,13 @@ export default function SummaryStep({ formData, isSubmitting, setIsSubmitting, u
               <div className="text-sm font-body text-blue-700">
                 {getTotalDays() > 21 ? (
                   <div className="space-y-1">
-                    <div>• Deposit (50%): ${(formData.pricing.totalPrice * 0.5).toFixed(2)} - Due immediately upon booking</div>
-                    <div>• Balance (50%): ${(formData.pricing.totalPrice * 0.5).toFixed(2)} - Due 3 weeks before check-in</div>
+                    <div>• Deposit (50%): ${(getFinalTotal() * 0.5).toFixed(2)} - Due immediately upon booking</div>
+                    <div>• Balance (50%): ${(getFinalTotal() * 0.5).toFixed(2)} - Due 3 weeks before check-in</div>
                     <div className="text-xs text-blue-600 mt-2">You'll receive separate invoices for each payment.</div>
                   </div>
                 ) : (
                   <div>
-                    <div>• Full payment: ${formData.pricing.totalPrice} - Due immediately upon booking</div>
+                    <div>• Full payment: ${getFinalTotal().toFixed(2)} - Due immediately upon booking</div>
                     <div className="text-xs text-blue-600 mt-2">Payment required within 3 weeks of check-in.</div>
                   </div>
                 )}

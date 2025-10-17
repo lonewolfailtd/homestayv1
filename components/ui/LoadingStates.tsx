@@ -24,7 +24,7 @@ export const LoadingOverlay: React.FC<{ message?: string }> = ({
 }) => (
   <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10 rounded-xl">
     <div className="text-center">
-      <LoadingSpinner size="lg" className="text-purple-600 mx-auto mb-3" />
+      <LoadingSpinner size="lg" className="text-cyan-600 mx-auto mb-3" />
       <p className="text-gray-600 font-body text-sm">{message}</p>
     </div>
   </div>
@@ -171,7 +171,7 @@ export const PageLoading: React.FC<{ message?: string }> = ({
 }) => (
   <div className="min-h-screen bg-gray-50 flex items-center justify-center">
     <div className="text-center">
-      <LoadingSpinner size="lg" className="text-purple-600 mx-auto mb-4" />
+      <LoadingSpinner size="lg" className="text-cyan-600 mx-auto mb-4" />
       <h2 className="text-xl font-heading text-black mb-2">{message}</h2>
       <p className="text-gray-600 font-body">Please wait a moment</p>
     </div>

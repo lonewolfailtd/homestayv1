@@ -14,13 +14,6 @@ interface InteractiveCalendarProps {
   onDateChange: (dates: { checkIn: string; checkOut: string }) => void;
 }
 
-const quickFilters = [
-  { label: 'Today', days: 0 },
-  { label: 'Tomorrow', days: 1 },
-  { label: 'This Weekend', days: 5 }, // Approximate
-  { label: 'Next Week', days: 7 },
-  { label: 'Next Month', days: 30 },
-];
 
 // Peak periods with 20% surcharge - exact dates from business requirements
 const peakPeriods = [
@@ -40,7 +33,6 @@ export default function InteractiveCalendar({ selectedDates, onDateChange }: Int
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [isSelectingCheckOut, setIsSelectingCheckOut] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [showQuickFilters, setShowQuickFilters] = useState(false);
 
   const today = startOfDay(new Date());
   const minDate = today;
@@ -99,16 +91,6 @@ export default function InteractiveCalendar({ selectedDates, onDateChange }: Int
     }
   };
 
-  const handleQuickFilter = (days: number) => {
-    const checkIn = addDays(today, days);
-    const checkOut = addDays(checkIn, 1); // Default 1 night
-    
-    onDateChange({
-      checkIn: format(checkIn, 'yyyy-MM-dd'),
-      checkOut: format(checkOut, 'yyyy-MM-dd'),
-    });
-    setIsSelectingCheckOut(false);
-  };
 
   const clearSelection = () => {
     onDateChange({ checkIn: '', checkOut: '' });
@@ -129,34 +111,38 @@ export default function InteractiveCalendar({ selectedDates, onDateChange }: Int
 
   const modifiersStyles = {
     selected: {
-      backgroundColor: '#0891b2', // Using cyan for 100% K9 brand
+      backgroundColor: '#000000', // Black for selected dates - highest priority
       color: 'white',
       borderRadius: '8px',
       fontWeight: 'bold',
+      zIndex: 10,
     },
     range_start: {
-      backgroundColor: '#0891b2',
+      backgroundColor: '#000000',
       color: 'white',
       borderRadius: '8px 0 0 8px',
       fontWeight: 'bold',
+      zIndex: 10,
     },
     range_end: {
-      backgroundColor: '#0891b2',
+      backgroundColor: '#000000',
       color: 'white',
       borderRadius: '0 8px 8px 0',
       fontWeight: 'bold',
+      zIndex: 10,
     },
     range_middle: {
-      backgroundColor: '#cffafe', // Light cyan for range
-      color: '#0891b2',
+      backgroundColor: '#f3f4f6', // Light gray for range middle
+      color: '#000000',
       fontWeight: 'normal',
+      border: '1px solid #d1d5db',
     },
     peak: {
-      backgroundColor: '#fbbf24', // More prominent orange for peak periods
-      color: '#ffffff',
-      fontWeight: 'bold',
-      border: '2px solid #f59e0b',
-      borderRadius: '6px',
+      backgroundColor: '#cffafe', // Light cyan for peak periods - lower priority than selections
+      color: '#0891b2',
+      fontWeight: 'normal',
+      border: '1px solid #22d3ee',
+      borderRadius: '4px',
     },
     unavailable: {
       backgroundColor: '#FEE2E2',
@@ -179,23 +165,17 @@ export default function InteractiveCalendar({ selectedDates, onDateChange }: Int
             <p className="text-sm text-gray-600 font-body">
               {mode === 'range' ? 'Choose check-in and check-out dates' : 'Choose a single date'}
             </p>
+            <p className="text-xs text-cyan-600 font-body mt-1">
+              💡 We charge by day rates (total days of stay)
+            </p>
           </div>
           
           <div className="flex items-center space-x-2">
-            {isMobile && (
-              <button
-                onClick={() => setShowQuickFilters(!showQuickFilters)}
-                className="p-2 rounded-lg border border-gray-200 bg-white text-gray-600 md:hidden"
-              >
-                {showQuickFilters ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-              </button>
-            )}
-            
             <button
               onClick={() => setMode('single')}
               className={`px-3 py-1 rounded-lg text-sm font-button transition-colors ${
                 mode === 'single' 
-                  ? 'bg-cyan-600 text-white' 
+                  ? 'bg-black text-white' 
                   : 'bg-white text-gray-600 border border-gray-200'
               }`}
             >
@@ -205,7 +185,7 @@ export default function InteractiveCalendar({ selectedDates, onDateChange }: Int
               onClick={() => setMode('range')}
               className={`px-3 py-1 rounded-lg text-sm font-button transition-colors ${
                 mode === 'range' 
-                  ? 'bg-cyan-600 text-white' 
+                  ? 'bg-black text-white' 
                   : 'bg-white text-gray-600 border border-gray-200'
               }`}
             >
@@ -215,105 +195,64 @@ export default function InteractiveCalendar({ selectedDates, onDateChange }: Int
         </div>
       </div>
 
-      <div className={`${isMobile ? 'block' : 'flex'}`}>
-        {/* Quick Filters Sidebar */}
-        <div className={`${isMobile ? 'w-full' : 'w-48'} bg-gray-50 ${isMobile ? 'border-b' : 'border-r'} border-gray-200 p-4 ${isMobile && !showQuickFilters ? 'hidden' : ''}`}>
-          <div className="space-y-2">
-            <div className="text-sm font-button font-medium text-gray-700 mb-3">Quick Select</div>
-            {quickFilters.map((filter, index) => (
-              <button
-                key={index}
-                onClick={() => handleQuickFilter(filter.days)}
-                className="w-full text-left px-3 py-2 text-sm font-body text-gray-600 hover:bg-cyan-50 hover:text-cyan-600 rounded-lg transition-colors"
-              >
-                {filter.label}
-              </button>
-            ))}
-            
-            <div className="pt-4 border-t border-gray-200">
+      <div className="w-full">
+        {/* Legend - moved to top as compact bar */}
+        <div className="bg-gray-50 px-6 py-3 border-b border-gray-200">
+          <div className="flex flex-wrap items-center gap-4 text-xs font-body">
+            <div className="flex items-center">
+              <div className="w-3 h-3 bg-black rounded mr-2"></div>
+              <span>Selected Dates</span>
+            </div>
+            <div className="flex items-center">
+              <div className="w-3 h-3 bg-cyan-200 border border-cyan-400 rounded mr-2"></div>
+              <span className="font-medium">Peak Period (+20%)</span>
+            </div>
+            <div className="flex items-center">
+              <div className="w-3 h-3 bg-gray-200 rounded mr-2"></div>
+              <span>Past Dates</span>
+            </div>
+            {/* Show clear button if dates selected */}
+            {(checkInDate || checkOutDate) && (
               <button
                 onClick={clearSelection}
-                className="w-full text-left px-3 py-2 text-sm font-body text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                className="ml-auto text-gray-600 hover:text-black font-medium"
               >
                 Clear Selection
               </button>
-            </div>
-          </div>
-
-          {/* Legend */}
-          <div className="mt-6 pt-4 border-t border-gray-200">
-            <div className="text-sm font-button font-medium text-gray-700 mb-3">Legend</div>
-            <div className="space-y-2 text-xs font-body">
-              <div className="flex items-center">
-                <div className="w-4 h-4 bg-cyan-600 rounded mr-2"></div>
-                <span>Selected Dates</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-4 h-4 bg-amber-400 border-2 border-amber-600 rounded mr-2"></div>
-                <span className="font-medium">Peak Period (+20%)</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-4 h-4 bg-red-200 rounded mr-2"></div>
-                <span>Unavailable</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-4 h-4 bg-gray-200 rounded mr-2"></div>
-                <span>Past Dates</span>
-              </div>
-            </div>
-            
-            {/* Current peak periods */}
-            {peakPeriods.some(period => {
-              const today = new Date();
-              const nextMonth = addMonths(today, 2);
-              return period.start <= nextMonth && period.end >= today;
-            }) && (
-              <div className="mt-4 pt-3 border-t border-gray-200">
-                <div className="text-sm font-button font-medium text-gray-700 mb-2">Upcoming Peak Periods</div>
-                <div className="space-y-1 text-xs font-body text-gray-600">
-                  {peakPeriods
-                    .filter(period => {
-                      const today = new Date();
-                      const nextMonth = addMonths(today, 2);
-                      return period.start <= nextMonth && period.end >= today;
-                    })
-                    .slice(0, 3)
-                    .map((period, index) => (
-                      <div key={index} className="flex items-center">
-                        <div className="w-2 h-2 bg-amber-400 rounded-full mr-2"></div>
-                        <span>{period.name}</span>
-                      </div>
-                    ))}
-                </div>
-              </div>
             )}
           </div>
         </div>
 
         {/* Calendar */}
-        <div className={`flex-1 ${isMobile ? 'p-4' : 'p-6'}`}>
+        <div className={`w-full flex justify-center ${isMobile ? 'p-4' : 'p-8'}`}>
           <style jsx global>{`
             .rdp {
-              --rdp-cell-size: 44px;
-              --rdp-accent-color: #0891b2;
-              --rdp-background-color: #0891b2;
-              margin: 0;
+              --rdp-cell-size: 64px;
+              --rdp-accent-color: #000000;
+              --rdp-background-color: #000000;
+              margin: 0 auto;
+              width: 100%;
+              max-width: 600px;
+              min-width: 480px;
             }
             .rdp-months {
               display: flex;
+              justify-content: center;
               gap: 2rem;
             }
             .rdp-month {
-              width: auto;
+              width: 100%;
             }
             .rdp-table {
               margin: 0;
+              width: 100%;
+              table-layout: fixed;
             }
             .rdp-head_cell {
-              font-size: 0.875rem;
-              font-weight: 500;
+              font-size: 1rem;
+              font-weight: 600;
               color: #6B7280;
-              padding: 0.5rem;
+              padding: 0.75rem;
             }
             .rdp-cell {
               text-align: center;
@@ -325,7 +264,8 @@ export default function InteractiveCalendar({ selectedDates, onDateChange }: Int
               border-radius: 0.5rem;
               border: none;
               background: transparent;
-              font-size: 0.875rem;
+              font-size: 1rem;
+              font-weight: 500;
               cursor: pointer;
               transition: all 0.2s;
               font-family: var(--font-button);
@@ -339,7 +279,9 @@ export default function InteractiveCalendar({ selectedDates, onDateChange }: Int
             }
             .rdp-day_today {
               font-weight: 600;
-              color: #0891b2;
+              color: #000000;
+              border: 2px solid #000000;
+              border-radius: 6px;
             }
             .rdp-caption {
               display: flex;
@@ -349,8 +291,8 @@ export default function InteractiveCalendar({ selectedDates, onDateChange }: Int
               margin: 0;
             }
             .rdp-caption_label {
-              font-size: 1.125rem;
-              font-weight: 600;
+              font-size: 1.25rem;
+              font-weight: 700;
               color: #111827;
               margin: 0 auto;
               font-family: var(--font-heading);
@@ -426,7 +368,7 @@ export default function InteractiveCalendar({ selectedDates, onDateChange }: Int
             required={false}
             selected={checkInDate}
             onSelect={handleDayClick}
-            numberOfMonths={isMobile ? 1 : 2}
+            numberOfMonths={1}
             month={currentMonth}
             onMonthChange={setCurrentMonth}
             fromDate={minDate}
@@ -441,12 +383,12 @@ export default function InteractiveCalendar({ selectedDates, onDateChange }: Int
 
       {/* Selection Summary */}
       {(checkInDate || checkOutDate) && (
-        <div className={`bg-gray-50 ${isMobile ? 'px-4 py-3' : 'px-6 py-4'} border-t border-gray-200`}>
+        <div className={`bg-white ${isMobile ? 'px-4 py-3' : 'px-6 py-4'} border-t border-gray-100`}>
           <div className={`${isMobile ? 'block space-y-3' : 'flex items-center justify-between'}`}>
             <div className={`${isMobile ? 'grid grid-cols-2 gap-3' : 'flex items-center space-x-6'}`}>
               {checkInDate && (
                 <div className="flex items-center">
-                  <Calendar className="h-4 w-4 text-cyan-600 mr-2" />
+                  <Calendar className="h-4 w-4 text-black mr-2" />
                   <div>
                     <div className="text-xs font-body text-gray-600">Check-in</div>
                     <div className="font-button font-medium text-black">
@@ -458,7 +400,7 @@ export default function InteractiveCalendar({ selectedDates, onDateChange }: Int
               
               {checkOutDate && (
                 <div className="flex items-center">
-                  <Clock className="h-4 w-4 text-cyan-600 mr-2" />
+                  <Clock className="h-4 w-4 text-black mr-2" />
                   <div>
                     <div className="text-xs font-body text-gray-600">Check-out</div>
                     <div className="font-button font-medium text-black">
@@ -470,13 +412,13 @@ export default function InteractiveCalendar({ selectedDates, onDateChange }: Int
               
               {checkInDate && checkOutDate && (
                 <div className="text-sm font-body text-gray-600">
-                  {Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24))} nights
+                  {Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)) + 1} days
                 </div>
               )}
             </div>
             
             {isSelectingCheckOut && (
-              <div className="text-sm font-body text-cyan-600">
+              <div className="text-sm font-body text-black">
                 Select your check-out date
               </div>
             )}

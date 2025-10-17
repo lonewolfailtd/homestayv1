@@ -62,7 +62,7 @@ export default function DateStep({ formData, updateFormData, nextStep }: DateSte
     if (!dateData.checkIn || !dateData.checkOut) return 0;
     const checkIn = new Date(dateData.checkIn);
     const checkOut = new Date(dateData.checkOut);
-    return Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
+    return Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24)) + 1;
   };
 
   const formatDate = (dateString: string) => {
@@ -89,8 +89,8 @@ export default function DateStep({ formData, updateFormData, nextStep }: DateSte
   return (
     <div className="max-w-4xl mx-auto">
       <div className="text-center mb-8">
-        <div className="bg-purple-100 rounded-full p-3 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-          <Calendar className="h-8 w-8 text-purple-600" />
+        <div className="bg-cyan-100 rounded-full p-3 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+          <Calendar className="h-8 w-8 text-cyan-600" />
         </div>
         <h2 className="text-2xl font-heading text-black mb-2">Select Your Dates</h2>
         <p className="text-gray-600 font-body">
@@ -111,7 +111,7 @@ export default function DateStep({ formData, updateFormData, nextStep }: DateSte
         {(dateData.checkIn || dateData.checkOut) && (
           <div className="form-section">
             <h3 className="text-lg font-button font-semibold text-black mb-4 flex items-center">
-              <Clock className="h-5 w-5 mr-2 text-purple-600" />
+              <Clock className="h-5 w-5 mr-2 text-cyan-600" />
               Booking Summary
             </h3>
             
@@ -133,24 +133,27 @@ export default function DateStep({ formData, updateFormData, nextStep }: DateSte
               </div>
               
               <div className="space-y-4">
-                <div className="bg-purple-50 rounded-xl p-4">
+                <div className="bg-cyan-50 rounded-xl p-4">
                   <div className="text-sm font-body text-gray-600 mb-1">Total Days</div>
-                  <div className="font-button font-medium text-purple-600 text-2xl">
+                  <div className="font-button font-medium text-cyan-600 text-2xl">
                     {getTotalDays()} {getTotalDays() === 1 ? 'day' : 'days'}
                   </div>
                 </div>
                 
                 {pricing && (
                   <div className="bg-green-50 rounded-xl p-4">
-                    <div className="text-sm font-body text-gray-600 mb-1">Estimated Total</div>
+                    <div className="text-sm font-body text-gray-600 mb-1">Base Stay Cost</div>
                     <div className="font-button font-medium text-green-600 text-2xl">
-                      ${pricing.totalPrice}
+                      ${pricing.baseSubtotal}
                     </div>
                     {pricing.isPeakPeriod && (
                       <div className="text-xs text-amber-600 font-body mt-1">
-                        Includes peak period surcharge
+                        +${pricing.peakSurcharge} peak period
                       </div>
                     )}
+                    <div className="text-xs text-gray-500 font-body mt-1">
+                      Final total with services shown below
+                    </div>
                   </div>
                 )}
               </div>
@@ -158,41 +161,84 @@ export default function DateStep({ formData, updateFormData, nextStep }: DateSte
           </div>
         )}
 
-        {/* Pricing Breakdown */}
+        {/* Detailed Pricing Breakdown - Moved to End */}
         {pricing && (
           <div className="form-section">
-            <h3 className="text-lg font-button font-semibold text-black mb-4">
-              Pricing Breakdown
+            <h3 className="text-lg font-button font-semibold text-black mb-6">
+              Complete Pricing Breakdown
             </h3>
             
-            <div className="space-y-3">
-              <div className="flex justify-between items-center py-2">
-                <span className="font-body text-gray-700">
-                  Base Stay ({pricing.totalDays} days × ${pricing.baseDailyRate})
-                </span>
-                <span className="font-button font-medium">${pricing.baseSubtotal}</span>
+            <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-4">
+              {/* Base Accommodation */}
+              <div className="space-y-2">
+                <h4 className="font-button font-medium text-gray-800 border-b border-gray-100 pb-2">
+                  Accommodation
+                </h4>
+                <div className="flex justify-between items-center py-2">
+                  <span className="font-body text-gray-700">
+                    Base Stay ({pricing.totalDays} days × ${pricing.baseDailyRate}/day)
+                  </span>
+                  <span className="font-button font-medium">${pricing.baseSubtotal}</span>
+                </div>
+                
+                {pricing.isPeakPeriod && (
+                  <div className="flex justify-between items-center py-2">
+                    <span className="font-body text-amber-700">
+                      Peak Period Surcharge - {pricing.peakPeriodName} (+20%)
+                    </span>
+                    <span className="font-button font-medium text-amber-700">+${pricing.peakSurcharge}</span>
+                  </div>
+                )}
+                
+                {pricing.dogSurcharges > 0 && (
+                  <div className="flex justify-between items-center py-2">
+                    <span className="font-body text-gray-700">Entire Dog Surcharge</span>
+                    <span className="font-button font-medium">+${pricing.dogSurcharges}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Additional Services */}
+              {pricing.breakdown?.services && pricing.breakdown.services.length > 0 && (
+                <div className="space-y-2">
+                  <h4 className="font-button font-medium text-gray-800 border-b border-gray-100 pb-2">
+                    Additional Services
+                  </h4>
+                  {pricing.breakdown.services.map((service: any, index: number) => (
+                    <div key={index} className="flex justify-between items-center py-2">
+                      <span className="font-body text-gray-700">
+                        {service.name} {service.quantity > 1 && `(${service.quantity} × $${service.unitPrice})`}
+                      </span>
+                      <span className="font-button font-medium">+${service.total}</span>
+                    </div>
+                  ))}
+                  {/* Total Additional Services */}
+                  <div className="border-t border-gray-100 pt-2 mt-2">
+                    <div className="flex justify-between items-center py-2">
+                      <span className="font-button font-medium text-gray-800">Total Additional Services</span>
+                      <span className="font-button font-medium">+${pricing.serviceCharges || pricing.breakdown.services.reduce((sum: number, service: any) => sum + service.total, 0)}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Subtotal */}
+              <div className="border-t border-gray-200 pt-3">
+                <div className="flex justify-between items-center py-2">
+                  <span className="font-button font-medium text-gray-800">Subtotal (excl. GST)</span>
+                  <span className="font-button font-medium">${(pricing.totalPrice / 1.15).toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between items-center py-2">
+                  <span className="font-body text-gray-700">GST (15%)</span>
+                  <span className="font-button font-medium">${(pricing.totalPrice - (pricing.totalPrice / 1.15)).toFixed(2)}</span>
+                </div>
               </div>
               
-              {pricing.isPeakPeriod && (
-                <div className="flex justify-between items-center py-2">
-                  <span className="font-body text-amber-700">
-                    Peak Period Surcharge ({pricing.peakPeriodName})
-                  </span>
-                  <span className="font-button font-medium text-amber-700">+${pricing.peakSurcharge}</span>
-                </div>
-              )}
-              
-              {pricing.dogSurcharges > 0 && (
-                <div className="flex justify-between items-center py-2">
-                  <span className="font-body text-gray-700">Entire Dog Surcharge</span>
-                  <span className="font-button font-medium">+${pricing.dogSurcharges}</span>
-                </div>
-              )}
-              
-              <div className="border-t border-gray-200 pt-3">
+              {/* Final Total */}
+              <div className="border-t-2 border-gray-300 pt-4">
                 <div className="flex justify-between items-center">
-                  <span className="font-button font-semibold text-black text-lg">Total</span>
-                  <span className="font-button font-semibold text-black text-lg">
+                  <span className="font-button font-semibold text-black text-xl">Total (incl. GST)</span>
+                  <span className="font-button font-semibold text-black text-xl">
                     ${pricing.totalPrice}
                   </span>
                 </div>
@@ -266,8 +312,8 @@ export default function DateStep({ formData, updateFormData, nextStep }: DateSte
         {/* Loading State */}
         {isCalculating && (
           <div className="text-center py-4">
-            <div className="inline-flex items-center text-purple-600">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-600 mr-2"></div>
+            <div className="inline-flex items-center text-cyan-600">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-cyan-600 mr-2"></div>
               <span className="font-body text-sm">Calculating pricing...</span>
             </div>
           </div>

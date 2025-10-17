@@ -12,7 +12,7 @@ export default function SignInPage() {
         <div className="text-center">
           <div className="mx-auto flex justify-center mb-4">
             <Image
-              src="/images/100%K9 on Transparent HORIZONTAL.png"
+              src="/images/100-K9-logo-horizontal.png"
               alt="100% K9 Dog Boarding"
               width={200}
               height={50}
@@ -36,7 +36,7 @@ export default function SignInPage() {
                 formButtonPrimary: 'btn-primary',
                 socialButtonsBlockButton: 'btn-secondary text-sm',
                 formFieldInput: 'input-field',
-                footerActionLink: 'text-purple-600 hover:text-purple-700',
+                footerActionLink: 'text-cyan-600 hover:text-cyan-700',
                 card: 'card shadow-lg',
                 headerTitle: 'font-heading text-black',
                 headerSubtitle: 'font-body text-gray-600',
@@ -44,12 +44,12 @@ export default function SignInPage() {
                 formFieldLabel: 'font-body text-gray-700 font-medium',
                 dividerLine: 'bg-gray-200',
                 dividerText: 'text-gray-500 font-body text-sm',
-                formResendCodeLink: 'text-purple-600 hover:text-purple-700 font-body',
+                formResendCodeLink: 'text-cyan-600 hover:text-cyan-700 font-body',
                 identityPreviewText: 'font-body',
-                identityPreviewEditButtonIcon: 'text-purple-600',
+                identityPreviewEditButtonIcon: 'text-cyan-600',
               },
               variables: {
-                colorPrimary: '#6B46C1',
+                colorPrimary: '#0891b2',
                 colorText: '#1a1a1a',
                 colorTextSecondary: '#666666',
                 colorBackground: '#ffffff',

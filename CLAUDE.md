@@ -26,6 +26,7 @@ A modern Next.js web application for managing dog boarding bookings with user au
 - ✅ **Service Showcase**: Comprehensive service discovery pages
 - ✅ **Brand Color Update**: Removed purple, implemented 100% K9 brand colors
 - ✅ **Document Management**: File categorization and deletion capabilities
+- ✅ **Dashboard Layout Optimization**: Fixed positioning and sizing for optimal UX
 
 ## Tech Stack
 - **Framework**: Next.js 14 with App Router
@@ -366,5 +367,23 @@ app/
 - 🏪 **Service Pages**: Professional showcase of all boarding and additional services
 - 💾 **File Storage**: Organized user-specific file storage with proper cleanup
 - 🔗 **Enhanced APIs**: New endpoints for rebooking, file management, and profiles
+- 📐 **Dashboard Layout**: Optimized positioning and responsive design
+
+## Dashboard Layout Configuration
+
+### Key Positioning Settings
+- **Main Container**: `-mt-[33rem] pb-[30rem]` - Critical negative margin to align content with sidebar logo level
+- **Logo Size**: `h-16 w-auto` (260px width, 60px height) - Prominent sidebar branding
+- **Header Padding**: `p-6` - Balanced spacing for welcome section
+- **Grid Spacing**: `gap-4` - Consistent spacing between stat cards and content sections
+- **Content Alignment**: Top of dashboard aligns with logo level in sidebar navigation
+
+### Layout Architecture
+- **Sidebar**: Fixed 256px width with logo at top (h-16 container)
+- **Main Content**: `lg:pl-64` offset with precise negative margin positioning
+- **Responsive**: Mobile-first design with collapsible sidebar
+- **Grid System**: 5-column stats grid on large screens, responsive breakpoints
+
+**IMPORTANT**: The `-mt-[33rem]` value is precisely calibrated to align the dashboard header with the sidebar logo. Any changes to sidebar height or logo size require recalibrating this value.
 - 🎯 **Horizontal Logo**: 100% K9 branding implemented across all pages
 - 🔧 **Build Fixes**: Resolved all Vercel deployment errors for production release

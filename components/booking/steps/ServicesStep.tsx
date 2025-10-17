@@ -14,7 +14,7 @@ const serviceCategories = [
     id: 'grooming',
     title: 'Grooming Services',
     icon: Scissors,
-    color: 'purple',
+    color: 'cyan',
     services: [
       {
         id: 'FULL_WASH',
@@ -138,12 +138,12 @@ export default function ServicesStep({ formData, updateFormData, nextStep }: Ser
 
   const getColorClasses = (color: string) => {
     const colors = {
-      purple: 'bg-purple-100 text-purple-600 border-purple-200',
+      cyan: 'bg-cyan-100 text-cyan-600 border-cyan-200',
       green: 'bg-green-100 text-green-600 border-green-200',
       blue: 'bg-blue-100 text-blue-600 border-blue-200',
       amber: 'bg-amber-100 text-amber-600 border-amber-200',
     };
-    return colors[color as keyof typeof colors] || colors.purple;
+    return colors[color as keyof typeof colors] || colors.cyan;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -154,8 +154,8 @@ export default function ServicesStep({ formData, updateFormData, nextStep }: Ser
   return (
     <div className="max-w-4xl mx-auto">
       <div className="text-center mb-8">
-        <div className="bg-purple-100 rounded-full p-3 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-          <Plus className="h-8 w-8 text-purple-600" />
+        <div className="bg-cyan-100 rounded-full p-3 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+          <Plus className="h-8 w-8 text-cyan-600" />
         </div>
         <h2 className="text-2xl font-heading text-black mb-2">Additional Services</h2>
         <p className="text-gray-600 font-body">
@@ -185,7 +185,7 @@ export default function ServicesStep({ formData, updateFormData, nextStep }: Ser
                     className={`
                       border-2 rounded-xl p-6 transition-all cursor-pointer
                       ${isSelected 
-                        ? 'border-purple-300 bg-purple-50' 
+                        ? 'border-cyan-300 bg-cyan-50' 
                         : 'border-gray-200 bg-white hover:border-gray-300'
                       }
                     `}
@@ -199,7 +199,7 @@ export default function ServicesStep({ formData, updateFormData, nextStep }: Ser
                           {service.description}
                         </p>
                         <div className="flex items-center space-x-4">
-                          <span className="text-lg font-button font-semibold text-purple-600">
+                          <span className="text-lg font-button font-semibold text-cyan-600">
                             ${service.price}
                           </span>
                           <span className="text-sm text-gray-500 font-body">
@@ -221,9 +221,18 @@ export default function ServicesStep({ formData, updateFormData, nextStep }: Ser
                           <Minus className="h-4 w-4" />
                         </button>
                         
-                        <span className="w-8 text-center font-button font-medium">
-                          {quantity}
-                        </span>
+                        <input
+                          type="number"
+                          min="0"
+                          max={service.maxQuantity}
+                          value={quantity}
+                          onChange={(e) => {
+                            const newValue = parseInt(e.target.value) || 0;
+                            const clampedValue = Math.min(Math.max(0, newValue), service.maxQuantity);
+                            handleServiceChange(service.id, clampedValue);
+                          }}
+                          className="w-16 text-center font-button font-medium border border-gray-300 rounded-md px-2 py-1 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+                        />
                         
                         <button
                           type="button"

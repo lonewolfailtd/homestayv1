@@ -212,7 +212,7 @@ export default function BookingsPage() {
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="card text-center">
-          <div className="text-2xl font-heading text-purple-600">{pagination.total}</div>
+          <div className="text-2xl font-heading text-cyan-600">{pagination.total}</div>
           <div className="text-sm text-gray-600 font-body">Total Bookings</div>
         </div>
         <div className="card text-center">
@@ -258,8 +258,8 @@ export default function BookingsPage() {
             <div key={booking.id} className="card hover:shadow-lg transition-shadow">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center space-x-3">
-                  <div className="bg-purple-100 p-2 rounded-lg">
-                    <Dog className="h-5 w-5 text-purple-600" />
+                  <div className="bg-cyan-100 p-2 rounded-lg">
+                    <Dog className="h-5 w-5 text-cyan-600" />
                   </div>
                   <div>
                     <h3 className="font-button font-semibold text-black">

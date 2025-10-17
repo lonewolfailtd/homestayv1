@@ -44,9 +44,14 @@
       "mcp__playwright__browser_network_requests",
       "WebFetch(domain:docs.anthropic.com)",
       "WebFetch(domain:docs.claude.com)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(ren:*)",
+      "Bash(dir)"
     ],
     "deny": [],
-    "ask": []
+    "ask": [],
+    "additionalDirectories": [
+      "C:\\c\\Users\\Hodgs"
+    ]
   }
 }

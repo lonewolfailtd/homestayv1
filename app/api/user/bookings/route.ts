@@ -33,7 +33,9 @@ export async function GET(request: NextRequest) {
     // Build filter conditions
     const now = new Date();
     let whereCondition: any = {
-      userId: user.id
+      customer: {
+        email: user.email // Use email to match bookings since bookings don't have userId directly
+      }
     };
 
     switch (filter) {

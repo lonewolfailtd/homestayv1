@@ -195,8 +195,8 @@ interface PricingResult {
 export async function calculateAdvancedPricing(params: PricingCalculationParams): Promise<PricingResult> {
   const { checkInDate, checkOutDate, isEntireDog = false, selectedServices = [], numberOfMeals = 0, numberOfWalks = 0 } = params;
   
-  // Calculate total days
-  const totalDays = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24));
+  // Calculate total days (inclusive of both check-in and check-out dates)
+  const totalDays = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
   
   // Determine base daily rate based on stay duration
   let baseDailyRate: number;
