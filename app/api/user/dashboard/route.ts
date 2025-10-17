@@ -15,13 +15,35 @@ export async function GET(_request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get customer from database
+    // Get user from database first
+    const user = await prisma.user.findUnique({
+      where: { clerkId: clerkUserId }
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    // Get customer record (might not exist if user hasn't made bookings yet)
     const customer = await prisma.customer.findFirst({
       where: { clerkUserId: clerkUserId }
     });
 
+    // If no customer exists, return empty dashboard data
     if (!customer) {
-      return NextResponse.json({ error: 'Customer not found' }, { status: 404 });
+      return NextResponse.json({
+        stats: {
+          totalBookings: 0,
+          thisYearBookings: 0,
+          totalSpent: 0,
+          savedDogs: 0,
+          avgStayDuration: 0
+        },
+        upcomingBookings: [],
+        activeBookings: [],
+        recentActivity: [],
+        nextPaymentDue: null
+      });
     }
 
     const now = new Date();

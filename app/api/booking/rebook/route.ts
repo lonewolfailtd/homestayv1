@@ -31,6 +31,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid date range' }, { status: 400 });
     }
 
+    // Check if user exists first
+    const user = await prisma.user.findUnique({
+      where: { clerkId: userId }
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
     // Get user's customer record
     const customer = await prisma.customer.findFirst({
       where: { clerkUserId: userId },
@@ -38,7 +47,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!customer) {
-      return NextResponse.json({ error: 'Customer not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Customer not found - please complete a booking first' }, { status: 404 });
     }
 
     // Verify the dog belongs to this customer

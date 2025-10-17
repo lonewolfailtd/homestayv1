@@ -38,7 +38,12 @@
       "WebFetch(domain:developer.xero.com)",
       "mcp__playwright__browser_tabs",
       "Bash(mkdir:*)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "mcp__playwright__browser_take_screenshot",
+      "mcp__playwright__browser_resize",
+      "mcp__playwright__browser_network_requests",
+      "WebFetch(domain:docs.anthropic.com)",
+      "WebFetch(domain:docs.claude.com)"
     ],
     "deny": [],
     "ask": []
