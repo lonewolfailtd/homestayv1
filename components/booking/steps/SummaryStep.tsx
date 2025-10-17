@@ -519,7 +519,7 @@ export default function SummaryStep({ formData, isSubmitting, setIsSubmitting, u
                 Processing Booking...
               </div>
             ) : (
-              'Confirm Booking'
+              'Complete Booking'
             )}
           </button>
           

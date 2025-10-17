@@ -44,7 +44,8 @@ export default function StepNavigation({
         Step {currentStep + 1} of {totalSteps}
       </div>
 
-{!isLastStep && (
+      {/* Only show Next button for steps 1-4 (skipping Welcome step 0 and Summary step 5) */}
+      {currentStep > 0 && !isLastStep && (
         <button
           type="button"
           onClick={onNext}

@@ -49,8 +49,8 @@ export default function WelcomeStep({ nextStep }: WelcomeStepProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         {highlights.map((highlight, index) => (
           <div key={index} className="bg-gray-50 rounded-xl p-6 text-left">
-            <div className="bg-purple-100 rounded-lg p-3 w-12 h-12 flex items-center justify-center mb-4">
-              <highlight.icon className="h-6 w-6 text-purple-600" />
+            <div className="bg-cyan-100 rounded-lg p-3 w-12 h-12 flex items-center justify-center mb-4">
+              <highlight.icon className="h-6 w-6 text-cyan-600" />
             </div>
             <h3 className="font-button font-semibold text-black mb-2">
               {highlight.title}
@@ -63,18 +63,18 @@ export default function WelcomeStep({ nextStep }: WelcomeStepProps) {
       </div>
 
       {/* Quick Info */}
-      <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl p-6 mb-8">
+      <div className="bg-gradient-to-r from-cyan-50 to-cyan-100 rounded-xl p-6 mb-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
           <div>
-            <div className="text-2xl font-heading text-purple-600 mb-1">$75-85</div>
+            <div className="text-2xl font-heading text-cyan-600 mb-1">$75-85</div>
             <div className="text-sm text-gray-600 font-body">Per day</div>
           </div>
           <div>
-            <div className="text-2xl font-heading text-purple-600 mb-1">FREE</div>
+            <div className="text-2xl font-heading text-cyan-600 mb-1">FREE</div>
             <div className="text-sm text-gray-600 font-body">Pick-up & drop-off</div>
           </div>
           <div>
-            <div className="text-2xl font-heading text-purple-600 mb-1">24/7</div>
+            <div className="text-2xl font-heading text-cyan-600 mb-1">24/7</div>
             <div className="text-sm text-gray-600 font-body">Care & monitoring</div>
           </div>
         </div>
@@ -85,27 +85,27 @@ export default function WelcomeStep({ nextStep }: WelcomeStepProps) {
         <h3 className="font-button font-semibold text-black mb-4">What's Included in Every Stay:</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm font-body text-gray-600">
           <div className="flex items-center">
-            <div className="w-2 h-2 bg-purple-600 rounded-full mr-3"></div>
+            <div className="w-2 h-2 bg-cyan-600 rounded-full mr-3"></div>
             Premium overnight care with structure
           </div>
           <div className="flex items-center">
-            <div className="w-2 h-2 bg-purple-600 rounded-full mr-3"></div>
+            <div className="w-2 h-2 bg-cyan-600 rounded-full mr-3"></div>
             Daily exercise with our farm dogs
           </div>
           <div className="flex items-center">
-            <div className="w-2 h-2 bg-purple-600 rounded-full mr-3"></div>
+            <div className="w-2 h-2 bg-cyan-600 rounded-full mr-3"></div>
             Professional daily routines
           </div>
           <div className="flex items-center">
-            <div className="w-2 h-2 bg-purple-600 rounded-full mr-3"></div>
+            <div className="w-2 h-2 bg-cyan-600 rounded-full mr-3"></div>
             Training support & enrichment
           </div>
           <div className="flex items-center">
-            <div className="w-2 h-2 bg-purple-600 rounded-full mr-3"></div>
+            <div className="w-2 h-2 bg-cyan-600 rounded-full mr-3"></div>
             Home-based environment
           </div>
           <div className="flex items-center">
-            <div className="w-2 h-2 bg-purple-600 rounded-full mr-3"></div>
+            <div className="w-2 h-2 bg-cyan-600 rounded-full mr-3"></div>
             Behavioral & emotional care
           </div>
         </div>
@@ -117,7 +117,7 @@ export default function WelcomeStep({ nextStep }: WelcomeStepProps) {
           onClick={nextStep}
           className="btn-primary px-8 py-4 text-lg"
         >
-          Let's Get Started
+          Let's Start
         </button>
       </div>
     </div>

@@ -39,6 +39,20 @@ A modern Next.js web application for managing dog boarding bookings with user au
 - **Notifications**: Sonner toasts
 - **Integrations**: Xero Node SDK, GoHighLevel REST API
 
+## Development Best Practices
+
+### Task Management & Commits
+- **Complete Related Work Before Committing**: Always finish all related tasks in your todo list before committing, unless you have a very large todo list (5+ items), then commit after completing logical groups
+- **Use TodoWrite Tool**: Track all tasks and mark them completed as you finish them
+- **Batch Related Changes**: Group related fixes (UI updates, bug fixes, new features) into single commits
+- **Clear Commit Messages**: Use descriptive commit messages that explain both what changed and why
+
+### Code Quality Standards
+- **Test Changes**: Always test functionality after making changes
+- **Follow Existing Patterns**: Match existing code style and architectural patterns
+- **Brand Consistency**: Ensure all UI changes align with 100% K9 brand colors (cyan, black, gray)
+- **Mobile Responsive**: Test all changes on mobile devices
+
 ## Development Commands
 
 ### Setup

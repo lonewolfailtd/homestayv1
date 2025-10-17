@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Dog, Plus, Edit2, Trash2, Heart, Star, Calendar, Users } from 'lucide-react';
+import { Dog, Plus, Edit2, Trash2, Heart, Star, Calendar, Users, CheckSquare, Square, BookOpen } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface SavedDog {
@@ -32,6 +32,8 @@ export default function DogsPage() {
   const [loading, setLoading] = useState(true);
   const [editingDog, setEditingDog] = useState<SavedDog | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedDogs, setSelectedDogs] = useState<string[]>([]);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   const fetchSavedDogs = async () => {
     try {
@@ -108,6 +110,63 @@ export default function DogsPage() {
     }
   };
 
+  const handleSelectDog = (dogId: string) => {
+    setSelectedDogs(prev => 
+      prev.includes(dogId) 
+        ? prev.filter(id => id !== dogId)
+        : [...prev, dogId]
+    );
+  };
+
+  const handleSelectAll = () => {
+    if (selectedDogs.length === savedDogs.length) {
+      setSelectedDogs([]);
+    } else {
+      setSelectedDogs(savedDogs.map(dog => dog.id));
+    }
+  };
+
+  const handleBulkBooking = () => {
+    if (selectedDogs.length === 0) {
+      toast.error('Please select at least one dog to book');
+      return;
+    }
+    
+    const selectedDogIds = selectedDogs.map(selectedId => {
+      const savedDog = savedDogs.find(dog => dog.id === selectedId);
+      return savedDog?.dog.id;
+    }).filter(Boolean);
+    
+    // Redirect to multi-dog booking page
+    const dogParams = selectedDogIds.map(id => `dogId=${id}`).join('&');
+    window.location.href = `/book/multi?${dogParams}`;
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedDogs.length === 0) {
+      toast.error('Please select at least one dog to delete');
+      return;
+    }
+
+    if (!confirm(`Are you sure you want to remove ${selectedDogs.length} dog profiles?`)) {
+      return;
+    }
+
+    try {
+      const promises = selectedDogs.map(dogId => 
+        fetch(`/api/user/dogs?id=${dogId}`, { method: 'DELETE' })
+      );
+      
+      await Promise.all(promises);
+      toast.success(`${selectedDogs.length} dog profiles removed successfully`);
+      setSelectedDogs([]);
+      fetchSavedDogs();
+    } catch (error) {
+      console.error('Error deleting dogs:', error);
+      toast.error('Failed to remove dog profiles');
+    }
+  };
+
   const getSocialLevelColor = (level: string) => {
     switch (level.toLowerCase()) {
       case 'very social':
@@ -156,7 +215,7 @@ export default function DogsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mb-4">
         <div>
           <h1 className="text-2xl font-heading text-black">My Dogs</h1>
           <p className="text-gray-600 font-body">
@@ -164,14 +223,67 @@ export default function DogsPage() {
           </p>
         </div>
         
-        <a
-          href="/dashboard/dogs/new"
-          className="btn-primary flex items-center"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Add New Dog
-        </a>
+        <div className="flex items-center space-x-3">
+          <a
+            href="/dashboard/dogs/new"
+            className="btn-primary flex items-center"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add New Dog
+          </a>
+        </div>
       </div>
+
+      {/* Multi-Pet Actions */}
+      {savedDogs.length > 1 && (
+        <div className="card p-4 mb-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={handleSelectAll}
+                className="flex items-center space-x-2 text-sm font-body text-gray-600 hover:text-cyan-600"
+              >
+                {selectedDogs.length === savedDogs.length ? (
+                  <CheckSquare className="h-4 w-4" />
+                ) : (
+                  <Square className="h-4 w-4" />
+                )}
+                <span>
+                  {selectedDogs.length === savedDogs.length 
+                    ? 'Deselect All' 
+                    : `Select All (${savedDogs.length})`
+                  }
+                </span>
+              </button>
+              
+              {selectedDogs.length > 0 && (
+                <span className="text-sm font-body text-gray-500">
+                  {selectedDogs.length} dog{selectedDogs.length !== 1 ? 's' : ''} selected
+                </span>
+              )}
+            </div>
+            
+            {selectedDogs.length > 0 && (
+              <div className="flex items-center space-x-3">
+                <button
+                  onClick={handleBulkBooking}
+                  className="btn-primary flex items-center text-sm"
+                >
+                  <BookOpen className="h-4 w-4 mr-2" />
+                  Book Selected ({selectedDogs.length})
+                </button>
+                <button
+                  onClick={handleBulkDelete}
+                  className="btn-secondary text-red-600 hover:bg-red-50 flex items-center text-sm"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete Selected
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -218,27 +330,42 @@ export default function DogsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {savedDogs.map((savedDog) => (
-            <div key={savedDog.id} className="card hover:shadow-lg transition-shadow">
-              {/* Header */}
+            <div key={savedDog.id} className={`card hover:shadow-lg transition-all ${selectedDogs.includes(savedDog.id) ? 'ring-2 ring-cyan-500 bg-cyan-50' : ''}`}>
+              {/* Selection & Header */}
               <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center space-x-3">
-                  <div className="bg-cyan-100 p-2 rounded-lg">
-                    <Dog className="h-5 w-5 text-cyan-600" />
-                  </div>
-                  <div>
-                    <div className="flex items-center space-x-2">
-                      <h3 className="font-button font-semibold text-black">
-                        {savedDog.nickname || savedDog.dog.name}
-                      </h3>
-                      {savedDog.isDefault && (
-                        <Star className="h-4 w-4 text-yellow-500 fill-current" />
+                {/* Selection checkbox - only show when multiple dogs */}
+                {savedDogs.length > 1 && (
+                  <button
+                    onClick={() => handleSelectDog(savedDog.id)}
+                    className="p-1 mr-3 mt-1 text-gray-400 hover:text-cyan-600"
+                  >
+                    {selectedDogs.includes(savedDog.id) ? (
+                      <CheckSquare className="h-5 w-5 text-cyan-600" />
+                    ) : (
+                      <Square className="h-5 w-5" />
+                    )}
+                  </button>
+                )}
+                
+                  <div className="flex items-center space-x-3">
+                    <div className="bg-cyan-100 p-2 rounded-lg">
+                      <Dog className="h-5 w-5 text-cyan-600" />
+                    </div>
+                    <div>
+                      <div className="flex items-center space-x-2">
+                        <h3 className="font-button font-semibold text-black">
+                          {savedDog.nickname || savedDog.dog.name}
+                        </h3>
+                        {savedDog.isDefault && (
+                          <Star className="h-4 w-4 text-yellow-500 fill-current" />
+                        )}
+                      </div>
+                      {savedDog.nickname && savedDog.nickname !== savedDog.dog.name && (
+                        <p className="text-sm text-gray-500 font-body">
+                          Real name: {savedDog.dog.name}
+                        </p>
                       )}
                     </div>
-                    {savedDog.nickname && savedDog.nickname !== savedDog.dog.name && (
-                      <p className="text-sm text-gray-500 font-body">
-                        Real name: {savedDog.dog.name}
-                      </p>
-                    )}
                   </div>
                 </div>
                 
@@ -329,12 +456,26 @@ export default function DogsPage() {
 
               {/* Actions */}
               <div className="mt-4 pt-4 border-t border-gray-200">
-                <a
-                  href={`/book?dogId=${savedDog.dog.id}`}
-                  className="btn-primary w-full text-center"
-                >
-                  Book Again
-                </a>
+                <div className="grid grid-cols-1 gap-2">
+                  <a
+                    href={`/book?dogId=${savedDog.dog.id}`}
+                    className="btn-primary w-full text-center text-sm"
+                  >
+                    Book This Dog
+                  </a>
+                  {savedDogs.length > 1 && (
+                    <button
+                      onClick={() => handleSelectDog(savedDog.id)}
+                      className={`w-full text-center text-sm py-2 px-3 rounded-lg border transition-colors ${
+                        selectedDogs.includes(savedDog.id)
+                          ? 'bg-cyan-100 text-cyan-700 border-cyan-300'
+                          : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'
+                      }`}
+                    >
+                      {selectedDogs.includes(savedDog.id) ? '✓ Selected for Multi-Book' : 'Select for Multi-Book'}
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           ))}
