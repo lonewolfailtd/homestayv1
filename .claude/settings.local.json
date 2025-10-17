@@ -46,7 +46,9 @@
       "WebFetch(domain:docs.claude.com)",
       "Bash(grep:*)",
       "Bash(ren:*)",
-      "Bash(dir)"
+      "Bash(dir)",
+      "Bash(npm run build:*)",
+      "Bash(npx tsc:*)"
     ],
     "deny": [],
     "ask": [],

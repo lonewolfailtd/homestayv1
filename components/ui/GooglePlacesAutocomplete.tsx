@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { setOptions, importLibrary } from '@googlemaps/js-api-loader';
 
 interface GooglePlacesAutocompleteProps {
   value: string;
@@ -39,18 +38,26 @@ export default function GooglePlacesAutocomplete({
       return;
     }
 
-    // Set the global options
-    setOptions({
-      apiKey: API_KEY,
-      version: 'weekly',
-      region: 'NZ',
-    });
+    // Load Google Maps API
+    const loadGoogleMaps = async () => {
+      if (!(window as any).google?.maps) {
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&libraries=places&region=NZ&version=weekly`;
+        script.async = true;
+        script.defer = true;
+        
+        return new Promise((resolve, reject) => {
+          script.onload = resolve;
+          script.onerror = reject;
+          document.head.appendChild(script);
+        });
+      }
+    };
 
-    // Try to use the new PlaceAutocompleteElement first
-    importLibrary('places')
+    loadGoogleMaps()
       .then(() => {
-        if (containerRef.current && !autocompleteRef.current) {
-          try {
+          if (containerRef.current && !autocompleteRef.current) {
+            try {
             // Try new PlaceAutocompleteElement for new customers
             if (useNewElement && (window as any).google?.maps?.places?.PlaceAutocompleteElement) {
               const autocompleteElement = new (window as any).google.maps.places.PlaceAutocompleteElement();
@@ -106,12 +113,9 @@ export default function GooglePlacesAutocomplete({
                         types: comp.types
                       })),
                       geometry: place.location ? {
-                        location: {
-                          lat: () => place.location.lat,
-                          lng: () => place.location.lng
-                        }
+                        location: place.location
                       } : undefined
-                    };
+                    } as any;
                     onPlaceSelect(legacyPlace);
                   }
                 }
