@@ -165,7 +165,7 @@ export default function DogsPage() {
         </div>
         
         <a
-          href="/book"
+          href="/dashboard/dogs/new"
           className="btn-primary flex items-center"
         >
           <Plus className="h-4 w-4 mr-2" />
@@ -176,7 +176,7 @@ export default function DogsPage() {
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="card text-center">
-          <div className="text-2xl font-heading text-purple-600">{savedDogs.length}</div>
+          <div className="text-2xl font-heading text-cyan-600">{savedDogs.length}</div>
           <div className="text-sm text-gray-600 font-body">Saved Dogs</div>
         </div>
         <div className="card text-center">
@@ -203,12 +203,17 @@ export default function DogsPage() {
           <p className="text-gray-500 font-body mb-4">
             Dogs will be automatically saved when you make bookings. You can then manage their profiles here.
           </p>
-          <a
-            href="/book"
-            className="btn-primary inline-block"
-          >
-            Make Your First Booking
-          </a>
+          <div className="space-y-2">
+            <a
+              href="/dashboard/dogs/new"
+              className="btn-primary inline-block"
+            >
+              Add Your First Dog
+            </a>
+            <p className="text-xs text-gray-500 font-body">
+              Or <a href="/book" className="text-cyan-600 hover:text-cyan-700">make a booking</a> to automatically create a dog profile
+            </p>
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -217,8 +222,8 @@ export default function DogsPage() {
               {/* Header */}
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center space-x-3">
-                  <div className="bg-purple-100 p-2 rounded-lg">
-                    <Dog className="h-5 w-5 text-purple-600" />
+                  <div className="bg-cyan-100 p-2 rounded-lg">
+                    <Dog className="h-5 w-5 text-cyan-600" />
                   </div>
                   <div>
                     <div className="flex items-center space-x-2">
@@ -243,7 +248,7 @@ export default function DogsPage() {
                       setEditingDog(savedDog);
                       setShowEditModal(true);
                     }}
-                    className="p-1 text-gray-400 hover:text-purple-600 transition-colors"
+                    className="p-1 text-gray-400 hover:text-cyan-600 transition-colors"
                   >
                     <Edit2 className="h-4 w-4" />
                   </button>
@@ -417,7 +422,7 @@ function EditDogModal({ savedDog, onSave, onClose }: EditDogModalProps) {
               id="isDefault"
               checked={isDefault}
               onChange={(e) => setIsDefault(e.target.checked)}
-              className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+              className="rounded border-gray-300 text-cyan-600 focus:ring-cyan-500"
             />
             <label htmlFor="isDefault" className="text-sm font-body text-gray-700">
               Set as default dog for quick booking

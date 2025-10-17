@@ -22,13 +22,17 @@ const quickFilters = [
   { label: 'Next Month', days: 30 },
 ];
 
-// Mock peak periods - in production, these would come from your pricing engine
+// Peak periods with 20% surcharge - exact dates from business requirements
 const peakPeriods = [
-  { start: new Date('2025-01-25'), end: new Date('2025-01-27'), name: 'Auckland Anniversary' },
-  { start: new Date('2025-02-07'), end: new Date('2025-02-09'), name: 'Waitangi Day' },
-  { start: new Date('2025-04-18'), end: new Date('2025-04-21'), name: 'Easter Weekend' },
-  { start: new Date('2025-04-25'), end: new Date('2025-04-27'), name: 'ANZAC Day' },
-  { start: new Date('2025-12-20'), end: new Date('2025-12-28'), name: 'Christmas Period' },
+  { start: new Date('2024-12-28'), end: new Date('2025-01-05'), name: 'New Year Period', days: 9 },
+  { start: new Date('2025-01-25'), end: new Date('2025-01-27'), name: 'Auckland Anniversary', days: 3 },
+  { start: new Date('2025-02-07'), end: new Date('2025-02-09'), name: 'Waitangi Day', days: 3 },
+  { start: new Date('2025-04-18'), end: new Date('2025-04-21'), name: 'Easter Weekend', days: 4 },
+  { start: new Date('2025-04-25'), end: new Date('2025-04-27'), name: 'ANZAC Day', days: 3 },
+  { start: new Date('2025-05-31'), end: new Date('2025-06-02'), name: "King's Birthday", days: 3 },
+  { start: new Date('2025-06-20'), end: new Date('2025-06-22'), name: 'Matariki', days: 3 },
+  { start: new Date('2025-10-25'), end: new Date('2025-10-27'), name: 'Labour Day', days: 3 },
+  { start: new Date('2025-12-20'), end: new Date('2025-12-28'), name: 'Christmas/Boxing Day', days: 9 },
 ];
 
 export default function InteractiveCalendar({ selectedDates, onDateChange }: InteractiveCalendarProps) {
@@ -125,28 +129,34 @@ export default function InteractiveCalendar({ selectedDates, onDateChange }: Int
 
   const modifiersStyles = {
     selected: {
-      backgroundColor: '#6B46C1',
+      backgroundColor: '#0891b2', // Using cyan for 100% K9 brand
       color: 'white',
       borderRadius: '8px',
+      fontWeight: 'bold',
     },
     range_start: {
-      backgroundColor: '#6B46C1',
+      backgroundColor: '#0891b2',
       color: 'white',
       borderRadius: '8px 0 0 8px',
+      fontWeight: 'bold',
     },
     range_end: {
-      backgroundColor: '#6B46C1',
+      backgroundColor: '#0891b2',
       color: 'white',
       borderRadius: '0 8px 8px 0',
+      fontWeight: 'bold',
     },
     range_middle: {
-      backgroundColor: '#E0E7FF',
-      color: '#6B46C1',
+      backgroundColor: '#cffafe', // Light cyan for range
+      color: '#0891b2',
+      fontWeight: 'normal',
     },
     peak: {
-      backgroundColor: '#FEF3C7',
-      color: '#D97706',
+      backgroundColor: '#fbbf24', // More prominent orange for peak periods
+      color: '#ffffff',
       fontWeight: 'bold',
+      border: '2px solid #f59e0b',
+      borderRadius: '6px',
     },
     unavailable: {
       backgroundColor: '#FEE2E2',
@@ -185,7 +195,7 @@ export default function InteractiveCalendar({ selectedDates, onDateChange }: Int
               onClick={() => setMode('single')}
               className={`px-3 py-1 rounded-lg text-sm font-button transition-colors ${
                 mode === 'single' 
-                  ? 'bg-purple-600 text-white' 
+                  ? 'bg-cyan-600 text-white' 
                   : 'bg-white text-gray-600 border border-gray-200'
               }`}
             >
@@ -195,7 +205,7 @@ export default function InteractiveCalendar({ selectedDates, onDateChange }: Int
               onClick={() => setMode('range')}
               className={`px-3 py-1 rounded-lg text-sm font-button transition-colors ${
                 mode === 'range' 
-                  ? 'bg-purple-600 text-white' 
+                  ? 'bg-cyan-600 text-white' 
                   : 'bg-white text-gray-600 border border-gray-200'
               }`}
             >
@@ -214,7 +224,7 @@ export default function InteractiveCalendar({ selectedDates, onDateChange }: Int
               <button
                 key={index}
                 onClick={() => handleQuickFilter(filter.days)}
-                className="w-full text-left px-3 py-2 text-sm font-body text-gray-600 hover:bg-purple-50 hover:text-purple-600 rounded-lg transition-colors"
+                className="w-full text-left px-3 py-2 text-sm font-body text-gray-600 hover:bg-cyan-50 hover:text-cyan-600 rounded-lg transition-colors"
               >
                 {filter.label}
               </button>
@@ -235,22 +245,48 @@ export default function InteractiveCalendar({ selectedDates, onDateChange }: Int
             <div className="text-sm font-button font-medium text-gray-700 mb-3">Legend</div>
             <div className="space-y-2 text-xs font-body">
               <div className="flex items-center">
-                <div className="w-3 h-3 bg-purple-600 rounded mr-2"></div>
-                <span>Selected</span>
+                <div className="w-4 h-4 bg-cyan-600 rounded mr-2"></div>
+                <span>Selected Dates</span>
               </div>
               <div className="flex items-center">
-                <div className="w-3 h-3 bg-amber-200 rounded mr-2"></div>
-                <span>Peak Period (+20%)</span>
+                <div className="w-4 h-4 bg-amber-400 border-2 border-amber-600 rounded mr-2"></div>
+                <span className="font-medium">Peak Period (+20%)</span>
               </div>
               <div className="flex items-center">
-                <div className="w-3 h-3 bg-red-200 rounded mr-2"></div>
+                <div className="w-4 h-4 bg-red-200 rounded mr-2"></div>
                 <span>Unavailable</span>
               </div>
               <div className="flex items-center">
-                <div className="w-3 h-3 bg-gray-200 rounded mr-2"></div>
+                <div className="w-4 h-4 bg-gray-200 rounded mr-2"></div>
                 <span>Past Dates</span>
               </div>
             </div>
+            
+            {/* Current peak periods */}
+            {peakPeriods.some(period => {
+              const today = new Date();
+              const nextMonth = addMonths(today, 2);
+              return period.start <= nextMonth && period.end >= today;
+            }) && (
+              <div className="mt-4 pt-3 border-t border-gray-200">
+                <div className="text-sm font-button font-medium text-gray-700 mb-2">Upcoming Peak Periods</div>
+                <div className="space-y-1 text-xs font-body text-gray-600">
+                  {peakPeriods
+                    .filter(period => {
+                      const today = new Date();
+                      const nextMonth = addMonths(today, 2);
+                      return period.start <= nextMonth && period.end >= today;
+                    })
+                    .slice(0, 3)
+                    .map((period, index) => (
+                      <div key={index} className="flex items-center">
+                        <div className="w-2 h-2 bg-amber-400 rounded-full mr-2"></div>
+                        <span>{period.name}</span>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -259,8 +295,8 @@ export default function InteractiveCalendar({ selectedDates, onDateChange }: Int
           <style jsx global>{`
             .rdp {
               --rdp-cell-size: 44px;
-              --rdp-accent-color: #6B46C1;
-              --rdp-background-color: #6B46C1;
+              --rdp-accent-color: #0891b2;
+              --rdp-background-color: #0891b2;
               margin: 0;
             }
             .rdp-months {
@@ -303,7 +339,7 @@ export default function InteractiveCalendar({ selectedDates, onDateChange }: Int
             }
             .rdp-day_today {
               font-weight: 600;
-              color: #6B46C1;
+              color: #0891b2;
             }
             .rdp-caption {
               display: flex;
@@ -410,7 +446,7 @@ export default function InteractiveCalendar({ selectedDates, onDateChange }: Int
             <div className={`${isMobile ? 'grid grid-cols-2 gap-3' : 'flex items-center space-x-6'}`}>
               {checkInDate && (
                 <div className="flex items-center">
-                  <Calendar className="h-4 w-4 text-purple-600 mr-2" />
+                  <Calendar className="h-4 w-4 text-cyan-600 mr-2" />
                   <div>
                     <div className="text-xs font-body text-gray-600">Check-in</div>
                     <div className="font-button font-medium text-black">
@@ -422,7 +458,7 @@ export default function InteractiveCalendar({ selectedDates, onDateChange }: Int
               
               {checkOutDate && (
                 <div className="flex items-center">
-                  <Clock className="h-4 w-4 text-purple-600 mr-2" />
+                  <Clock className="h-4 w-4 text-cyan-600 mr-2" />
                   <div>
                     <div className="text-xs font-body text-gray-600">Check-out</div>
                     <div className="font-button font-medium text-black">
@@ -440,7 +476,7 @@ export default function InteractiveCalendar({ selectedDates, onDateChange }: Int
             </div>
             
             {isSelectingCheckOut && (
-              <div className="text-sm font-body text-purple-600">
+              <div className="text-sm font-body text-cyan-600">
                 Select your check-out date
               </div>
             )}
