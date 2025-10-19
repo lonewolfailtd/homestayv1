@@ -17,6 +17,7 @@ interface Invoice {
   checkInDate: string;
   checkOutDate: string;
   xeroInvoiceId?: string;
+  paymentMethod?: string;
   downloadUrl?: string;
 }
 
@@ -202,7 +203,7 @@ export default function InvoicesPage() {
                       </div>
                       
                       <div>
-                        <div className="flex items-center space-x-2 mb-1">
+                        <div className="flex items-center space-x-2 mb-1 flex-wrap gap-1">
                           <h3 className="font-button font-medium text-black">
                             {invoice.invoiceNumber || `Invoice #${invoice.id.slice(0, 8)}`}
                           </h3>
@@ -214,6 +215,13 @@ export default function InvoicesPage() {
                           }`}>
                             {invoice.type === 'deposit' ? 'Deposit' : 'Balance'}
                           </span>
+                          {invoice.paymentMethod && (
+                            <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full font-body">
+                              {invoice.paymentMethod === 'cash' ? '💵 Cash' :
+                               invoice.paymentMethod === 'bank_transfer' ? '🏦 Bank Transfer' :
+                               '💳 Card'}
+                            </span>
+                          )}
                         </div>
                         
                         <div className="text-sm text-gray-600 font-body">

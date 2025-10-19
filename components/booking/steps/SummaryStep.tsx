@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { CheckCircle, User, Dog, Calendar, CreditCard, AlertTriangle, Loader2 } from 'lucide-react';
+import { CheckCircle, User, Dog, Calendar, CreditCard, AlertTriangle, Loader2, Wallet, Banknote, Building2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface SummaryStepProps {
@@ -15,6 +15,16 @@ export default function SummaryStep({ formData, isSubmitting, setIsSubmitting, u
   const [agreed, setAgreed] = useState(false);
   const [submitResult, setSubmitResult] = useState<any>(null);
   const [pricingLoading, setPricingLoading] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'bank_transfer'>(
+    formData.paymentMethod || 'card'
+  );
+
+  // Update form data when payment method changes
+  useEffect(() => {
+    if (updateFormData) {
+      updateFormData({ paymentMethod });
+    }
+  }, [paymentMethod]);
 
   // Calculate pricing when component mounts or service selections change
   useEffect(() => {
@@ -162,11 +172,12 @@ export default function SummaryStep({ formData, isSubmitting, setIsSubmitting, u
         boardingType: 'standard',
         isEntireDog: formData.isEntireDog || false,
         selectedServices: Object.keys(formData.selectedServices || {}),
-        
+        paymentMethod: paymentMethod, // Include payment method selection
+
         // Enhanced pricing data
         numberOfMeals: formData.selectedServices?.RAW_MEAL || 0,
         numberOfWalks: formData.selectedServices?.PACK_WALK || 0,
-        
+
         // Special instructions
         specialInstructions: formData.additionalNotes || '',
       };
@@ -208,9 +219,33 @@ export default function SummaryStep({ formData, isSubmitting, setIsSubmitting, u
           Booking Confirmed! 🎉
         </h2>
         
-        <p className="text-lg text-gray-600 font-body mb-8">
+        <p className="text-lg text-gray-600 font-body mb-4">
           Thank you for choosing 100% K9! We've sent confirmation details to your email.
         </p>
+
+        {/* Payment Method Specific Message */}
+        <div className={`border-2 rounded-xl p-4 mb-8 ${
+          paymentMethod === 'cash' ? 'bg-green-50 border-green-300' :
+          paymentMethod === 'bank_transfer' ? 'bg-blue-50 border-blue-300' :
+          'bg-cyan-50 border-cyan-300'
+        }`}>
+          {paymentMethod === 'cash' ? (
+            <div className="text-sm font-body text-green-800">
+              <p className="font-semibold mb-2">💵 Cash Payment Instructions</p>
+              <p>An invoice has been sent to your email for your records. Payment must be completed before the 3-week deadline (21 days before check-in).</p>
+            </div>
+          ) : paymentMethod === 'bank_transfer' ? (
+            <div className="text-sm font-body text-blue-800">
+              <p className="font-semibold mb-2">🏦 Bank Transfer Instructions</p>
+              <p>An invoice with our bank account details has been sent to your email. Payment must be completed before the 3-week deadline (21 days before check-in).</p>
+            </div>
+          ) : (
+            <div className="text-sm font-body text-cyan-800">
+              <p className="font-semibold mb-2">💳 Card Payment Instructions</p>
+              <p>An invoice with a secure payment link has been sent to your email. Click the "Pay online" link to complete your payment before the 3-week deadline.</p>
+            </div>
+          )}
+        </div>
 
         <div className="bg-white border border-gray-200 rounded-xl p-6 text-left mb-8">
           <h3 className="font-button font-semibold text-black mb-4">Booking Details</h3>
@@ -420,7 +455,7 @@ export default function SummaryStep({ formData, isSubmitting, setIsSubmitting, u
               {formData.pricing.isPeakPeriod && (
                 <div className="flex justify-between">
                   <span className="font-body text-amber-700">
-                    Peak Period Surcharge ({formData.pricing.peakPeriodName})
+                    Peak Period Surcharge (20% - {formData.pricing.peakPeriodName})
                   </span>
                   <span className="font-button font-medium text-amber-700">
                     +${formData.pricing.peakSurcharge}
@@ -488,6 +523,123 @@ export default function SummaryStep({ formData, isSubmitting, setIsSubmitting, u
             </div>
           </div>
         )}
+
+        {/* Payment Method Selection */}
+        <div className="form-section">
+          <h3 className="text-lg font-button font-semibold text-black mb-4 flex items-center">
+            <Wallet className="h-5 w-5 mr-2 text-cyan-600" />
+            Payment Method
+          </h3>
+
+          <p className="text-sm text-gray-600 font-body mb-4">
+            Choose how you'd like to pay for your booking
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Cash Payment */}
+            <button
+              type="button"
+              onClick={() => setPaymentMethod('cash')}
+              className={`
+                border-2 rounded-xl p-6 transition-all text-left touch-manipulation
+                ${paymentMethod === 'cash'
+                  ? 'border-green-500 bg-green-50'
+                  : 'border-gray-200 bg-white hover:border-gray-300'
+                }
+              `}
+            >
+              <div className="flex items-start justify-between mb-3">
+                <div className={`p-3 rounded-lg ${paymentMethod === 'cash' ? 'bg-green-100' : 'bg-gray-100'}`}>
+                  <Wallet className={`h-6 w-6 ${paymentMethod === 'cash' ? 'text-green-600' : 'text-gray-600'}`} />
+                </div>
+                {paymentMethod === 'cash' && (
+                  <CheckCircle className="h-5 w-5 text-green-600" />
+                )}
+              </div>
+              <h4 className="font-button font-semibold text-black mb-2">Cash</h4>
+              <p className="text-sm text-gray-600 font-body">
+                Pay in person before the 3-week deadline
+              </p>
+            </button>
+
+            {/* Card Payment */}
+            <button
+              type="button"
+              onClick={() => setPaymentMethod('card')}
+              className={`
+                border-2 rounded-xl p-6 transition-all text-left touch-manipulation
+                ${paymentMethod === 'card'
+                  ? 'border-cyan-500 bg-cyan-50'
+                  : 'border-gray-200 bg-white hover:border-gray-300'
+                }
+              `}
+            >
+              <div className="flex items-start justify-between mb-3">
+                <div className={`p-3 rounded-lg ${paymentMethod === 'card' ? 'bg-cyan-100' : 'bg-gray-100'}`}>
+                  <CreditCard className={`h-6 w-6 ${paymentMethod === 'card' ? 'text-cyan-600' : 'text-gray-600'}`} />
+                </div>
+                {paymentMethod === 'card' && (
+                  <CheckCircle className="h-5 w-5 text-cyan-600" />
+                )}
+              </div>
+              <h4 className="font-button font-semibold text-black mb-2">Card</h4>
+              <p className="text-sm text-gray-600 font-body">
+                Invoice and payment link sent via email
+              </p>
+            </button>
+
+            {/* Bank Transfer */}
+            <button
+              type="button"
+              onClick={() => setPaymentMethod('bank_transfer')}
+              className={`
+                border-2 rounded-xl p-6 transition-all text-left touch-manipulation
+                ${paymentMethod === 'bank_transfer'
+                  ? 'border-blue-500 bg-blue-50'
+                  : 'border-gray-200 bg-white hover:border-gray-300'
+                }
+              `}
+            >
+              <div className="flex items-start justify-between mb-3">
+                <div className={`p-3 rounded-lg ${paymentMethod === 'bank_transfer' ? 'bg-blue-100' : 'bg-gray-100'}`}>
+                  <Building2 className={`h-6 w-6 ${paymentMethod === 'bank_transfer' ? 'text-blue-600' : 'text-gray-600'}`} />
+                </div>
+                {paymentMethod === 'bank_transfer' && (
+                  <CheckCircle className="h-5 w-5 text-blue-600" />
+                )}
+              </div>
+              <h4 className="font-button font-semibold text-black mb-2">Bank Transfer</h4>
+              <p className="text-sm text-gray-600 font-body">
+                Invoice with bank details sent via email
+              </p>
+            </button>
+          </div>
+
+          {/* Payment Method Info */}
+          {paymentMethod === 'card' && (
+            <div className="mt-4 bg-cyan-50 border border-cyan-200 rounded-lg p-4">
+              <p className="text-sm text-cyan-800 font-body">
+                💳 An invoice with a secure payment link will be sent to your email. Payment must be completed before the 3-week deadline.
+              </p>
+            </div>
+          )}
+
+          {paymentMethod === 'bank_transfer' && (
+            <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <p className="text-sm text-blue-800 font-body">
+                🏦 An invoice with our bank account details will be sent to your email. Payment must be completed before the 3-week deadline.
+              </p>
+            </div>
+          )}
+
+          {paymentMethod === 'cash' && (
+            <div className="mt-4 bg-green-50 border border-green-200 rounded-lg p-4">
+              <p className="text-sm text-green-800 font-body">
+                💵 Cash payment must be completed before the 3-week deadline. Payment must be received before your dog's check-in date.
+              </p>
+            </div>
+          )}
+        </div>
 
         {/* Terms and Conditions */}
         <div className="form-section">

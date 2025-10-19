@@ -28,7 +28,12 @@ interface Booking {
   services: string[];
   depositPaid: boolean;
   balancePaid: boolean;
+  depositAmount?: number;
+  balanceAmount?: number;
   balanceDueDate?: string;
+  paymentMethod?: string;
+  depositInvoiceId?: string;
+  balanceInvoiceId?: string;
   createdAt: string;
 }
 
@@ -314,7 +319,7 @@ export default function BookingsPage() {
 
               {/* Payment Status */}
               <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-4 flex-wrap gap-2">
                   <div className="flex items-center space-x-2">
                     <div className={`w-2 h-2 rounded-full ${booking.depositPaid ? 'bg-green-500' : 'bg-gray-300'}`}></div>
                     <span className="text-sm font-body text-gray-600">Deposit</span>
@@ -323,13 +328,20 @@ export default function BookingsPage() {
                     <div className={`w-2 h-2 rounded-full ${booking.balancePaid ? 'bg-green-500' : 'bg-gray-300'}`}></div>
                     <span className="text-sm font-body text-gray-600">Balance</span>
                   </div>
+                  {booking.paymentMethod && (
+                    <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full font-body">
+                      {booking.paymentMethod === 'cash' ? '💵 Cash' :
+                       booking.paymentMethod === 'bank_transfer' ? '🏦 Bank Transfer' :
+                       '💳 Card'}
+                    </span>
+                  )}
                   {booking.balanceDueDate && !booking.balancePaid && (
                     <span className="text-xs text-amber-600 font-body">
-                      Balance due: {formatDate(booking.balanceDueDate)}
+                      Due: {formatDate(booking.balanceDueDate)}
                     </span>
                   )}
                 </div>
-                
+
                 <div className="flex items-center space-x-2">
                   <span className="text-xs text-gray-500 font-body">
                     Booked {formatDateTime(booking.createdAt)}

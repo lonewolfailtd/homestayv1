@@ -60,6 +60,7 @@ export async function POST(request: NextRequest) {
       boardingType,
       services,
       specialInstructions,
+      paymentMethod,
       // Enhanced pricing fields
       isEntireDog,
       selectedServices,
@@ -243,6 +244,7 @@ export async function POST(request: NextRequest) {
           serviceCharges,
           totalPrice,
           specialNotes: specialInstructions || '',
+          paymentMethod: paymentMethod || 'card', // Store payment method
           status: 'confirmed',
           // Enhanced pricing fields
           baseDailyRate,
@@ -479,6 +481,7 @@ export async function POST(request: NextRequest) {
       checkOut: checkOutDate.toLocaleDateString(),
       totalPrice: `$${totalPrice.toFixed(2)}`,
       invoiceUrl: invoiceUrl,
+      paymentMethod: paymentMethod || 'card',
       ghlSuccess: ghlResult.status === 'fulfilled' ? ghlResult.value.success : false,
       xeroSuccess: xeroSuccess,
     });

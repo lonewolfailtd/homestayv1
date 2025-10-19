@@ -81,14 +81,14 @@ export default function Home() {
   const { isSignedIn, user, isLoaded } = useUser();
   const [showContent, setShowContent] = useState(false);
 
-  // Timeout fallback - show content after 3 seconds even if Clerk hasn't loaded
+  // Timeout fallback - show content after 1.5 seconds even if Clerk hasn't loaded
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (!isLoaded) {
         console.warn('Clerk loading timeout - showing content anyway');
         setShowContent(true);
       }
-    }, 3000);
+    }, 1500);
 
     return () => clearTimeout(timeout);
   }, [isLoaded]);

@@ -28,6 +28,9 @@ interface HistoryBooking {
   services: string[];
   depositPaid: boolean;
   balancePaid: boolean;
+  paymentMethod?: string;
+  depositInvoiceId?: string;
+  balanceInvoiceId?: string;
   createdAt: string;
 }
 
@@ -375,7 +378,7 @@ export default function HistoryPage() {
 
                     {/* Payment Status */}
                     <div className="flex items-center justify-between py-3 border-t border-gray-200">
-                      <div className="flex items-center space-x-4">
+                      <div className="flex items-center space-x-4 flex-wrap gap-2">
                         <div className="flex items-center space-x-2">
                           <div className={`w-2 h-2 rounded-full ${booking.depositPaid ? 'bg-green-500' : 'bg-gray-300'}`}></div>
                           <span className="text-sm font-body text-gray-600">Deposit</span>
@@ -384,6 +387,13 @@ export default function HistoryPage() {
                           <div className={`w-2 h-2 rounded-full ${booking.balancePaid ? 'bg-green-500' : 'bg-gray-300'}`}></div>
                           <span className="text-sm font-body text-gray-600">Balance</span>
                         </div>
+                        {booking.paymentMethod && (
+                          <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full font-body">
+                            {booking.paymentMethod === 'cash' ? '💵 Cash' :
+                             booking.paymentMethod === 'bank_transfer' ? '🏦 Bank Transfer' :
+                             '💳 Card'}
+                          </span>
+                        )}
                       </div>
                       
                       <div className="flex items-center space-x-2">

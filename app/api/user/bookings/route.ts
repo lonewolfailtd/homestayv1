@@ -100,7 +100,12 @@ export async function GET(request: NextRequest) {
       specialNotes: booking.specialNotes,
       depositPaid: booking.depositPaid,
       balancePaid: booking.balancePaid,
+      depositAmount: booking.depositAmount,
+      balanceAmount: booking.balanceAmount,
       balanceDueDate: booking.balanceDueDate,
+      paymentMethod: booking.paymentMethod,
+      depositInvoiceId: booking.depositInvoiceId,
+      balanceInvoiceId: booking.balanceInvoiceId,
       createdAt: booking.createdAt
     }));
 

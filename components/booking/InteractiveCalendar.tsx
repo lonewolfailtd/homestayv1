@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { DayPicker } from 'react-day-picker';
-import { format, addMonths, startOfDay, isBefore, isAfter, addDays } from 'date-fns';
+import { format, addMonths, startOfDay, isBefore, isAfter, addDays, getDay } from 'date-fns';
 import { ChevronLeft, ChevronRight, Calendar, Clock, Menu, X } from 'lucide-react';
 import 'react-day-picker/dist/style.css';
 
@@ -14,19 +14,143 @@ interface InteractiveCalendarProps {
   onDateChange: (dates: { checkIn: string; checkOut: string }) => void;
 }
 
+// Function to calculate Easter Sunday for a given year (Computus algorithm)
+const getEasterSunday = (year: number): Date => {
+  const a = year % 19;
+  const b = Math.floor(year / 100);
+  const c = year % 100;
+  const d = Math.floor(b / 4);
+  const e = b % 4;
+  const f = Math.floor((b + 8) / 25);
+  const g = Math.floor((b - f + 1) / 3);
+  const h = (19 * a + b - d - g + 15) % 30;
+  const i = Math.floor(c / 4);
+  const k = c % 4;
+  const l = (32 + 2 * e + 2 * i - h - k) % 7;
+  const m = Math.floor((a + 11 * h + 22 * l) / 451);
+  const month = Math.floor((h + l - 7 * m + 114) / 31);
+  const day = ((h + l - 7 * m + 114) % 31) + 1;
+  return new Date(year, month - 1, day);
+};
 
-// Peak periods with 20% surcharge - exact dates from business requirements
+// Function to get Monday for observance (if date falls on weekend, observe on Monday)
+const getMondayObservance = (date: Date): Date => {
+  const dayOfWeek = getDay(date);
+  if (dayOfWeek === 0) return addDays(date, 1); // Sunday -> Monday
+  if (dayOfWeek === 6) return addDays(date, 2); // Saturday -> Monday
+  return date;
+};
+
+// Generate peak periods for a given year automatically
+const generatePeakPeriodsForYear = (year: number) => {
+  const periods = [];
+
+  // New Year Period (Dec 28 prev year - Jan 5)
+  periods.push({
+    start: new Date(year - 1, 11, 28),
+    end: new Date(year, 0, 5),
+    name: `New Year Period ${year}`,
+    days: 9
+  });
+
+  // Auckland Anniversary (Monday closest to Jan 29)
+  const auckAnniv = getMondayObservance(new Date(year, 0, 29));
+  periods.push({
+    start: addDays(auckAnniv, -1),
+    end: addDays(auckAnniv, 1),
+    name: 'Auckland Anniversary',
+    days: 3
+  });
+
+  // Waitangi Day (Feb 6, observed on Monday if weekend)
+  const waitangi = getMondayObservance(new Date(year, 1, 6));
+  periods.push({
+    start: addDays(waitangi, -1),
+    end: addDays(waitangi, 1),
+    name: 'Waitangi Day',
+    days: 3
+  });
+
+  // Easter Weekend (Good Friday to Easter Monday)
+  const easter = getEasterSunday(year);
+  periods.push({
+    start: addDays(easter, -2), // Good Friday
+    end: addDays(easter, 1),    // Easter Monday
+    name: 'Easter Weekend',
+    days: 4
+  });
+
+  // ANZAC Day (Apr 25, observed on Monday if weekend)
+  const anzac = getMondayObservance(new Date(year, 3, 25));
+  periods.push({
+    start: addDays(anzac, -1),
+    end: addDays(anzac, 1),
+    name: 'ANZAC Day',
+    days: 3
+  });
+
+  // King's Birthday (First Monday in June)
+  const juneFirst = new Date(year, 5, 1);
+  const dayOfWeek = getDay(juneFirst);
+  const daysUntilMonday = dayOfWeek === 0 ? 1 : dayOfWeek === 1 ? 0 : 8 - dayOfWeek;
+  const kingsBirthday = addDays(juneFirst, daysUntilMonday);
+  periods.push({
+    start: addDays(kingsBirthday, -1),
+    end: addDays(kingsBirthday, 1),
+    name: "King's Birthday",
+    days: 3
+  });
+
+  // Matariki (varies by year - using approximate dates, should be updated from official calendar)
+  // These are approximate - Matariki dates should ideally come from an official source
+  const matarikiDates: { [key: number]: Date } = {
+    2025: new Date(2025, 5, 20),
+    2026: new Date(2026, 6, 10),
+    2027: new Date(2027, 5, 25),
+    2028: new Date(2028, 6, 14),
+    2029: new Date(2029, 6, 6),
+    2030: new Date(2030, 5, 21),
+  };
+  const matariki = matarikiDates[year];
+  if (matariki) {
+    periods.push({
+      start: addDays(matariki, -1),
+      end: addDays(matariki, 1),
+      name: 'Matariki',
+      days: 3
+    });
+  }
+
+  // Labour Day (Fourth Monday in October)
+  const octoberFirst = new Date(year, 9, 1);
+  const octDayOfWeek = getDay(octoberFirst);
+  const daysToFirstMonday = octDayOfWeek === 0 ? 1 : octDayOfWeek === 1 ? 0 : 8 - octDayOfWeek;
+  const labourDay = addDays(octoberFirst, daysToFirstMonday + 21); // Fourth Monday
+  periods.push({
+    start: addDays(labourDay, -1),
+    end: addDays(labourDay, 1),
+    name: 'Labour Day',
+    days: 3
+  });
+
+  // Christmas/Boxing Day (Dec 20-28, 7-day minimum stay)
+  periods.push({
+    start: new Date(year, 11, 20),
+    end: new Date(year, 11, 28),
+    name: 'Christmas/Boxing Day',
+    days: 9
+  });
+
+  return periods;
+};
+
+// Generate peak periods for current year + 2 years ahead (allows 1+ year advance booking)
+const currentYear = new Date().getFullYear();
 const peakPeriods = [
-  { start: new Date('2024-12-28'), end: new Date('2025-01-05'), name: 'New Year Period', days: 9 },
-  { start: new Date('2025-01-25'), end: new Date('2025-01-27'), name: 'Auckland Anniversary', days: 3 },
-  { start: new Date('2025-02-07'), end: new Date('2025-02-09'), name: 'Waitangi Day', days: 3 },
-  { start: new Date('2025-04-18'), end: new Date('2025-04-21'), name: 'Easter Weekend', days: 4 },
-  { start: new Date('2025-04-25'), end: new Date('2025-04-27'), name: 'ANZAC Day', days: 3 },
-  { start: new Date('2025-05-31'), end: new Date('2025-06-02'), name: "King's Birthday", days: 3 },
-  { start: new Date('2025-06-20'), end: new Date('2025-06-22'), name: 'Matariki', days: 3 },
-  { start: new Date('2025-10-25'), end: new Date('2025-10-27'), name: 'Labour Day', days: 3 },
-  { start: new Date('2025-12-20'), end: new Date('2025-12-28'), name: 'Christmas/Boxing Day', days: 9 },
-];
+  ...generatePeakPeriodsForYear(currentYear),
+  ...generatePeakPeriodsForYear(currentYear + 1),
+  ...generatePeakPeriodsForYear(currentYear + 2),
+].sort((a, b) => a.start.getTime() - b.start.getTime());
 
 export default function InteractiveCalendar({ selectedDates, onDateChange }: InteractiveCalendarProps) {
   const [mode, setMode] = useState<'single' | 'range'>('range');

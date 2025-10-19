@@ -70,6 +70,7 @@ export async function GET(_request: NextRequest) {
           checkInDate: booking.checkIn.toISOString(),
           checkOutDate: booking.checkOut.toISOString(),
           xeroInvoiceId: booking.depositInvoiceId,
+          paymentMethod: booking.paymentMethod,
           downloadUrl: undefined // TODO: Add Xero invoice download URL when available
         });
       }
@@ -92,6 +93,7 @@ export async function GET(_request: NextRequest) {
           checkInDate: booking.checkIn.toISOString(),
           checkOutDate: booking.checkOut.toISOString(),
           xeroInvoiceId: booking.balanceInvoiceId,
+          paymentMethod: booking.paymentMethod,
           downloadUrl: undefined // TODO: Add Xero invoice download URL when available
         });
       }

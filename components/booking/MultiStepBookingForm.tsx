@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUser } from '@clerk/nextjs';
+import Image from 'next/image';
 import ProgressIndicator from './ProgressIndicator';
 import StepNavigation from './StepNavigation';
 import WelcomeStep from './steps/WelcomeStep';
@@ -26,17 +27,78 @@ export default function MultiStepBookingForm() {
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasCustomerData, setHasCustomerData] = useState(false);
+  const [loading, setLoading] = useState(true);
   const { user } = useUser();
+
+  // Check if user has complete customer data on mount
+  useEffect(() => {
+    const checkCustomerData = async () => {
+      if (user) {
+        try {
+          const response = await fetch('/api/user/customer');
+          if (response.ok) {
+            const data = await response.json();
+            if (data.exists && data.customer) {
+              const customer = data.customer;
+              // Check if customer has all required fields
+              const isComplete = !!(
+                customer.phone &&
+                customer.emergencyName &&
+                customer.emergencyPhone
+              );
+              setHasCustomerData(isComplete);
+
+              // If complete, pre-populate form data and skip customer step
+              if (isComplete) {
+                setFormData({
+                  firstName: user.firstName || customer.firstName,
+                  lastName: user.lastName || customer.lastName,
+                  email: user.emailAddresses?.[0]?.emailAddress || customer.email,
+                  phone: customer.phone,
+                  address: customer.address,
+                  city: customer.city,
+                  postalCode: customer.postalCode,
+                  emergencyName: customer.emergencyName,
+                  emergencyPhone: customer.emergencyPhone,
+                  emergencyRelation: customer.emergencyRelation,
+                });
+              }
+            }
+          }
+        } catch (error) {
+          console.log('Could not fetch customer data:', error);
+        }
+      }
+      setLoading(false);
+    };
+
+    checkCustomerData();
+  }, [user]);
 
   const nextStep = () => {
     if (currentStep < STEPS.length - 1) {
-      setCurrentStep(currentStep + 1);
+      let nextStepIndex = currentStep + 1;
+
+      // Skip customer step if user already has complete data
+      if (nextStepIndex === 1 && hasCustomerData) {
+        nextStepIndex = 2; // Skip to dog step
+      }
+
+      setCurrentStep(nextStepIndex);
     }
   };
 
   const prevStep = () => {
     if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
+      let prevStepIndex = currentStep - 1;
+
+      // Skip customer step if user already has complete data
+      if (prevStepIndex === 1 && hasCustomerData) {
+        prevStepIndex = 0; // Go back to welcome
+      }
+
+      setCurrentStep(prevStepIndex);
     }
   };
 
@@ -56,22 +118,29 @@ export default function MultiStepBookingForm() {
     <FormProvider value={{ formData, updateFormData, user }}>
       <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
         {/* Header with Logo and Progress */}
-        <div className="bg-gradient-to-r from-slate-700 to-slate-800 px-8 py-6">
-          <div className="flex items-center justify-between mb-6">
+        <div className="bg-gradient-to-r from-black to-gray-800 px-4 md:px-8 py-4 md:py-6">
+          <div className="flex items-center justify-between mb-4 md:mb-6 flex-wrap gap-4">
             <div className="flex items-center">
-              <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center mr-4">
-                <span className="text-cyan-600 font-heading text-lg font-bold">K9</span>
-              </div>
-              <div>
-                <h1 className="text-2xl font-heading text-white">Book Your Stay</h1>
-                <p className="text-slate-300 text-sm font-body">
+              <Image
+                src="/images/100-K9-logo-horizontal.png"
+                alt="100% K9"
+                width={200}
+                height={46}
+                className="h-10 md:h-14 w-auto mr-4"
+                priority
+              />
+              <div className="hidden md:block border-l border-gray-600 pl-4">
+                <h1 className="text-xl md:text-2xl font-heading text-white">Book Your Stay</h1>
+                <p className="text-gray-300 text-xs md:text-sm font-body">
                   Professional dog boarding & homestay
                 </p>
               </div>
             </div>
             <div className="text-right text-white">
-              <div className="text-sm font-body text-slate-300">Step {currentStep + 1} of {STEPS.length}</div>
-              <div className="text-lg font-button">{STEPS[currentStep].title}</div>
+              <div className="text-xs md:text-sm font-body text-gray-300">
+                Step {currentStep + 1} of {hasCustomerData ? STEPS.length - 1 : STEPS.length}
+              </div>
+              <div className="text-base md:text-lg font-button">{STEPS[currentStep].title}</div>
             </div>
           </div>
           

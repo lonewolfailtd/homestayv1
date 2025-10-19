@@ -28,6 +28,13 @@ A modern Next.js web application for managing dog boarding bookings with user au
 - ✅ **Document Management**: File categorization and deletion capabilities
 - ✅ **Dashboard Layout Optimization**: Fixed positioning and sizing for optimal UX
 
+### Key Features - Phase 3 (COMPLETED Oct 19, 2025)
+- ✅ **Payment Method Tracking**: Complete cash/card/bank transfer tracking across all dashboard pages
+- ✅ **Branded Email Templates**: 100% K9 branded booking confirmations with payment-specific instructions
+- ✅ **Dashboard Enhancement**: Added payment tracking to Bookings, History, and Invoices pages
+- ✅ **Accounting Integration**: Full Xero invoice generation for all payment methods including cash
+- ✅ **Payment Badges**: Visual payment method indicators (💵 Cash, 💳 Card, 🏦 Bank Transfer)
+
 ## Tech Stack
 - **Framework**: Next.js 14 with App Router
 - **Authentication**: Clerk with custom styling
@@ -116,16 +123,25 @@ npx prisma studio    # Open database GUI
 - `components/ui/FileUpload.tsx` - Reusable file upload component
 - `public/images/` - Brand asset storage directory
 
+### Enhanced Components - Phase 3 Complete
+- `lib/email.ts` - Fully branded email templates with payment-specific instructions
+- `app/dashboard/bookings/page.tsx` - Enhanced with payment method badges
+- `app/dashboard/history/page.tsx` - Enhanced with payment tracking
+- `app/dashboard/invoices/page.tsx` - Enhanced with payment method display
+- `components/booking/steps/SummaryStep.tsx` - Added payment method selection
+
 ### API Routes
 - `app/api/customers/route.ts` - Customer lookup
 - `app/api/customers/dogs/route.ts` - Fetch user's saved dogs
 - `app/api/pricing/calculate/route.ts` - Price calculation
-- `app/api/booking/submit/route.ts` - Booking submission
+- `app/api/booking/submit/route.ts` - Booking submission with payment method tracking
 - `app/api/booking/rebook/route.ts` - Quick rebooking for existing customers
 - `app/api/dogs/[id]/route.ts` - Dog profile management (GET/PUT)
 - `app/api/dogs/[id]/files/[fileId]/route.ts` - File deletion
 - `app/api/upload/route.ts` - File upload handling
 - `app/api/user/profile/route.ts` - User profile management
+- `app/api/user/bookings/route.ts` - Fetch user bookings with payment tracking
+- `app/api/user/invoices/route.ts` - Generate invoice list with payment method data
 - `app/api/xero/auth/route.ts` - Xero OAuth
 - `app/api/gohighlevel/webhook/route.ts` - GHL webhooks
 
@@ -387,6 +403,9 @@ app/
 - 🗂️ **Separate File Tabs**: Photos and vaccinations now properly separated with context-aware categorization
 - 📋 **Profile Progress Modal**: Click-outside to close functionality added
 - ✅ **Profile Completeness**: Real-time tracking with on-demand progress checking
+- 💳 **Payment Method Tracking**: Complete tracking system for cash, card, and bank transfer payments
+- 📧 **Branded Email Templates**: 100% K9 branded booking confirmations with payment-specific instructions
+- 📊 **Dashboard Payment Tracking**: Payment method badges across all dashboard pages (Bookings, History, Invoices)
 
 ## Dashboard Layout Configuration
 
@@ -436,3 +455,47 @@ If no category is provided (shouldn't happen with context-aware system), the API
 ### Profile Completeness Integration
 - `hasDogPhotos`: Checks for files where `fileCategory === 'photo'`
 - `hasVaccinationRecords`: Checks for files where `fileCategory === 'vaccination'`
+
+## Payment Method Tracking System (Oct 19, 2025)
+
+### Payment Method Options
+- **Cash** (💵): Manual payment with Xero invoice for accounting reconciliation
+- **Card** (💳): Online payment through Xero invoice link
+- **Bank Transfer** (🏦): Direct bank deposit with invoice reference
+
+### Implementation Details
+
+**Database Schema:**
+- Added `paymentMethod` field to Booking model (String, default: "card")
+- Stores: "cash" | "card" | "bank_transfer"
+
+**Booking Flow:**
+1. Customer selects payment method in SummaryStep
+2. Payment preference stored with booking submission
+3. Xero invoice generated for ALL payment methods (including cash)
+4. Email sent with payment-specific instructions
+
+**Email Templates:**
+- Complete redesign with 100% K9 branding
+- Header image from Google Storage
+- Payment method-specific instruction sections
+- Brand colors: Cyan (#1FB6E0), Green (#9ACA3C)
+- Footer with logo, contact info, social media links
+
+**Dashboard Integration:**
+- Payment method badges displayed on:
+  - Upcoming Bookings page (`/dashboard/bookings`)
+  - Booking History page (`/dashboard/history`)
+  - Invoices & Receipts page (`/dashboard/invoices`)
+- Visual indicators: 💵 Cash, 💳 Card, 🏦 Bank Transfer
+
+**API Enhancements:**
+- `/api/booking/submit` - Stores payment method with booking
+- `/api/user/bookings` - Returns payment method in booking list
+- `/api/user/invoices` - Includes payment method in invoice records
+
+**Accounting Workflow:**
+- All bookings create Xero invoices regardless of payment method
+- Cash payments tracked for manual reconciliation
+- Invoice emails sent automatically by Xero
+- 3-week payment deadline applies to all payment methods

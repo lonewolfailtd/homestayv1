@@ -118,6 +118,7 @@ model Booking {
   specialNotes        String?
   invoiceId           String?  // Legacy field - keeping for compatibility
   xeroInvoiceId       String?  // Legacy field - keeping for compatibility
+  paymentMethod       String   @default("card") // "cash", "card", "bank_transfer"
   status              String   @default("pending")
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt

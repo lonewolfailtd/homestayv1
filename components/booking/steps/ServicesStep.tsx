@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { Scissors, Footprints, GraduationCap, Utensils, Plus, Minus, AlertTriangle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Scissors, Footprints, GraduationCap, Utensils, Plus, Minus, AlertTriangle, Calendar } from 'lucide-react';
 
 interface ServicesStepProps {
   formData: any;
@@ -105,6 +105,68 @@ export default function ServicesStep({ formData, updateFormData, nextStep }: Ser
   const [selectedServices, setSelectedServices] = useState<Record<string, number>>(
     formData.selectedServices || {}
   );
+  const [weekdayWalks, setWeekdayWalks] = useState(formData.weekdayWalks || false);
+  const [dailyMeals, setDailyMeals] = useState(formData.dailyMeals || false);
+
+  // Calculate number of weekdays between check-in and check-out
+  const getWeekdaysCount = () => {
+    const checkInDate = formData.checkIn || formData.checkInDate;
+    const checkOutDate = formData.checkOut || formData.checkOutDate;
+
+    if (!checkInDate || !checkOutDate) return 0;
+
+    const checkIn = new Date(checkInDate);
+    const checkOut = new Date(checkOutDate);
+    let count = 0;
+
+    const currentDate = new Date(checkIn);
+    while (currentDate <= checkOut) {
+      const dayOfWeek = currentDate.getDay();
+      if (dayOfWeek !== 0 && dayOfWeek !== 6) { // Not Sunday (0) or Saturday (6)
+        count++;
+      }
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+    return count;
+  };
+
+  // Calculate total days for daily meals
+  const getTotalDays = () => {
+    const checkInDate = formData.checkIn || formData.checkInDate;
+    const checkOutDate = formData.checkOut || formData.checkOutDate;
+
+    if (!checkInDate || !checkOutDate) return 0;
+
+    const checkIn = new Date(checkInDate);
+    const checkOut = new Date(checkOutDate);
+    const diffTime = Math.abs(checkOut.getTime() - checkIn.getTime());
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 to include both check-in and check-out days
+  };
+
+  // Update selected services when weekday walks toggle changes
+  useEffect(() => {
+    if (weekdayWalks) {
+      const weekdaysCount = getWeekdaysCount();
+      handleServiceChange('PACK_WALK', weekdaysCount);
+    } else if (formData.weekdayWalks && !weekdayWalks) {
+      // If toggling off, remove walks
+      handleServiceChange('PACK_WALK', 0);
+    }
+    updateFormData({ weekdayWalks });
+  }, [weekdayWalks]);
+
+  // Update selected services when daily meals toggle changes
+  useEffect(() => {
+    if (dailyMeals) {
+      const totalDays = getTotalDays();
+      // 2 meals per day
+      handleServiceChange('RAW_MEAL', totalDays * 2);
+    } else if (formData.dailyMeals && !dailyMeals) {
+      // If toggling off, remove meals
+      handleServiceChange('RAW_MEAL', 0);
+    }
+    updateFormData({ dailyMeals });
+  }, [dailyMeals]);
 
   const handleServiceChange = (serviceId: string, quantity: number) => {
     const newServices = { ...selectedServices };
@@ -173,7 +235,88 @@ export default function ServicesStep({ formData, updateFormData, nextStep }: Ser
               </div>
               {category.title}
             </h3>
-            
+
+            {/* Weekday Walks Quick Toggle (only for walks category) */}
+            {category.id === 'walks' && (formData.checkIn || formData.checkInDate) && (formData.checkOut || formData.checkOutDate) && getWeekdaysCount() > 0 && (
+              <div className="mb-6 border-2 border-green-300 rounded-xl p-6 bg-green-50">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center flex-1">
+                    <Calendar className="h-6 w-6 text-green-600 mr-3" />
+                    <div>
+                      <h4 className="font-button font-semibold text-black">
+                        Weekday Walks (Mon-Fri)
+                      </h4>
+                      <p className="text-sm text-gray-600 font-body">
+                        Automatically schedule walks for all weekdays ({getWeekdaysCount()} walks)
+                      </p>
+                      <p className="text-sm text-green-600 font-body mt-1">
+                        ${30 * getWeekdaysCount()} total for {getWeekdaysCount()} weekday walks
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setWeekdayWalks(!weekdayWalks)}
+                    className={`
+                      relative inline-flex h-10 w-20 items-center rounded-full transition-colors touch-manipulation
+                      ${weekdayWalks ? 'bg-green-600' : 'bg-gray-300'}
+                    `}
+                  >
+                    <span
+                      className={`
+                        inline-block h-8 w-8 transform rounded-full bg-white transition-transform
+                        ${weekdayWalks ? 'translate-x-11' : 'translate-x-1'}
+                      `}
+                    />
+                  </button>
+                </div>
+                {weekdayWalks && getWeekdaysCount() > 0 && (
+                  <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                    <p className="text-sm text-amber-700 font-body">
+                      ⚠️ Adventure Pack Walks require a Pre Walk Assessment for new clients
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Daily Meals Quick Toggle (only for food category) */}
+            {category.id === 'food' && (formData.checkIn || formData.checkInDate) && (formData.checkOut || formData.checkOutDate) && getTotalDays() > 0 && (
+              <div className="mb-6 border-2 border-amber-300 rounded-xl p-6 bg-amber-50">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center flex-1">
+                    <Calendar className="h-6 w-6 text-amber-600 mr-3" />
+                    <div>
+                      <h4 className="font-button font-semibold text-black">
+                        Daily Meals (Every Day)
+                      </h4>
+                      <p className="text-sm text-gray-600 font-body">
+                        2 balanced raw meals per day for entire stay ({getTotalDays()} days = {getTotalDays() * 2} meals)
+                      </p>
+                      <p className="text-sm text-amber-600 font-body mt-1">
+                        ${5 * getTotalDays() * 2} total for {getTotalDays() * 2} meals
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setDailyMeals(!dailyMeals)}
+                    className={`
+                      relative inline-flex h-10 w-20 items-center rounded-full transition-colors touch-manipulation
+                      ${dailyMeals ? 'bg-amber-600' : 'bg-gray-300'}
+                    `}
+                  >
+                    <span
+                      className={`
+                        inline-block h-8 w-8 transform rounded-full bg-white transition-transform
+                        ${dailyMeals ? 'translate-x-11' : 'translate-x-1'}
+                      `}
+                    />
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {category.services.map((service) => {
                 const quantity = selectedServices[service.id] || 0;
