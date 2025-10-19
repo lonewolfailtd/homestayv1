@@ -2,30 +2,20 @@ import type { Metadata } from 'next'
 import { ClerkProvider } from '@clerk/nextjs'
 import { Toaster } from 'sonner'
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
+import { Inter, Montserrat } from 'next/font/google'
 import './globals.css'
 
-// Use conditional font loading - Google Fonts in production, fallbacks in dev
-let montserrat, inter
+const montserrat = Montserrat({
+  weight: ['400', '500', '600', '700'],
+  subsets: ['latin'],
+  variable: '--font-montserrat'
+})
 
-if (process.env.NODE_ENV === 'production') {
-  const { Inter, Montserrat } = require('next/font/google')
-
-  montserrat = Montserrat({
-    weight: ['400', '500', '600', '700'],
-    subsets: ['latin'],
-    variable: '--font-montserrat'
-  })
-
-  inter = Inter({
-    weight: ['400', '500', '600'],
-    subsets: ['latin'],
-    variable: '--font-inter'
-  })
-} else {
-  // Development: Use system fallback fonts for instant startup
-  montserrat = { variable: '--font-montserrat', className: '' }
-  inter = { variable: '--font-inter', className: '' }
-}
+const inter = Inter({
+  weight: ['400', '500', '600'],
+  subsets: ['latin'],
+  variable: '--font-inter'
+})
 
 export const metadata: Metadata = {
   title: 'Dog Boarding Auckland | Premium Homestay Services | 100% K9',
