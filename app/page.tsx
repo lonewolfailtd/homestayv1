@@ -3,12 +3,13 @@
 import { useUser, SignInButton } from '@clerk/nextjs';
 import Link from 'next/link';
 import Image from 'next/image';
-import { 
-  ArrowRight, 
-  Shield, 
-  Heart, 
-  Star, 
-  Dog, 
+import { motion } from 'framer-motion';
+import {
+  ArrowRight,
+  Shield,
+  Heart,
+  Star,
+  Dog,
   Calendar,
   CheckCircle,
   Users
@@ -53,6 +54,27 @@ const testimonials = [
     dogName: 'Bella'
   }
 ];
+
+// Animation variants
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 }
+};
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const scaleIn = {
+  hidden: { opacity: 0, scale: 0.9 },
+  visible: { opacity: 1, scale: 1 }
+};
 
 export default function Home() {
   const { isSignedIn, user, isLoaded } = useUser();
@@ -119,15 +141,15 @@ export default function Home() {
       {/* Navigation */}
       <nav className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+          <div className="flex justify-between items-center h-24">
             <div className="flex items-center">
               <Link href="/" className="flex items-center">
                 <Image
                   src="/images/100-K9-logo-horizontal.png"
                   alt="100% K9 Dog Boarding"
-                  width={260}
-                  height={60}
-                  className="h-16 w-auto"
+                  width={320}
+                  height={74}
+                  className="h-20 w-auto"
                   priority
                 />
               </Link>
@@ -172,7 +194,7 @@ export default function Home() {
             alt="Happy dog in outdoor setting"
             fill
             sizes="100vw"
-            className="object-cover"
+            className="object-cover object-[center_35%]"
             priority
             quality={85}
           />
@@ -180,16 +202,33 @@ export default function Home() {
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-5xl md:text-6xl font-heading mb-6 text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
+          <motion.div
+            className="text-center"
+            initial="hidden"
+            animate="visible"
+            variants={staggerContainer}
+          >
+            <motion.h1
+              className="text-5xl md:text-6xl font-heading mb-6 text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]"
+              variants={fadeInUp}
+              transition={{ duration: 0.6 }}
+            >
               Premium Dog Boarding & Homestay in Auckland
-            </h1>
-            <p className="text-xl md:text-2xl text-white mb-8 max-w-3xl mx-auto font-body drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+            </motion.h1>
+            <motion.p
+              className="text-xl md:text-2xl text-white mb-8 max-w-3xl mx-auto font-body drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
+              variants={fadeInUp}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
               Auckland's trusted dog boarding service with professional overnight care, full structure, enrichment and daily exercise on our farm.
               Your dog's home away from home.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            </motion.p>
+
+            <motion.div
+              className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+              variants={fadeInUp}
+              transition={{ duration: 0.6, delay: 0.4 }}
+            >
               {isSignedIn ? (
                 <Link
                   href="/book"
@@ -208,55 +247,73 @@ export default function Home() {
                 </Link>
               )}
               <Link
-                href="#features"
+                href="/learn-more"
                 className="bg-white/20 backdrop-blur-sm border-2 border-white text-white px-8 py-4 rounded-xl font-button font-semibold text-lg hover:bg-white hover:text-black transition-colors shadow-lg"
               >
                 Learn More
               </Link>
-            </div>
+            </motion.div>
 
             {/* Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16 max-w-3xl mx-auto">
-              <div className="text-center">
+            <motion.div
+              className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16 max-w-3xl mx-auto"
+              initial="hidden"
+              animate="visible"
+              variants={staggerContainer}
+              transition={{ delay: 0.6 }}
+            >
+              <motion.div className="text-center" variants={scaleIn}>
                 <div className="text-3xl font-heading mb-2 text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)]">500+</div>
                 <div className="text-white font-body drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Happy Dogs</div>
-              </div>
-              <div className="text-center">
+              </motion.div>
+              <motion.div className="text-center" variants={scaleIn}>
                 <div className="text-3xl font-heading mb-2 text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)]">5★</div>
                 <div className="text-white font-body drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Average Rating</div>
-              </div>
-              <div className="text-center">
+              </motion.div>
+              <motion.div className="text-center" variants={scaleIn}>
                 <div className="text-3xl font-heading mb-2 text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)]">24/7</div>
                 <div className="text-white font-body drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Care & Monitoring</div>
-              </div>
-            </div>
-          </div>
+              </motion.div>
+            </motion.div>
+          </motion.div>
         </div>
       </section>
 
       {/* Features Section */}
       <section id="features" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
+          <motion.div
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
             <h2 className="text-4xl font-heading text-black mb-4">
               Why Choose 100% K9?
             </h2>
             <p className="text-xl text-gray-600 font-body max-w-2xl mx-auto">
               Professional dog boarding with the comfort and care of a family home environment.
             </p>
-          </div>
+          </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={staggerContainer}
+          >
             {features.map((feature, index) => (
-              <div key={index} className="text-center">
+              <motion.div key={index} className="text-center" variants={fadeInUp}>
                 <div className="bg-cyan-50 rounded-2xl p-4 w-16 h-16 mx-auto mb-6 flex items-center justify-center">
                   <feature.icon className="h-8 w-8 text-cyan-600" />
                 </div>
                 <h3 className="text-xl font-heading text-black mb-3">{feature.title}</h3>
                 <p className="text-gray-600 font-body">{feature.description}</p>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -306,15 +363,33 @@ export default function Home() {
       {/* Testimonials */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
+          <motion.div
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
             <h2 className="text-4xl font-heading text-black mb-4">
               What Pet Parents Say
             </h2>
-          </div>
+          </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={staggerContainer}
+          >
             {testimonials.map((testimonial, index) => (
-              <div key={index} className="card p-8">
+              <motion.div
+                key={index}
+                className="card p-8"
+                variants={fadeInUp}
+                whileHover={{ scale: 1.02 }}
+                transition={{ duration: 0.2 }}
+              >
                 <div className="flex items-center mb-4">
                   {[...Array(testimonial.rating)].map((_, i) => (
                     <Star key={i} className="h-5 w-5 text-amber-400 fill-current" />
@@ -336,9 +411,9 @@ export default function Home() {
                     </div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
