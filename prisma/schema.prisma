@@ -26,8 +26,9 @@ model User {
   createdAt               DateTime @default(now())
   updatedAt               DateTime @updatedAt
 
-  savedDogs     SavedDog[]
-  bookingViews  BookingView[]
+  savedDogs             SavedDog[]
+  bookingViews          BookingView[]
+  bookingModifications  BookingModification[]
 
   @@map("users")
 }
@@ -123,10 +124,17 @@ model Booking {
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
   
+  // Cancellation and modification tracking
+  isCancelled         Boolean  @default(false)
+  cancellationDate    DateTime?
+  refundAmount        Decimal? @db.Decimal(10, 2)
+  cancellationReason  String?
+
   customer            Customer @relation(fields: [customerId], references: [id])
   dog                 Dog      @relation(fields: [dogId], references: [id])
   bookingViews        BookingView[]
-  
+  modifications       BookingModification[]
+
   @@map("bookings")
 }
 
@@ -287,6 +295,52 @@ model DogFile {
   updatedAt       DateTime @updatedAt
   
   dog             Dog      @relation(fields: [dogId], references: [id], onDelete: Cascade)
-  
+
   @@map("dog_files")
+}
+
+// BookingModification model for tracking booking changes and cancellations
+model BookingModification {
+  id                String   @id @default(cuid())
+  bookingId         String
+  modifiedBy        String   // User ID who made the modification
+  modificationType  String   // "date_change", "service_change", "cancellation"
+
+  // Original values (for audit trail)
+  originalCheckIn   DateTime?
+  originalCheckOut  DateTime?
+  originalServices  Json?
+  originalPrice     Decimal? @db.Decimal(10, 2)
+
+  // New values
+  newCheckIn        DateTime?
+  newCheckOut       DateTime?
+  newServices       Json?
+  newPrice          Decimal? @db.Decimal(10, 2)
+
+  // Pricing adjustment
+  priceDifference   Decimal  @db.Decimal(10, 2) @default(0)
+  adjustmentReason  String?
+
+  // Cancellation specific fields
+  refundAmount      Decimal? @db.Decimal(10, 2)
+  refundReason      String?
+  cancellationFee   Decimal? @db.Decimal(10, 2)
+
+  // Xero integration
+  adjustmentInvoiceId String?  // New invoice for price differences
+  creditNoteId        String?  // Credit note for refunds
+
+  // Status tracking
+  status            String   @default("pending") // "pending", "approved", "completed", "rejected"
+  notes             String?
+  approvedBy        String?  // Admin user ID who approved (if manual approval required)
+  approvedAt        DateTime?
+  createdAt         DateTime @default(now())
+  processedAt       DateTime?
+
+  booking           Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  user              User     @relation(fields: [modifiedBy], references: [id])
+
+  @@map("booking_modifications")
 }

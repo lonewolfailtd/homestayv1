@@ -484,6 +484,7 @@ export async function POST(request: NextRequest) {
       paymentMethod: paymentMethod || 'card',
       ghlSuccess: ghlResult.status === 'fulfilled' ? ghlResult.value.success : false,
       xeroSuccess: xeroSuccess,
+      bookingId: booking.id,
     });
 
     console.log('Email notification result:', emailResult);

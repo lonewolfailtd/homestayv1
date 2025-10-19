@@ -32,25 +32,69 @@ export default function DateStep({ formData, updateFormData, nextStep }: DateSte
 
   const calculatePricing = async (checkIn: string, checkOut: string) => {
     if (!checkIn || !checkOut) return;
-    
+
     setIsCalculating(true);
     try {
-      const response = await fetch('/api/pricing/calculate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          checkIn,
-          checkOut,
-          isEntireDog: formData.isEntireDog || false,
-          selectedServices: formData.selectedServices || [],
-          numberOfMeals: formData.numberOfMeals || 0,
-          numberOfWalks: formData.numberOfWalks || 0,
-        }),
-      });
-      
-      const data = await response.json();
-      setPricing(data);
-      updateFormData({ pricing: data });
+      if (formData.isMultiDogBooking && formData.dogs && formData.dogs.length > 0) {
+        // Multi-dog booking: calculate pricing for each dog
+        const dogPricings = await Promise.all(
+          formData.dogs.map(async (dog: any) => {
+            const response = await fetch('/api/pricing/calculate', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                checkIn,
+                checkOut,
+                isEntireDog: dog.isEntireDog || false,
+                selectedServices: formData.selectedServices || [],
+                numberOfMeals: formData.numberOfMeals || 0,
+                numberOfWalks: formData.numberOfWalks || 0,
+              }),
+            });
+            const data = await response.json();
+            return { ...data, dogName: dog.dogName };
+          })
+        );
+
+        // Calculate combined totals
+        const combinedPricing = {
+          totalDays: dogPricings[0].totalDays,
+          baseDailyRate: dogPricings[0].baseDailyRate,
+          baseSubtotal: dogPricings.reduce((sum, p) => sum + parseFloat(p.baseSubtotal || 0), 0).toFixed(2),
+          peakSurcharge: dogPricings.reduce((sum, p) => sum + parseFloat(p.peakSurcharge || 0), 0).toFixed(2),
+          dogSurcharges: dogPricings.reduce((sum, p) => sum + parseFloat(p.dogSurcharges || 0), 0).toFixed(2),
+          serviceCharges: dogPricings.reduce((sum, p) => sum + parseFloat(p.serviceCharges || 0), 0).toFixed(2),
+          totalPrice: dogPricings.reduce((sum, p) => sum + parseFloat(p.totalPrice || 0), 0).toFixed(2),
+          isPeakPeriod: dogPricings[0].isPeakPeriod,
+          peakPeriodName: dogPricings[0].peakPeriodName,
+          breakdown: {
+            services: dogPricings[0].breakdown?.services || [],
+          },
+          isMultiDog: true,
+          dogPricings: dogPricings, // Store individual dog pricings
+        };
+
+        setPricing(combinedPricing);
+        updateFormData({ pricing: combinedPricing });
+      } else {
+        // Single dog booking
+        const response = await fetch('/api/pricing/calculate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            checkIn,
+            checkOut,
+            isEntireDog: formData.isEntireDog || false,
+            selectedServices: formData.selectedServices || [],
+            numberOfMeals: formData.numberOfMeals || 0,
+            numberOfWalks: formData.numberOfWalks || 0,
+          }),
+        });
+
+        const data = await response.json();
+        setPricing(data);
+        updateFormData({ pricing: data });
+      }
     } catch (error) {
       console.error('Error calculating pricing:', error);
     } finally {
@@ -142,10 +186,17 @@ export default function DateStep({ formData, updateFormData, nextStep }: DateSte
                 
                 {pricing && (
                   <div className="bg-green-50 rounded-xl p-4">
-                    <div className="text-sm font-body text-gray-600 mb-1">Base Stay Cost</div>
+                    <div className="text-sm font-body text-gray-600 mb-1">
+                      {pricing.isMultiDog ? `Total for ${pricing.dogPricings.length} Dogs` : 'Base Stay Cost'}
+                    </div>
                     <div className="font-button font-medium text-green-600 text-2xl">
                       ${pricing.baseSubtotal}
                     </div>
+                    {pricing.isMultiDog && (
+                      <div className="text-xs text-gray-600 font-body mt-1">
+                        {pricing.dogPricings.map((dp: any) => dp.dogName).join(', ')}
+                      </div>
+                    )}
                     {pricing.isPeakPeriod && (
                       <div className="text-xs text-amber-600 font-body mt-1">
                         +${pricing.peakSurcharge} peak period
@@ -169,14 +220,53 @@ export default function DateStep({ formData, updateFormData, nextStep }: DateSte
             </h3>
             
             <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-4">
+              {/* Multi-Dog Breakdown */}
+              {pricing.isMultiDog && pricing.dogPricings && (
+                <div className="space-y-2 mb-6">
+                  <h4 className="font-button font-medium text-gray-800 border-b border-gray-100 pb-2 flex items-center">
+                    <Calendar className="h-4 w-4 mr-2 text-cyan-600" />
+                    Individual Dog Pricing ({pricing.dogPricings.length} dogs)
+                  </h4>
+                  {pricing.dogPricings.map((dogPricing: any, index: number) => (
+                    <div key={index} className="bg-gray-50 rounded-lg p-3 my-2">
+                      <div className="font-button font-semibold text-black mb-2">
+                        {dogPricing.dogName}
+                      </div>
+                      <div className="space-y-1 text-sm">
+                        <div className="flex justify-between">
+                          <span className="font-body text-gray-600">Base Stay</span>
+                          <span className="font-button">${dogPricing.baseSubtotal}</span>
+                        </div>
+                        {parseFloat(dogPricing.peakSurcharge) > 0 && (
+                          <div className="flex justify-between">
+                            <span className="font-body text-amber-600">Peak Surcharge</span>
+                            <span className="font-button text-amber-600">+${dogPricing.peakSurcharge}</span>
+                          </div>
+                        )}
+                        {parseFloat(dogPricing.dogSurcharges) > 0 && (
+                          <div className="flex justify-between">
+                            <span className="font-body text-gray-600">Entire Dog</span>
+                            <span className="font-button">+${dogPricing.dogSurcharges}</span>
+                          </div>
+                        )}
+                        <div className="flex justify-between border-t border-gray-200 pt-1 mt-1">
+                          <span className="font-button text-gray-800">Dog Total</span>
+                          <span className="font-button text-gray-800">${dogPricing.totalPrice}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               {/* Base Accommodation */}
               <div className="space-y-2">
                 <h4 className="font-button font-medium text-gray-800 border-b border-gray-100 pb-2">
-                  Accommodation
+                  {pricing.isMultiDog ? 'Combined Accommodation Total' : 'Accommodation'}
                 </h4>
                 <div className="flex justify-between items-center py-2">
                   <span className="font-body text-gray-700">
-                    Base Stay ({pricing.totalDays} days × ${pricing.baseDailyRate}/day)
+                    Base Stay ({pricing.totalDays} days × ${pricing.baseDailyRate}/day{pricing.isMultiDog ? ` × ${pricing.dogPricings.length} dogs` : ''})
                   </span>
                   <span className="font-button font-medium">${pricing.baseSubtotal}</span>
                 </div>

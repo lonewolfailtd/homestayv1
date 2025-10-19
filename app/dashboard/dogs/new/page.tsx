@@ -113,7 +113,7 @@ export default function NewDogPage() {
   };
 
   return (
-    <div className="-mt-[33rem] pb-[30rem] max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center space-x-4">
         <Link

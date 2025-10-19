@@ -1,0 +1,19 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//100% K9//Dog Boarding Booking//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:1760865763477-fnofabu@100percentk9.co.nz
+DTSTAMP:20251019T092243Z
+DTSTART:20251031T210000Z
+DTEND:20251105T030000Z
+SUMMARY:Dog Boarding - Max
+DESCRIPTION:Dog boarding stay at 100% K9\\nDog: Max\\nCustomer: Sarah Johnson\\nTotal: $340.00\\nBooking ID: TEST-123\\nDrop-off: 10:00 AM\\nPick-up: 4:00 PM\\nContact: 020 4081 2829\\nEmail: training@100percentk9.co.nz
+LOCATION:100% K9 Dog Boarding\, Auckland\, New Zealand
+STATUS:CONFIRMED
+SEQUENCE:0
+ORGANIZER;CN=100% K9:mailto:training@100percentk9.co.nz
+ATTENDEE;CN=Sarah Johnson;RSVP=FALSE:mailto:sarah@example.com
+END:VEVENT
+END:VCALENDAR

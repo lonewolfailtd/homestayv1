@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { CheckCircle, User, Dog, Calendar, CreditCard, AlertTriangle, Loader2, Wallet, Banknote, Building2 } from 'lucide-react';
+import { CheckCircle, User, Dog, Calendar, CreditCard, AlertTriangle, Loader2, Wallet, Banknote, Building2, CalendarPlus, Download } from 'lucide-react';
 import { toast } from 'sonner';
+import { generateAllCalendarLinks } from '@/lib/calendar';
 
 interface SummaryStepProps {
   formData: any;
@@ -209,16 +210,40 @@ export default function SummaryStep({ formData, isSubmitting, setIsSubmitting, u
 
   // Show success message
   if (submitResult?.success) {
+    // Generate calendar links
+    const calendarLinks = generateAllCalendarLinks({
+      dogName: formData.dogName,
+      customerName: `${formData.firstName} ${formData.lastName}`.trim(),
+      customerEmail: formData.email,
+      checkIn: new Date(formData.checkIn),
+      checkOut: new Date(formData.checkOut),
+      totalPrice: `$${getFinalTotal().toFixed(2)}`,
+      bookingId: submitResult.bookingId || submitResult.booking?.id,
+    });
+
+    const handleDownloadICS = () => {
+      const blob = new Blob([calendarLinks.icsContent], { type: 'text/calendar;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `100K9-Booking-${formData.dogName}.ics`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      toast.success('Calendar file downloaded!');
+    };
+
     return (
       <div className="text-center max-w-2xl mx-auto">
         <div className="bg-green-100 rounded-full p-4 w-20 h-20 mx-auto mb-6 flex items-center justify-center">
           <CheckCircle className="h-12 w-12 text-green-600" />
         </div>
-        
+
         <h2 className="text-3xl font-heading text-black mb-4">
           Booking Confirmed! 🎉
         </h2>
-        
+
         <p className="text-lg text-gray-600 font-body mb-4">
           Thank you for choosing 100% K9! We've sent confirmation details to your email.
         </p>
@@ -273,6 +298,72 @@ export default function SummaryStep({ formData, isSubmitting, setIsSubmitting, u
           </div>
         </div>
 
+        {/* Add to Calendar Section */}
+        <div className="bg-cyan-50 border-2 border-cyan-200 rounded-xl p-6 mb-8">
+          <div className="flex items-center justify-center mb-4">
+            <CalendarPlus className="h-6 w-6 text-cyan-600 mr-2" />
+            <h3 className="font-button font-semibold text-black text-lg">Add to Calendar</h3>
+          </div>
+
+          <p className="text-sm text-gray-600 font-body mb-4">
+            Never miss your booking! Add this to your calendar with one click.
+          </p>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {/* Download .ics file - works with all calendar apps */}
+            <button
+              onClick={handleDownloadICS}
+              className="flex flex-col items-center justify-center p-4 bg-white border-2 border-gray-200 rounded-lg hover:border-cyan-500 hover:bg-cyan-50 transition-all"
+            >
+              <Download className="h-6 w-6 text-gray-700 mb-2" />
+              <span className="text-xs font-button font-medium text-gray-700">Download .ics</span>
+            </button>
+
+            {/* Google Calendar */}
+            <a
+              href={calendarLinks.googleUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex flex-col items-center justify-center p-4 bg-white border-2 border-gray-200 rounded-lg hover:border-cyan-500 hover:bg-cyan-50 transition-all"
+            >
+              <svg className="h-6 w-6 mb-2" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z"/>
+              </svg>
+              <span className="text-xs font-button font-medium text-gray-700">Google</span>
+            </a>
+
+            {/* Outlook Calendar */}
+            <a
+              href={calendarLinks.outlookUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex flex-col items-center justify-center p-4 bg-white border-2 border-gray-200 rounded-lg hover:border-cyan-500 hover:bg-cyan-50 transition-all"
+            >
+              <svg className="h-6 w-6 mb-2" viewBox="0 0 24 24">
+                <path fill="#0078D4" d="M7,6H17V9H7V6M17,10H7V14H17V10M7,15H17V18H7V15M19,3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3Z"/>
+              </svg>
+              <span className="text-xs font-button font-medium text-gray-700">Outlook</span>
+            </a>
+
+            {/* Yahoo Calendar */}
+            <a
+              href={calendarLinks.yahooUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex flex-col items-center justify-center p-4 bg-white border-2 border-gray-200 rounded-lg hover:border-cyan-500 hover:bg-cyan-50 transition-all"
+            >
+              <svg className="h-6 w-6 mb-2" viewBox="0 0 24 24">
+                <path fill="#6001D2" d="M5.5,3L8.5,12L11.5,3H15L10,17H8L3,3H5.5M21,10V7H14V10H21M21,17V14H14V17H21Z"/>
+              </svg>
+              <span className="text-xs font-button font-medium text-gray-700">Yahoo</span>
+            </a>
+          </div>
+
+          <p className="text-xs text-gray-500 font-body mt-3">
+            Check-in: 10:00 AM | Check-out: 4:00 PM
+          </p>
+        </div>
+
         <div className="space-y-4">
           <a
             href="/dashboard"
@@ -280,7 +371,7 @@ export default function SummaryStep({ formData, isSubmitting, setIsSubmitting, u
           >
             View in Dashboard
           </a>
-          
+
           {submitResult.integrations?.invoiceUrl && (
             <div>
               <a

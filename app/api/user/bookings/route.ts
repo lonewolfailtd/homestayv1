@@ -71,6 +71,12 @@ export async function GET(request: NextRequest) {
             age: true,
             sex: true
           }
+        },
+        modifications: {
+          where: {
+            status: 'pending'
+          },
+          take: 1
         }
       },
       orderBy: { checkIn: 'desc' },
@@ -106,7 +112,9 @@ export async function GET(request: NextRequest) {
       paymentMethod: booking.paymentMethod,
       depositInvoiceId: booking.depositInvoiceId,
       balanceInvoiceId: booking.balanceInvoiceId,
-      createdAt: booking.createdAt
+      createdAt: booking.createdAt,
+      isCancelled: booking.isCancelled,
+      hasPendingModification: booking.modifications && booking.modifications.length > 0
     }));
 
     return NextResponse.json({

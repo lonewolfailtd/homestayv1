@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@clerk/nextjs';
-import { Dog, Heart, Shield, Activity, AlertTriangle, Star, Plus } from 'lucide-react';
+import { Dog, Heart, Shield, Activity, AlertTriangle, Star, Plus, Users, Trash2 } from 'lucide-react';
 
 interface SavedDog {
   id: string;
@@ -31,6 +31,29 @@ interface SavedDog {
   };
 }
 
+interface DogData {
+  dogName: string;
+  dogAge: string;
+  dogSex: string;
+  dogBreed: string;
+  dogWeight: string;
+  isEntireDog: boolean;
+  vaccinated: string;
+  neutered: string;
+  vetClinic: string;
+  vetPhone: string;
+  medications: string;
+  medicalConditions: string;
+  crateTrained: string;
+  socialLevel: string;
+  peopleBehavior: string;
+  behavioralIssues: string;
+  farmAnimalReactive: string;
+  biteHistory: string;
+  additionalNotes: string;
+  selectedDogId?: string;
+}
+
 interface DogStepProps {
   formData: any;
   updateFormData: (data: any) => void;
@@ -43,6 +66,11 @@ export default function DogStep({ formData, updateFormData, nextStep }: DogStepP
   const [loadingSavedDogs, setLoadingSavedDogs] = useState(false);
   const [selectedSavedDog, setSelectedSavedDog] = useState<string | null>(null);
   const [showNewDogForm, setShowNewDogForm] = useState(!isSignedIn);
+
+  // Multi-dog booking state
+  const [isMultiDogBooking, setIsMultiDogBooking] = useState(formData.isMultiDogBooking || false);
+  const [selectedDogs, setSelectedDogs] = useState<DogData[]>(formData.dogs || []);
+  const [currentDogIndex, setCurrentDogIndex] = useState(0);
 
   const [dogData, setDogData] = useState({
     dogName: formData.dogName || '',
@@ -72,6 +100,13 @@ export default function DogStep({ formData, updateFormData, nextStep }: DogStepP
       fetchSavedDogs();
     }
   }, [isSignedIn]);
+
+  // Load current dog from selectedDogs array when in multi-dog mode
+  useEffect(() => {
+    if (isMultiDogBooking && selectedDogs.length > currentDogIndex) {
+      setDogData(selectedDogs[currentDogIndex]);
+    }
+  }, [isMultiDogBooking, currentDogIndex]);
 
   const fetchSavedDogs = async () => {
     if (!isSignedIn) return;
@@ -165,10 +200,32 @@ export default function DogStep({ formData, updateFormData, nextStep }: DogStepP
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (isMultiDogBooking) {
+      // Save current dog to array and pass array to form
+      const updatedDogs = [...selectedDogs];
+      updatedDogs[currentDogIndex] = dogData;
+
+      updateFormData({
+        isMultiDogBooking: true,
+        dogs: updatedDogs,
+        numberOfDogs: updatedDogs.length,
+      });
+    } else {
+      // Single dog booking - keep existing behavior
+      updateFormData(dogData);
+    }
+
     nextStep();
   };
 
   const isValid = () => {
+    if (isMultiDogBooking) {
+      // At least one dog must be added
+      return selectedDogs.length > 0 && selectedDogs.every(dog =>
+        dog.dogName && dog.dogAge && dog.dogBreed && dog.peopleBehavior
+      );
+    }
     return (
       dogData.dogName &&
       dogData.dogAge &&
@@ -177,17 +234,233 @@ export default function DogStep({ formData, updateFormData, nextStep }: DogStepP
     );
   };
 
+  const toggleMultiDogBooking = () => {
+    const newValue = !isMultiDogBooking;
+    setIsMultiDogBooking(newValue);
+
+    if (newValue) {
+      // Switching to multi-dog: add current dog as first dog if valid
+      if (dogData.dogName) {
+        setSelectedDogs([dogData]);
+        setCurrentDogIndex(0);
+      }
+    } else {
+      // Switching to single dog: use first dog from array if exists
+      if (selectedDogs.length > 0) {
+        setDogData(selectedDogs[0]);
+      }
+      setSelectedDogs([]);
+      setCurrentDogIndex(0);
+    }
+
+    updateFormData({ isMultiDogBooking: newValue });
+  };
+
+  const addAnotherDog = () => {
+    // Save current dog data
+    const updatedDogs = [...selectedDogs];
+    updatedDogs[currentDogIndex] = dogData;
+    setSelectedDogs(updatedDogs);
+
+    // Add new empty dog
+    const emptyDog: DogData = {
+      dogName: '',
+      dogAge: '',
+      dogSex: 'Male',
+      dogBreed: '',
+      dogWeight: '',
+      isEntireDog: false,
+      vaccinated: 'Yes',
+      neutered: 'Yes',
+      vetClinic: '',
+      vetPhone: '',
+      medications: '',
+      medicalConditions: '',
+      crateTrained: 'Yes',
+      socialLevel: 'Great with dogs',
+      peopleBehavior: '',
+      behavioralIssues: 'None',
+      farmAnimalReactive: 'No',
+      biteHistory: 'No',
+      additionalNotes: '',
+    };
+
+    updatedDogs.push(emptyDog);
+    setSelectedDogs(updatedDogs);
+    setCurrentDogIndex(updatedDogs.length - 1);
+    setDogData(emptyDog);
+    setShowNewDogForm(true);
+  };
+
+  const removeDog = (index: number) => {
+    const updatedDogs = selectedDogs.filter((_, i) => i !== index);
+    setSelectedDogs(updatedDogs);
+
+    // Adjust current index if needed
+    if (currentDogIndex >= updatedDogs.length) {
+      setCurrentDogIndex(Math.max(0, updatedDogs.length - 1));
+    }
+
+    // Load the new current dog
+    if (updatedDogs.length > 0) {
+      setDogData(updatedDogs[currentDogIndex] || updatedDogs[0]);
+    }
+  };
+
+  const selectDogForEditing = (index: number) => {
+    // Save current dog first
+    const updatedDogs = [...selectedDogs];
+    updatedDogs[currentDogIndex] = dogData;
+    setSelectedDogs(updatedDogs);
+
+    // Load selected dog
+    setCurrentDogIndex(index);
+    setDogData(updatedDogs[index]);
+  };
+
+  const handleSelectSavedDogForMulti = (savedDog: SavedDog) => {
+    const dog = savedDog.dog;
+    const newDog: DogData = {
+      dogName: savedDog.nickname || dog.name,
+      dogAge: dog.age.toString(),
+      dogSex: dog.sex,
+      dogBreed: dog.breed,
+      dogWeight: '',
+      isEntireDog: dog.neutered === 'No',
+      vaccinated: dog.vaccinated,
+      neutered: dog.neutered,
+      vetClinic: dog.vetClinic || '',
+      vetPhone: dog.vetPhone || '',
+      medications: dog.medications || '',
+      medicalConditions: dog.medicalConditions || '',
+      crateTrained: dog.crateTrained,
+      socialLevel: dog.socialLevel,
+      peopleBehavior: dog.peopleBehavior,
+      behavioralIssues: dog.behavioralIssues,
+      farmAnimalReactive: dog.farmAnimalReactive,
+      biteHistory: dog.biteHistory,
+      additionalNotes: dog.additionalNotes || '',
+      selectedDogId: dog.id,
+    };
+
+    if (isMultiDogBooking) {
+      // Add to multi-dog array
+      const updatedDogs = [...selectedDogs, newDog];
+      setSelectedDogs(updatedDogs);
+      setCurrentDogIndex(updatedDogs.length - 1);
+      setDogData(newDog);
+    } else {
+      setDogData(newDog);
+      updateFormData(newDog);
+    }
+
+    setSelectedSavedDog(savedDog.id);
+    setShowNewDogForm(false);
+  };
+
   return (
     <div className="max-w-2xl mx-auto">
       <div className="text-center mb-8">
         <div className="bg-cyan-100 rounded-full p-3 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
           <Dog className="h-8 w-8 text-cyan-600" />
         </div>
-        <h2 className="text-2xl font-heading text-black mb-2">Tell Us About Your Dog</h2>
+        <h2 className="text-2xl font-heading text-black mb-2">Tell Us About Your Dog{isMultiDogBooking ? 's' : ''}</h2>
         <p className="text-gray-600 font-body">
           This helps us provide the best possible care and create a safe environment for all our guests.
         </p>
       </div>
+
+      {/* Multi-Dog Toggle */}
+      <div className="mb-6 bg-gradient-to-r from-cyan-50 to-blue-50 rounded-xl p-4 border border-cyan-200">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <Users className="h-6 w-6 text-cyan-600" />
+            <div>
+              <h3 className="font-button font-semibold text-black">Booking Multiple Dogs?</h3>
+              <p className="text-sm text-gray-600 font-body">
+                Add all dogs staying together for the same dates
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={toggleMultiDogBooking}
+            className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
+              isMultiDogBooking ? 'bg-cyan-600' : 'bg-gray-300'
+            }`}
+          >
+            <span
+              className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
+                isMultiDogBooking ? 'translate-x-7' : 'translate-x-1'
+              }`}
+            />
+          </button>
+        </div>
+      </div>
+
+      {/* Multi-Dog Overview - Show selected dogs */}
+      {isMultiDogBooking && selectedDogs.length > 0 && (
+        <div className="mb-6 bg-white rounded-xl p-4 border border-gray-200">
+          <h4 className="font-button font-semibold text-black mb-3 flex items-center">
+            <Dog className="h-5 w-5 mr-2 text-cyan-600" />
+            Dogs in This Booking ({selectedDogs.length})
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {selectedDogs.map((dog, index) => (
+              <div
+                key={index}
+                className={`p-3 rounded-lg border-2 transition-all cursor-pointer ${
+                  currentDogIndex === index
+                    ? 'border-cyan-500 bg-cyan-50'
+                    : 'border-gray-200 bg-gray-50 hover:border-cyan-300'
+                }`}
+                onClick={() => selectDogForEditing(index)}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="font-button font-semibold text-black">
+                      {dog.dogName || `Dog ${index + 1}`}
+                    </div>
+                    {dog.dogBreed && (
+                      <div className="text-sm text-gray-600 font-body">
+                        {dog.dogBreed} • {dog.dogAge} years
+                      </div>
+                    )}
+                    {!dog.dogName && (
+                      <div className="text-sm text-amber-600 font-body">
+                        Click to edit details
+                      </div>
+                    )}
+                  </div>
+                  {selectedDogs.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeDog(index);
+                      }}
+                      className="text-red-500 hover:text-red-700 transition-colors"
+                      title="Remove this dog"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+          {isMultiDogBooking && (
+            <button
+              type="button"
+              onClick={addAnotherDog}
+              className="mt-3 w-full btn-secondary flex items-center justify-center"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Another Dog
+            </button>
+          )}
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* Saved Dogs Selection - Only show for authenticated users */}
@@ -218,7 +491,7 @@ export default function DogStep({ formData, updateFormData, nextStep }: DogStepP
                           ? 'ring-2 ring-cyan-500 bg-cyan-50'
                           : 'hover:shadow-md'
                       }`}
-                      onClick={() => handleSelectSavedDog(savedDog)}
+                      onClick={() => isMultiDogBooking ? handleSelectSavedDogForMulti(savedDog) : handleSelectSavedDog(savedDog)}
                     >
                       <div className="flex items-start justify-between mb-2">
                         <div>
@@ -281,8 +554,33 @@ export default function DogStep({ formData, updateFormData, nextStep }: DogStepP
         )}
 
         {/* Show form only if user is not signed in, has chosen to add a new dog, or has no saved dogs */}
-        {(!isSignedIn || showNewDogForm || (isSignedIn && savedDogs.length === 0)) && (
+        {(!isSignedIn || showNewDogForm || (isSignedIn && savedDogs.length === 0) || isMultiDogBooking) && (
           <>
+            {/* Current Dog Indicator for Multi-Dog Mode */}
+            {isMultiDogBooking && selectedDogs.length > 0 && (
+              <div className="bg-cyan-50 border-l-4 border-cyan-600 p-4 rounded-r-xl mb-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-button font-semibold text-cyan-900">
+                      Editing: {dogData.dogName || `Dog ${currentDogIndex + 1}`}
+                    </h4>
+                    <p className="text-sm text-cyan-700 font-body">
+                      Dog {currentDogIndex + 1} of {selectedDogs.length}
+                    </p>
+                  </div>
+                  {currentDogIndex < selectedDogs.length - 1 && (
+                    <button
+                      type="button"
+                      onClick={() => selectDogForEditing(currentDogIndex + 1)}
+                      className="text-sm btn-secondary"
+                    >
+                      Next Dog →
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Basic Information */}
         <div className="form-section">
           <h3 className="text-lg font-button font-semibold text-black mb-4 flex items-center">

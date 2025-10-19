@@ -35,6 +35,8 @@ interface Booking {
   depositInvoiceId?: string;
   balanceInvoiceId?: string;
   createdAt: string;
+  isCancelled: boolean;
+  hasPendingModification?: boolean;
 }
 
 const filterOptions = [
@@ -165,7 +167,7 @@ export default function BookingsPage() {
   }
 
   return (
-    <div className="-mt-[33rem] pb-[30rem] space-y-6">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -260,7 +262,11 @@ export default function BookingsPage() {
           </div>
         ) : (
           filteredBookings.map((booking) => (
-            <div key={booking.id} className="card hover:shadow-lg transition-shadow">
+            <a
+              key={booking.id}
+              href={`/dashboard/bookings/${booking.id}`}
+              className="card hover:shadow-lg transition-shadow cursor-pointer block"
+            >
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center space-x-3">
                   <div className="bg-cyan-100 p-2 rounded-lg">
@@ -275,8 +281,18 @@ export default function BookingsPage() {
                     </p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center space-x-2">
+                  {booking.isCancelled && (
+                    <span className="px-2 py-1 bg-red-100 text-red-700 text-xs rounded-full font-body">
+                      Cancelled
+                    </span>
+                  )}
+                  {booking.hasPendingModification && (
+                    <span className="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs rounded-full font-body">
+                      Modification Pending
+                    </span>
+                  )}
                   {booking.isPeakPeriod && (
                     <span className="px-2 py-1 bg-amber-100 text-amber-700 text-xs rounded-full font-body">
                       {booking.peakPeriodName}
@@ -348,7 +364,7 @@ export default function BookingsPage() {
                   </span>
                 </div>
               </div>
-            </div>
+            </a>
           ))
         )}
       </div>

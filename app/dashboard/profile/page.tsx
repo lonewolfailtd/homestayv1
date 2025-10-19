@@ -51,56 +51,60 @@ export default function ProfilePage() {
 
   useEffect(() => {
     const fetchProfile = async () => {
-      if (user) {
-        try {
-          // Fetch both profile and customer data
-          const [profileRes, customerRes] = await Promise.all([
-            fetch('/api/user/profile'),
-            fetch('/api/user/customer')
-          ]);
+      if (!user) {
+        setLoading(false);
+        return;
+      }
 
-          let profileData = null;
-          let customerData = null;
+      try {
+        // Fetch both profile and customer data
+        const [profileRes, customerRes] = await Promise.all([
+          fetch('/api/user/profile'),
+          fetch('/api/user/customer')
+        ]);
 
-          if (profileRes.ok) {
-            const data = await profileRes.json();
-            profileData = data.data;
-          }
+        let profileData = null;
+        let customerData = null;
 
-          if (customerRes.ok) {
-            const data = await customerRes.json();
-            if (data.exists) {
-              customerData = data.customer;
-            }
-          }
-
-          setProfile({
-            firstName: profileData?.firstName || user.firstName || '',
-            lastName: profileData?.lastName || user.lastName || '',
-            email: profileData?.email || user.emailAddresses[0]?.emailAddress || '',
-            phone: profileData?.phone || customerData?.phone || user.phoneNumbers[0]?.phoneNumber || '',
-            address: customerData?.address || '',
-            city: customerData?.city || '',
-            postalCode: customerData?.postalCode || '',
-            preferences: {
-              default_emergency_contact: {
-                name: profileData?.preferences?.emergencyContact?.name || customerData?.emergencyName || '',
-                phone: profileData?.preferences?.emergencyContact?.phone || customerData?.emergencyPhone || '',
-                relation: profileData?.preferences?.emergencyContact?.relation || customerData?.emergencyRelation || '',
-              },
-            },
-          });
-        } catch (error) {
-          console.error('Error fetching profile:', error);
-          // Fallback to Clerk data
-          setProfile(prev => ({
-            ...prev,
-            firstName: user.firstName || '',
-            lastName: user.lastName || '',
-            email: user.emailAddresses[0]?.emailAddress || '',
-            phone: user.phoneNumbers[0]?.phoneNumber || '',
-          }));
+        if (profileRes.ok) {
+          const data = await profileRes.json();
+          profileData = data.data;
         }
+
+        if (customerRes.ok) {
+          const data = await customerRes.json();
+          if (data.exists) {
+            customerData = data.customer;
+          }
+        }
+
+        setProfile({
+          firstName: profileData?.firstName || user.firstName || '',
+          lastName: profileData?.lastName || user.lastName || '',
+          email: profileData?.email || user.emailAddresses[0]?.emailAddress || '',
+          phone: profileData?.phone || customerData?.phone || user.phoneNumbers[0]?.phoneNumber || '',
+          address: customerData?.address || '',
+          city: customerData?.city || '',
+          postalCode: customerData?.postalCode || '',
+          preferences: {
+            default_emergency_contact: {
+              name: profileData?.preferences?.emergencyContact?.name || customerData?.emergencyName || '',
+              phone: profileData?.preferences?.emergencyContact?.phone || customerData?.emergencyPhone || '',
+              relation: profileData?.preferences?.emergencyContact?.relation || customerData?.emergencyRelation || '',
+            },
+          },
+        });
+      } catch (error) {
+        console.error('Error fetching profile:', error);
+        // Fallback to Clerk data
+        setProfile(prev => ({
+          ...prev,
+          firstName: user.firstName || '',
+          lastName: user.lastName || '',
+          email: user.emailAddresses[0]?.emailAddress || '',
+          phone: user.phoneNumbers[0]?.phoneNumber || '',
+        }));
+      } finally {
         setLoading(false);
       }
     };
@@ -199,7 +203,7 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="-mt-[33rem] pb-[30rem]">
+      <div className="space-y-6">
         <div className="animate-pulse space-y-6">
           <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
           <div className="h-12 bg-gray-200 rounded w-full mb-4"></div>
@@ -215,7 +219,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="-mt-[33rem] pb-[30rem]">
+    <div className="space-y-6">
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <div>

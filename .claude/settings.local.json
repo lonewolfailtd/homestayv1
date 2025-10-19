@@ -64,7 +64,9 @@
       "Bash(cat .env.local)",
       "Bash(timeout 10 bash -c 'until curl -s http://localhost:3000 > /dev/null; do sleep 1; done && echo \"\"Server ready\"\"')",
       "Bash(node scripts/check-file-categories.js)",
-      "Bash(node scriptscheck-file-categories.js)"
+      "Bash(node scriptscheck-file-categories.js)",
+      "Bash(cat \"C:\\Users\\Hodgs\\homestayv1\\.playwright-mcp\\100K9-Booking-Max.ics\")",
+      "Bash(timeout 15 bash -c 'until curl -s http://localhost:3000 > /dev/null; do sleep 1; done && echo \"\"Server ready\"\"')"
     ],
     "deny": [],
     "ask": [],

@@ -1,4 +1,5 @@
 // import nodemailer from 'nodemailer'; // Future email implementation
+import { generateAllCalendarLinks } from './calendar';
 
 interface BookingEmailData {
   customerName: string;
@@ -11,10 +12,22 @@ interface BookingEmailData {
   paymentMethod: string;
   ghlSuccess: boolean;
   xeroSuccess: boolean;
+  bookingId?: string | number;
 }
 
 export async function sendBookingConfirmation(bookingData: BookingEmailData) {
   try {
+    // Generate calendar links
+    const calendarLinks = generateAllCalendarLinks({
+      dogName: bookingData.dogName,
+      customerName: bookingData.customerName,
+      customerEmail: bookingData.customerEmail,
+      checkIn: new Date(bookingData.checkIn),
+      checkOut: new Date(bookingData.checkOut),
+      totalPrice: bookingData.totalPrice,
+      bookingId: bookingData.bookingId,
+    });
+
     // Create branded HTML email template
     const emailHtml = `
       <!DOCTYPE html>
@@ -162,6 +175,46 @@ export async function sendBookingConfirmation(bookingData: BookingEmailData) {
                           </p>
                         </div>
                       `}
+                    </td>
+                  </tr>
+
+                  <!-- Add to Calendar Section -->
+                  <tr>
+                    <td style="padding:0 20px;">
+                      <div style="background:#ecfeff; border:2px solid #1FB6E0; padding:18px 20px; border-radius:6px; margin:12px 0;">
+                        <h3 style="font-size:18px; color:#0891b2; margin:0 0 8px; text-align:center;">📅 Add to Your Calendar</h3>
+                        <p style="margin:0 0 12px; font-size:14px; color:#0e7490; line-height:20px; text-align:center;">
+                          Never miss your booking! Add this to your calendar:
+                        </p>
+
+                        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:8px;">
+                          <tr>
+                            <td align="center" style="padding:4px;">
+                              <a href="${calendarLinks.googleUrl}" target="_blank" style="background-color:#4285F4; color:#ffffff; text-decoration:none; display:inline-block; padding:10px 20px; border-radius:6px; font-weight:700; font-size:14px; margin:4px;">
+                                📅 Google Calendar
+                              </a>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td align="center" style="padding:4px;">
+                              <a href="${calendarLinks.outlookUrl}" target="_blank" style="background-color:#0078D4; color:#ffffff; text-decoration:none; display:inline-block; padding:10px 20px; border-radius:6px; font-weight:700; font-size:14px; margin:4px;">
+                                📆 Outlook Calendar
+                              </a>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td align="center" style="padding:4px;">
+                              <a href="${calendarLinks.yahooUrl}" target="_blank" style="background-color:#6001D2; color:#ffffff; text-decoration:none; display:inline-block; padding:10px 20px; border-radius:6px; font-weight:700; font-size:14px; margin:4px;">
+                                🗓️ Yahoo Calendar
+                              </a>
+                            </td>
+                          </tr>
+                        </table>
+
+                        <p style="margin:8px 0 0; font-size:12px; color:#0e7490; line-height:18px; text-align:center;">
+                          <strong>Check-in:</strong> 10:00 AM | <strong>Check-out:</strong> 4:00 PM
+                        </p>
+                      </div>
                     </td>
                   </tr>
 

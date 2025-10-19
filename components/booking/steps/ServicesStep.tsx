@@ -221,9 +221,25 @@ export default function ServicesStep({ formData, updateFormData, nextStep }: Ser
         </div>
         <h2 className="text-2xl font-heading text-black mb-2">Additional Services</h2>
         <p className="text-gray-600 font-body">
-          Enhance your dog's stay with our premium services. All services are optional and can be added or removed.
+          Enhance your dog{formData.isMultiDogBooking ? 's\'' : '\'s'} stay with our premium services. All services are optional and can be added or removed.
         </p>
       </div>
+
+      {/* Multi-Dog Notice */}
+      {formData.isMultiDogBooking && formData.dogs && formData.dogs.length > 1 && (
+        <div className="mb-6 bg-blue-50 border border-blue-200 rounded-xl p-4">
+          <div className="flex items-start">
+            <Calendar className="h-5 w-5 text-blue-600 mr-3 mt-1 flex-shrink-0" />
+            <div>
+              <h4 className="font-button font-medium text-blue-800">Multi-Dog Booking</h4>
+              <p className="text-sm text-blue-700 font-body mt-1">
+                You're booking services for {formData.dogs.length} dogs: {formData.dogs.map((d: any) => d.dogName).join(', ')}.
+                Services like walks and meals will apply per dog where appropriate.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* Service Categories */}

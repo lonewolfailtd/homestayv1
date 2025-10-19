@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { Dog, Calendar, ArrowRight, Users } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import InteractiveCalendar from '@/components/booking/InteractiveCalendar';
 
 interface DogProfile {
   id: string;
@@ -19,7 +20,7 @@ function MultiDogBookingContent() {
   const searchParams = useSearchParams();
   const [selectedDogs, setSelectedDogs] = useState<DogProfile[]>([]);
   const [loading, setLoading] = useState(true);
-  const [bookingDates, setBookingDates] = useState({
+  const [selectedDates, setSelectedDates] = useState({
     checkIn: '',
     checkOut: ''
   });
@@ -34,13 +35,21 @@ function MultiDogBookingContent() {
       }
 
       try {
-        const promises = dogIds.map(id => 
-          fetch(`/api/dogs/${id}`).then(res => res.json())
+        const promises = dogIds.map(id =>
+          fetch(`/api/dogs/${id}`).then(res => {
+            if (!res.ok) throw new Error(`Failed to fetch dog ${id}`);
+            return res.json();
+          })
         );
-        
+
         const results = await Promise.all(promises);
-        const validDogs = results.filter(result => result.success).map(result => result.dog);
-        
+        // API returns dog objects directly, filter out any errors
+        const validDogs = results.filter(dog => dog && dog.id && !dog.error);
+
+        if (validDogs.length === 0) {
+          toast.error('No valid dogs found');
+        }
+
         setSelectedDogs(validDogs);
       } catch (error) {
         console.error('Error fetching dog profiles:', error);
@@ -54,7 +63,7 @@ function MultiDogBookingContent() {
   }, [searchParams]);
 
   const handleProceedToBooking = () => {
-    if (!bookingDates.checkIn || !bookingDates.checkOut) {
+    if (!selectedDates.checkIn || !selectedDates.checkOut) {
       toast.error('Please select check-in and check-out dates');
       return;
     }
@@ -63,8 +72,8 @@ function MultiDogBookingContent() {
     // In future, this could be enhanced to handle true multi-dog bookings
     const params = new URLSearchParams({
       dogId: selectedDogs[0]?.id || '',
-      checkIn: bookingDates.checkIn,
-      checkOut: bookingDates.checkOut,
+      checkIn: selectedDates.checkIn,
+      checkOut: selectedDates.checkOut,
       multiDog: 'true'
     });
 
@@ -146,34 +155,15 @@ function MultiDogBookingContent() {
         <div className="card mb-8">
           <div className="border-b border-gray-200 px-6 py-4">
             <h2 className="text-lg font-heading text-black">Select Dates</h2>
+            <p className="text-sm text-gray-600 font-body mt-1">
+              Choose your check-in and check-out dates for all selected dogs
+            </p>
           </div>
           <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-button font-medium text-gray-700 mb-2">
-                  Check-in Date
-                </label>
-                <input
-                  type="date"
-                  value={bookingDates.checkIn}
-                  onChange={(e) => setBookingDates(prev => ({ ...prev, checkIn: e.target.value }))}
-                  min={new Date().toISOString().split('T')[0]}
-                  className="input-field w-full"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-button font-medium text-gray-700 mb-2">
-                  Check-out Date
-                </label>
-                <input
-                  type="date"
-                  value={bookingDates.checkOut}
-                  onChange={(e) => setBookingDates(prev => ({ ...prev, checkOut: e.target.value }))}
-                  min={bookingDates.checkIn || new Date().toISOString().split('T')[0]}
-                  className="input-field w-full"
-                />
-              </div>
-            </div>
+            <InteractiveCalendar
+              selectedDates={selectedDates}
+              onDateChange={setSelectedDates}
+            />
           </div>
         </div>
 
@@ -199,9 +189,9 @@ function MultiDogBookingContent() {
           
           <button
             onClick={handleProceedToBooking}
-            disabled={!bookingDates.checkIn || !bookingDates.checkOut}
+            disabled={!selectedDates.checkIn || !selectedDates.checkOut}
             className={`flex items-center px-8 py-3 rounded-xl font-button font-medium transition-colors ${
-              bookingDates.checkIn && bookingDates.checkOut
+              selectedDates.checkIn && selectedDates.checkOut
                 ? 'bg-cyan-600 text-white hover:bg-cyan-700'
                 : 'bg-gray-300 text-gray-500 cursor-not-allowed'
             }`}
