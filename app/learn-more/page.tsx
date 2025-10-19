@@ -28,7 +28,7 @@ export default function LearnMore() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-24">
             <div className="flex items-center">
-              <Link href="/" className="flex items-center">
+              <Link href="/" className="flex items-center transition-opacity duration-200 hover:opacity-80 active:opacity-60">
                 <Image
                   src="/images/100-K9-logo-horizontal.png"
                   alt="100% K9 Dog Boarding"
