@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/db';
 import { z } from 'zod';
+import { updateProfileCompleteness } from '@/lib/profileCompletion';
 
 const updateDogSchema = z.object({
   name: z.string().min(1),
@@ -27,7 +28,8 @@ const updateDogSchema = z.object({
     fileName: z.string(),
     filePath: z.string(),
     fileType: z.string(),
-    fileSize: z.number()
+    fileSize: z.number(),
+    category: z.string().optional()
   })).optional()
 });
 
@@ -131,21 +133,45 @@ export async function PUT(
 
     // Add new files if provided
     if (validatedData.files && validatedData.files.length > 0) {
-      const fileRecords = validatedData.files.map(file => ({
-        dogId: dogId,
-        fileName: file.originalName,
-        storedFileName: file.fileName,
-        filePath: file.filePath,
-        fileType: file.fileType,
-        fileSize: file.fileSize,
-        fileCategory: 'other',
-        uploadedBy: userId
-      }));
+      const fileRecords = validatedData.files.map((file: any) => {
+        // Use provided category if available, otherwise auto-detect
+        let category = file.category || 'other';
+
+        // Only auto-detect if no category was provided
+        if (!file.category) {
+          // Check if it's an image - mark as photo
+          if (file.fileType.startsWith('image/')) {
+            category = 'photo';
+          }
+          // Check filename for vaccination keywords
+          else if (file.originalName.toLowerCase().match(/(vacc|immunis|shot|jab)/)) {
+            category = 'vaccination';
+          }
+          // Check filename for vet keywords
+          else if (file.originalName.toLowerCase().match(/(vet|veterinary|clinic|medical|health)/)) {
+            category = 'vet';
+          }
+        }
+
+        return {
+          dogId: dogId,
+          fileName: file.originalName,
+          storedFileName: file.fileName,
+          filePath: file.filePath,
+          fileType: file.fileType,
+          fileSize: file.fileSize,
+          fileCategory: category,
+          uploadedBy: userId
+        };
+      });
 
       await prisma.dogFile.createMany({
         data: fileRecords
       });
     }
+
+    // Update profile completeness after dog profile changes
+    await updateProfileCompleteness(userId);
 
     return NextResponse.json({
       success: true,

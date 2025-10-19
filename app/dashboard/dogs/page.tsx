@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Dog, Plus, Edit2, Trash2, Heart, Star, Calendar, Users, CheckSquare, Square, BookOpen } from 'lucide-react';
+import { Dog, Plus, Edit2, Trash2, Heart, Star, Calendar, Users, CheckSquare, Square, BookOpen, Syringe, ClipboardCheck } from 'lucide-react';
 import { toast } from 'sonner';
+import FileUpload from '@/components/ui/FileUpload';
+import ProfileIncompleteModal from '@/components/ProfileIncompleteModal';
 
 interface SavedDog {
   id: string;
@@ -34,6 +36,8 @@ export default function DogsPage() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedDogs, setSelectedDogs] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [profileStatus, setProfileStatus] = useState<any>(null);
 
   const fetchSavedDogs = async () => {
     try {
@@ -57,6 +61,23 @@ export default function DogsPage() {
   useEffect(() => {
     fetchSavedDogs();
   }, []);
+
+  const checkProfileCompleteness = async () => {
+    try {
+      const response = await fetch('/api/user/profile-completeness');
+      const data = await response.json();
+
+      if (response.ok) {
+        setProfileStatus(data);
+        setShowProfileModal(true);
+      } else {
+        toast.error('Failed to check profile completeness');
+      }
+    } catch (error) {
+      console.error('Error checking profile:', error);
+      toast.error('Failed to check profile completeness');
+    }
+  };
 
   const handleSaveDog = async (dogData: Partial<SavedDog>) => {
     try {
@@ -213,7 +234,7 @@ export default function DogsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="-mt-[33rem] pb-[30rem] space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div>
@@ -224,6 +245,13 @@ export default function DogsPage() {
         </div>
         
         <div className="flex items-center space-x-3">
+          <button
+            onClick={checkProfileCompleteness}
+            className="btn-secondary flex items-center"
+          >
+            <ClipboardCheck className="h-4 w-4 mr-2" />
+            Check Profile Progress
+          </button>
           <a
             href="/dashboard/dogs/new"
             className="btn-primary flex items-center"
@@ -494,6 +522,16 @@ export default function DogsPage() {
           }}
         />
       )}
+
+      {profileStatus && showProfileModal && (
+        <ProfileIncompleteModal
+          isOpen={showProfileModal}
+          onClose={() => setShowProfileModal(false)}
+          missing={profileStatus.missing}
+          checklist={profileStatus.checklist}
+          completeness={profileStatus.completeness}
+        />
+      )}
     </div>
   );
 }
@@ -504,87 +542,619 @@ interface EditDogModalProps {
   onClose: () => void;
 }
 
+interface DogFile {
+  id: string;
+  fileName: string;
+  filePath: string;
+  fileType: string;
+  fileSize: number;
+  fileCategory: string;
+  description: string;
+}
+
 function EditDogModal({ savedDog, onSave, onClose }: EditDogModalProps) {
+  const [activeTab, setActiveTab] = useState<'basic' | 'medical' | 'vaccinations' | 'behavior' | 'files'>('basic');
   const [nickname, setNickname] = useState(savedDog.nickname || savedDog.dog.name);
   const [notes, setNotes] = useState(savedDog.notes || '');
   const [isDefault, setIsDefault] = useState(savedDog.isDefault);
+  const [dogFiles, setDogFiles] = useState<DogFile[]>([]);
+  const [newFiles, setNewFiles] = useState<File[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [fullDogData, setFullDogData] = useState<any>(null);
+  const [formData, setFormData] = useState({
+    name: savedDog.dog.name,
+    age: savedDog.dog.age,
+    sex: savedDog.dog.sex,
+    breed: savedDog.dog.breed,
+    vaccinated: savedDog.dog.vaccinated,
+    neutered: savedDog.dog.neutered,
+    vetClinic: '',
+    vetPhone: '',
+    medications: '',
+    medicalConditions: '',
+    crateTrained: '',
+    socialLevel: savedDog.dog.socialLevel,
+    peopleBehavior: '',
+    behavioralIssues: '',
+    farmAnimalReactive: '',
+    biteHistory: '',
+    additionalNotes: ''
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSave({ nickname, notes, isDefault });
+  useEffect(() => {
+    fetchFullDogData();
+  }, [savedDog.dog.id]);
+
+  const fetchFullDogData = async () => {
+    try {
+      const response = await fetch(`/api/dogs/${savedDog.dog.id}`);
+      if (response.ok) {
+        const data = await response.json();
+        setFullDogData(data);
+        setDogFiles(data.files || []);
+        setFormData({
+          name: data.name || savedDog.dog.name,
+          age: data.age || savedDog.dog.age,
+          sex: data.sex || savedDog.dog.sex,
+          breed: data.breed || savedDog.dog.breed,
+          vaccinated: data.vaccinated || savedDog.dog.vaccinated,
+          neutered: data.neutered || savedDog.dog.neutered,
+          vetClinic: data.vetClinic || '',
+          vetPhone: data.vetPhone || '',
+          medications: data.medications || '',
+          medicalConditions: data.medicalConditions || '',
+          crateTrained: data.crateTrained || '',
+          socialLevel: data.socialLevel || savedDog.dog.socialLevel,
+          peopleBehavior: data.peopleBehavior || '',
+          behavioralIssues: data.behavioralIssues || '',
+          farmAnimalReactive: data.farmAnimalReactive || '',
+          biteHistory: data.biteHistory || '',
+          additionalNotes: data.additionalNotes || ''
+        });
+      }
+    } catch (error) {
+      console.error('Failed to fetch dog data:', error);
+    }
   };
 
+  const handleInputChange = (field: string, value: string | number) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleFileUpload = async (files: File[]) => {
+    if (files.length === 0) return [];
+
+    const formData = new FormData();
+    files.forEach(file => formData.append('files', file));
+
+    const response = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+      return result.files;
+    } else {
+      throw new Error('File upload failed');
+    }
+  };
+
+  const handleDeleteFile = async (fileId: string) => {
+    try {
+      const response = await fetch(`/api/dogs/${savedDog.dog.id}/files/${fileId}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        setDogFiles(prev => prev.filter(f => f.id !== fileId));
+        toast.success('File deleted successfully');
+      } else {
+        toast.error('Failed to delete file');
+      }
+    } catch (error) {
+      toast.error('Failed to delete file');
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setUploading(true);
+
+    try {
+      // Upload new files if any
+      let uploadedFiles: any[] = [];
+      if (newFiles.length > 0) {
+        uploadedFiles = await handleFileUpload(newFiles);
+
+        // Context-aware file categorization based on active tab
+        if (activeTab === 'vaccinations') {
+          uploadedFiles = uploadedFiles.map(file => ({
+            ...file,
+            category: 'vaccination'
+          }));
+        } else if (activeTab === 'files') {
+          // Photos tab - mark as photo
+          uploadedFiles = uploadedFiles.map(file => ({
+            ...file,
+            category: 'photo'
+          }));
+        }
+
+        toast.success(`${newFiles.length} file(s) uploaded successfully`);
+      }
+
+      // Update full dog profile
+      const response = await fetch(`/api/dogs/${savedDog.dog.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...formData,
+          files: uploadedFiles
+        })
+      });
+
+      if (response.ok) {
+        toast.success('Dog profile updated successfully');
+        // Save savedDog changes (nickname, notes, isDefault)
+        onSave({ nickname, notes, isDefault });
+      } else {
+        throw new Error('Update failed');
+      }
+    } catch (error) {
+      toast.error('Failed to update dog profile');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const tabs = [
+    { id: 'basic' as const, label: 'Basic Info', icon: Dog },
+    { id: 'medical' as const, label: 'Medical & Vet', icon: Heart },
+    { id: 'vaccinations' as const, label: 'Vaccinations', icon: Syringe },
+    { id: 'behavior' as const, label: 'Behavior', icon: Users },
+    { id: 'files' as const, label: 'Photos', icon: BookOpen }
+  ];
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-xl max-w-md w-full p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-button font-semibold text-black">
-            Edit Dog Profile
-          </h3>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
-          >
-            ×
-          </button>
+    <div className="fixed inset-0 bg-gray-50 z-50 overflow-y-auto">
+      <div className="min-h-screen">
+        {/* Header */}
+        <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-heading text-black">Edit {formData.name}</h2>
+                <p className="text-sm text-gray-600 font-body mt-1">Update your dog's complete profile</p>
+              </div>
+              <button
+                onClick={onClose}
+                className="text-gray-400 hover:text-gray-600 text-3xl leading-none px-2"
+                disabled={uploading}
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Tabs */}
+            <div className="flex space-x-1 mt-4 overflow-x-auto">
+              {tabs.map((tab) => {
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-button text-sm whitespace-nowrap transition-colors ${
+                      activeTab === tab.id
+                        ? 'bg-cyan-500 text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    <span>{tab.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-button font-medium text-gray-700 mb-1">
-              Display Name
-            </label>
-            <input
-              type="text"
-              value={nickname}
-              onChange={(e) => setNickname(e.target.value)}
-              className="input-field w-full"
-              placeholder="Enter a nickname or keep original name"
-            />
-            <p className="text-xs text-gray-500 font-body mt-1">
-              Original name: {savedDog.dog.name}
-            </p>
-          </div>
+        {/* Content */}
+        <form onSubmit={handleSubmit} className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Basic Info Tab */}
+          {activeTab === 'basic' && (
+            <div className="card p-6 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-button font-medium text-gray-700 mb-2">
+                    Dog's Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => handleInputChange('name', e.target.value)}
+                    className="input-field w-full"
+                    required
+                  />
+                </div>
 
-          <div>
-            <label className="block text-sm font-button font-medium text-gray-700 mb-1">
-              Personal Notes
-            </label>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              className="input-field w-full h-20 resize-none"
-              placeholder="Add personal notes about this dog..."
-            />
-          </div>
+                <div>
+                  <label className="block text-sm font-button font-medium text-gray-700 mb-2">
+                    Age (years) *
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="25"
+                    value={formData.age}
+                    onChange={(e) => handleInputChange('age', parseInt(e.target.value) || 0)}
+                    className="input-field w-full"
+                    required
+                  />
+                </div>
 
-          <div className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              id="isDefault"
-              checked={isDefault}
-              onChange={(e) => setIsDefault(e.target.checked)}
-              className="rounded border-gray-300 text-cyan-600 focus:ring-cyan-500"
-            />
-            <label htmlFor="isDefault" className="text-sm font-body text-gray-700">
-              Set as default dog for quick booking
-            </label>
-          </div>
+                <div>
+                  <label className="block text-sm font-button font-medium text-gray-700 mb-2">
+                    Sex *
+                  </label>
+                  <select
+                    value={formData.sex}
+                    onChange={(e) => handleInputChange('sex', e.target.value)}
+                    className="input-field w-full"
+                    required
+                  >
+                    <option value="">Select...</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                  </select>
+                </div>
 
-          <div className="flex items-center space-x-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="btn-secondary flex-1"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="btn-primary flex-1"
-            >
-              Save Changes
-            </button>
+                <div>
+                  <label className="block text-sm font-button font-medium text-gray-700 mb-2">
+                    Breed *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.breed}
+                    onChange={(e) => handleInputChange('breed', e.target.value)}
+                    className="input-field w-full"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="border-t border-gray-200 pt-6">
+                <h3 className="text-lg font-heading text-black mb-4">Display Preferences</h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-button font-medium text-gray-700 mb-2">
+                      Display Name (Nickname)
+                    </label>
+                    <input
+                      type="text"
+                      value={nickname}
+                      onChange={(e) => setNickname(e.target.value)}
+                      className="input-field w-full"
+                      placeholder="Enter a nickname or leave blank to use real name"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-button font-medium text-gray-700 mb-2">
+                      Personal Notes
+                    </label>
+                    <textarea
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      className="input-field w-full h-24 resize-none"
+                      placeholder="Add personal notes about this dog..."
+                    />
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="isDefault"
+                      checked={isDefault}
+                      onChange={(e) => setIsDefault(e.target.checked)}
+                      className="rounded border-gray-300 text-cyan-600 focus:ring-cyan-500"
+                    />
+                    <label htmlFor="isDefault" className="text-sm font-body text-gray-700">
+                      Set as default dog for quick booking
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Medical Info Tab */}
+          {activeTab === 'medical' && (
+            <div className="card p-6 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-button font-medium text-gray-700 mb-2">
+                    Neutered/Spayed *
+                  </label>
+                  <select
+                    value={formData.neutered}
+                    onChange={(e) => handleInputChange('neutered', e.target.value)}
+                    className="input-field w-full"
+                    required
+                  >
+                    <option value="">Select...</option>
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-button font-medium text-gray-700 mb-2">
+                    Veterinary Clinic
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.vetClinic}
+                    onChange={(e) => handleInputChange('vetClinic', e.target.value)}
+                    className="input-field w-full"
+                    placeholder="Name of veterinary clinic"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-button font-medium text-gray-700 mb-2">
+                    Vet Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    value={formData.vetPhone}
+                    onChange={(e) => handleInputChange('vetPhone', e.target.value)}
+                    className="input-field w-full"
+                    placeholder="+64 9 123 4567"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-button font-medium text-gray-700 mb-2">
+                    Current Medications
+                  </label>
+                  <textarea
+                    value={formData.medications}
+                    onChange={(e) => handleInputChange('medications', e.target.value)}
+                    className="input-field w-full h-24 resize-none"
+                    placeholder="List any current medications or supplements"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-button font-medium text-gray-700 mb-2">
+                    Medical Conditions
+                  </label>
+                  <textarea
+                    value={formData.medicalConditions}
+                    onChange={(e) => handleInputChange('medicalConditions', e.target.value)}
+                    className="input-field w-full h-24 resize-none"
+                    placeholder="Any medical conditions we should know about"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Vaccinations Tab */}
+          {activeTab === 'vaccinations' && (
+            <div className="card p-6 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-button font-medium text-gray-700 mb-2">
+                    Vaccination Status *
+                  </label>
+                  <select
+                    value={formData.vaccinated}
+                    onChange={(e) => handleInputChange('vaccinated', e.target.value)}
+                    className="input-field w-full"
+                    required
+                  >
+                    <option value="">Select...</option>
+                    <option value="yes">Yes, up to date</option>
+                    <option value="partial">Partially vaccinated</option>
+                    <option value="no">No</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="border-t border-gray-200 pt-6">
+                <h3 className="font-heading text-lg font-semibold text-gray-900 mb-4">
+                  Vaccination Records
+                </h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  Upload vaccination certificates or vet records showing current vaccinations. This is required for boarding.
+                </p>
+
+                <FileUpload
+                  onFilesChange={setNewFiles}
+                  acceptedTypes={['image/*', '.pdf', '.doc', '.docx']}
+                  maxFiles={10}
+                  maxSizePerFile={5}
+                  existingFiles={dogFiles
+                    .filter(f => f.fileCategory === 'vaccination')
+                    .map(f => ({
+                      id: f.id,
+                      name: f.fileName,
+                      url: f.filePath,
+                      type: f.fileType,
+                      size: f.fileSize
+                    }))}
+                  onDeleteFile={handleDeleteFile}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Behavior Tab */}
+          {activeTab === 'behavior' && (
+            <div className="card p-6 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-button font-medium text-gray-700 mb-2">
+                    Crate Trained
+                  </label>
+                  <select
+                    value={formData.crateTrained}
+                    onChange={(e) => handleInputChange('crateTrained', e.target.value)}
+                    className="input-field w-full"
+                  >
+                    <option value="">Select...</option>
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                    <option value="sometimes">Sometimes</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-button font-medium text-gray-700 mb-2">
+                    Social Level with Other Dogs
+                  </label>
+                  <select
+                    value={formData.socialLevel}
+                    onChange={(e) => handleInputChange('socialLevel', e.target.value)}
+                    className="input-field w-full"
+                  >
+                    <option value="">Select...</option>
+                    <option value="very social">Very Social</option>
+                    <option value="social">Social</option>
+                    <option value="somewhat social">Somewhat Social</option>
+                    <option value="not social">Not Social</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-button font-medium text-gray-700 mb-2">
+                    Behavior with People
+                  </label>
+                  <select
+                    value={formData.peopleBehavior}
+                    onChange={(e) => handleInputChange('peopleBehavior', e.target.value)}
+                    className="input-field w-full"
+                  >
+                    <option value="">Select...</option>
+                    <option value="friendly">Friendly</option>
+                    <option value="shy">Shy</option>
+                    <option value="protective">Protective</option>
+                    <option value="aggressive">Aggressive</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-button font-medium text-gray-700 mb-2">
+                    Reactive to Farm Animals
+                  </label>
+                  <select
+                    value={formData.farmAnimalReactive}
+                    onChange={(e) => handleInputChange('farmAnimalReactive', e.target.value)}
+                    className="input-field w-full"
+                  >
+                    <option value="">Select...</option>
+                    <option value="no">No</option>
+                    <option value="yes">Yes</option>
+                    <option value="unknown">Unknown</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-button font-medium text-gray-700 mb-2">
+                    History of Biting
+                  </label>
+                  <select
+                    value={formData.biteHistory}
+                    onChange={(e) => handleInputChange('biteHistory', e.target.value)}
+                    className="input-field w-full"
+                  >
+                    <option value="">Select...</option>
+                    <option value="no">No</option>
+                    <option value="yes">Yes</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-button font-medium text-gray-700 mb-2">
+                    Behavioral Issues
+                  </label>
+                  <textarea
+                    value={formData.behavioralIssues}
+                    onChange={(e) => handleInputChange('behavioralIssues', e.target.value)}
+                    className="input-field w-full h-24 resize-none"
+                    placeholder="Any behavioral issues or concerns..."
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-button font-medium text-gray-700 mb-2">
+                  Additional Notes
+                </label>
+                <textarea
+                  value={formData.additionalNotes}
+                  onChange={(e) => handleInputChange('additionalNotes', e.target.value)}
+                  className="input-field w-full h-32 resize-none"
+                  placeholder="Any additional information about your dog..."
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Files Tab */}
+          {activeTab === 'files' && (
+            <div className="card p-6">
+              <h3 className="text-lg font-heading text-black mb-4">Dog Photos</h3>
+              <p className="text-sm text-gray-600 font-body mb-6">
+                Upload photos of your dog for their profile
+              </p>
+              <FileUpload
+                onFilesChange={setNewFiles}
+                acceptedTypes={['image/*']}
+                maxFiles={10}
+                maxSizePerFile={10}
+                existingFiles={dogFiles
+                  .filter(f => f.fileCategory === 'photo')
+                  .map(f => ({
+                    id: f.id,
+                    name: f.fileName,
+                    url: f.filePath,
+                    type: f.fileType,
+                    size: f.fileSize
+                  }))}
+                onDeleteFile={handleDeleteFile}
+              />
+            </div>
+          )}
+
+          {/* Fixed Bottom Actions */}
+          <div className="sticky bottom-0 bg-white border-t border-gray-200 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-4 mt-8">
+            <div className="flex items-center justify-end space-x-3">
+              <button
+                type="button"
+                onClick={onClose}
+                className="btn-secondary px-6"
+                disabled={uploading}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="btn-primary px-6"
+                disabled={uploading}
+              >
+                {uploading ? 'Saving...' : 'Save All Changes'}
+              </button>
+            </div>
           </div>
         </form>
       </div>

@@ -12,6 +12,8 @@ const nextConfig = {
     // !! WARN !!
     ignoreBuildErrors: false, // Keep TypeScript checking enabled
   },
+  // Optimize font loading for faster dev startup
+  optimizeFonts: false, // Disable font optimization in development
 }
 
 module.exports = nextConfig

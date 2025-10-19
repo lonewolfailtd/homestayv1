@@ -26,15 +26,17 @@
 
 /* Typography Classes */
 .font-heading {
-  font-family: var(--font-heading);
+  font-family: var(--font-montserrat), system-ui, -apple-system, sans-serif;
+  font-weight: 700;
 }
 
 .font-body {
-  font-family: var(--font-body);
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
 }
 
 .font-button {
-  font-family: var(--font-button);
+  font-family: var(--font-montserrat), system-ui, -apple-system, sans-serif;
+  font-weight: 600;
 }
 
 /* Brand Component Styles */
@@ -93,21 +95,21 @@
   h1, h2, h3, h4, h5, h6 {
     @apply font-heading text-black;
   }
-  
+
   h1 {
-    @apply text-4xl font-normal;
+    @apply text-4xl font-bold;
   }
-  
+
   h2 {
-    @apply text-3xl font-normal;
+    @apply text-3xl font-bold;
   }
-  
+
   h3 {
-    @apply text-2xl font-normal;
+    @apply text-2xl font-semibold;
   }
-  
+
   h4 {
-    @apply text-xl font-normal;
+    @apply text-xl font-semibold;
   }
 }
 

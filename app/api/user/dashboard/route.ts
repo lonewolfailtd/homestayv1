@@ -23,23 +23,39 @@ export async function GET(_request: NextRequest) {
       where: { clerkId: clerkUserId }
     });
 
-    if (!user) {
+    if (!user && userEmail) {
       // Create user record if it doesn't exist (webhook might have failed)
       try {
         user = await prisma.user.create({
           data: {
             clerkId: clerkUserId,
-            email: 'temp@example.com', // Will be updated when user completes profile
-            firstName: null,
-            lastName: null,
+            email: userEmail, // Use actual Clerk email
+            firstName: clerkUser?.firstName || null,
+            lastName: clerkUser?.lastName || null,
             phone: null,
           }
         });
-        console.log('Created missing user record for:', clerkUserId);
+        console.log('Created missing user record for:', clerkUserId, userEmail);
       } catch (error) {
         console.error('Error creating user record:', error);
-        return NextResponse.json({ error: 'Failed to create user record' }, { status: 500 });
+        // If email already exists, try to find the user by email and update clerkId
+        const existingUser = await prisma.user.findUnique({
+          where: { email: userEmail }
+        });
+        if (existingUser) {
+          // Update existing user with new clerkId
+          user = await prisma.user.update({
+            where: { email: userEmail },
+            data: { clerkId: clerkUserId }
+          });
+          console.log('Updated existing user with clerkId:', userEmail);
+        } else {
+          return NextResponse.json({ error: 'Failed to create user record' }, { status: 500 });
+        }
       }
+    } else if (!user && !userEmail) {
+      // No email available from Clerk - this shouldn't happen but handle gracefully
+      return NextResponse.json({ error: 'User email not available' }, { status: 500 });
     }
 
     // Get customer record by email from Clerk user or clerkUserId

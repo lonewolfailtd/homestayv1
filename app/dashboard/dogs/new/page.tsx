@@ -2,13 +2,16 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Dog, Save, X } from 'lucide-react';
+import { ArrowLeft, Dog, Save, X, Upload } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 
 export default function NewDogPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [uploadingFiles, setUploadingFiles] = useState(false);
+  const [dogPhotos, setDogPhotos] = useState<File[]>([]);
+  const [vaccinationRecords, setVaccinationRecords] = useState<File[]>([]);
   const [formData, setFormData] = useState({
     name: '',
     age: '',
@@ -34,16 +37,47 @@ export default function NewDogPage() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setDogPhotos(Array.from(e.target.files));
+    }
+  };
+
+  const handleVaccinationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setVaccinationRecords(Array.from(e.target.files));
+    }
+  };
+
+  const uploadFiles = async (dogId: string) => {
+    const allFiles = [
+      ...dogPhotos.map(f => ({ file: f, category: 'photo' })),
+      ...vaccinationRecords.map(f => ({ file: f, category: 'vaccination' })),
+    ];
+
+    for (const { file, category } of allFiles) {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('dogId', dogId);
+      formData.append('category', category);
+
+      await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.name || !formData.age || !formData.breed) {
       toast.error('Please fill in all required fields');
       return;
     }
 
     setLoading(true);
-    
+
     try {
       const response = await fetch('/api/dogs/create', {
         method: 'POST',
@@ -52,7 +86,18 @@ export default function NewDogPage() {
       });
 
       if (response.ok) {
-        toast.success('Dog profile created successfully!');
+        const { dogId } = await response.json();
+
+        // Upload files if any were selected
+        if (dogPhotos.length > 0 || vaccinationRecords.length > 0) {
+          setUploadingFiles(true);
+          await uploadFiles(dogId);
+          setUploadingFiles(false);
+          toast.success('Dog profile and files uploaded successfully!');
+        } else {
+          toast.success('Dog profile created successfully!');
+        }
+
         router.push('/dashboard/dogs');
       } else {
         const error = await response.json();
@@ -63,11 +108,12 @@ export default function NewDogPage() {
       toast.error('Failed to create dog profile');
     } finally {
       setLoading(false);
+      setUploadingFiles(false);
     }
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="-mt-[33rem] pb-[30rem] max-w-4xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center space-x-4">
         <Link
@@ -393,6 +439,88 @@ export default function NewDogPage() {
           </div>
         </div>
 
+        {/* File Uploads */}
+        <div className="card">
+          <div className="border-b border-gray-200 px-6 py-4">
+            <h2 className="text-lg font-heading text-black">Photos & Documents</h2>
+            <p className="text-sm text-gray-600 font-body mt-1">
+              Upload photos and vaccination records (optional but recommended)
+            </p>
+          </div>
+
+          <div className="p-6 space-y-6">
+            {/* Dog Photos */}
+            <div>
+              <label className="block text-sm font-button font-medium text-gray-700 mb-2">
+                Dog Photos
+              </label>
+              <p className="text-xs text-gray-500 font-body mb-3">
+                Upload photos of your dog so we can recognise them (JPG, PNG, GIF)
+              </p>
+              <div className="flex items-center justify-center w-full">
+                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
+                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                    <Upload className="w-8 h-8 mb-2 text-gray-500" />
+                    <p className="mb-2 text-sm text-gray-500 font-body">
+                      <span className="font-semibold">Click to upload</span> or drag and drop
+                    </p>
+                    <p className="text-xs text-gray-500 font-body">
+                      {dogPhotos.length > 0 ? `${dogPhotos.length} file(s) selected` : 'PNG, JPG or GIF (MAX. 5MB each)'}
+                    </p>
+                  </div>
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    multiple
+                    onChange={handlePhotoChange}
+                  />
+                </label>
+              </div>
+              {dogPhotos.length > 0 && (
+                <div className="mt-2 text-sm text-gray-600 font-body">
+                  Selected: {dogPhotos.map(f => f.name).join(', ')}
+                </div>
+              )}
+            </div>
+
+            {/* Vaccination Records */}
+            <div>
+              <label className="block text-sm font-button font-medium text-gray-700 mb-2">
+                Vaccination Records
+              </label>
+              <p className="text-xs text-gray-500 font-body mb-3">
+                Upload proof of current vaccinations (PDF, JPG, PNG)
+              </p>
+              <div className="flex items-center justify-center w-full">
+                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
+                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                    <Upload className="w-8 h-8 mb-2 text-gray-500" />
+                    <p className="mb-2 text-sm text-gray-500 font-body">
+                      <span className="font-semibold">Click to upload</span> or drag and drop
+                    </p>
+                    <p className="text-xs text-gray-500 font-body">
+                      {vaccinationRecords.length > 0 ? `${vaccinationRecords.length} file(s) selected` : 'PDF, PNG or JPG (MAX. 10MB each)'}
+                    </p>
+                  </div>
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept="image/*,.pdf"
+                    multiple
+                    onChange={handleVaccinationChange}
+                  />
+                </label>
+              </div>
+              {vaccinationRecords.length > 0 && (
+                <div className="mt-2 text-sm text-gray-600 font-body">
+                  Selected: {vaccinationRecords.map(f => f.name).join(', ')}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
         {/* Actions */}
         <div className="flex items-center justify-between py-6">
           <Link
@@ -405,11 +533,11 @@ export default function NewDogPage() {
           
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || uploadingFiles}
             className="btn-primary flex items-center"
           >
             <Save className="h-4 w-4 mr-2" />
-            {loading ? 'Creating Profile...' : 'Create Dog Profile'}
+            {uploadingFiles ? 'Uploading Files...' : loading ? 'Creating Profile...' : 'Create Dog Profile'}
           </button>
         </div>
       </form>

@@ -40,31 +40,36 @@ export default function CustomerStep({ formData, updateFormData, nextStep }: Cus
     }
   }, [user, formData.firstName, updateFormData]);
 
-  // Fetch user preferences for emergency contact
+  // Fetch complete customer record for auto-population
   useEffect(() => {
-    const fetchUserPreferences = async () => {
+    const fetchCustomerData = async () => {
       if (user && !formData.emergencyName) {
         try {
-          const response = await fetch('/api/user/profile');
+          const response = await fetch('/api/user/customer');
           if (response.ok) {
             const data = await response.json();
-            if (data.preferences?.default_emergency_contact) {
-              const emergencyData = {
-                emergencyName: data.preferences.default_emergency_contact.name || '',
-                emergencyPhone: data.preferences.default_emergency_contact.phone || '',
-                emergencyRelation: data.preferences.default_emergency_contact.relation || 'Partner',
+            if (data.exists && data.customer) {
+              const customer = data.customer;
+              const populatedData = {
+                phone: customer.phone || '',
+                address: customer.address || '',
+                city: customer.city || '',
+                postalCode: customer.postalCode || '',
+                emergencyName: customer.emergencyName || '',
+                emergencyPhone: customer.emergencyPhone || '',
+                emergencyRelation: customer.emergencyRelation || 'Partner',
               };
-              setCustomerData(prev => ({ ...prev, ...emergencyData }));
-              updateFormData(emergencyData);
+              setCustomerData(prev => ({ ...prev, ...populatedData }));
+              updateFormData(populatedData);
             }
           }
         } catch (error) {
-          console.log('Could not fetch user preferences:', error);
+          console.log('Could not fetch customer data:', error);
         }
       }
     };
 
-    fetchUserPreferences();
+    fetchCustomerData();
   }, [user, formData.emergencyName, updateFormData]);
 
   const handleInputChange = (field: string, value: string) => {

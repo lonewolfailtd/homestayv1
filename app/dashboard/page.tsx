@@ -3,12 +3,12 @@
 import { useState, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
 import Link from 'next/link';
-import { 
-  Calendar, 
-  Dog, 
-  Plus, 
-  Clock, 
-  CheckCircle, 
+import {
+  Calendar,
+  Dog,
+  Plus,
+  Clock,
+  CheckCircle,
   ArrowRight,
   Heart,
   Star,
@@ -19,6 +19,7 @@ import {
 import { toast } from 'sonner';
 import { StatsSkeleton, BookingListSkeleton } from '@/components/ui/LoadingStates';
 import { DashboardErrorBoundary } from '@/components/ui/ErrorBoundary';
+import ProfileCompletionBanner from '@/components/ProfileCompletionBanner';
 
 interface DashboardData {
   stats: {
@@ -67,6 +68,7 @@ export default function DashboardPage() {
   const { user } = useUser();
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [profileStatus, setProfileStatus] = useState<any>(null);
 
   const fetchDashboardData = async () => {
     try {
@@ -87,8 +89,22 @@ export default function DashboardPage() {
     }
   };
 
+  const fetchProfileStatus = async () => {
+    try {
+      const response = await fetch('/api/user/profile-completeness');
+      const data = await response.json();
+
+      if (response.ok) {
+        setProfileStatus(data);
+      }
+    } catch (error) {
+      console.error('Error fetching profile status:', error);
+    }
+  };
+
   useEffect(() => {
     fetchDashboardData();
+    fetchProfileStatus();
   }, []);
 
   const formatDate = (date: Date) => {
@@ -211,6 +227,14 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Profile Completion Banner */}
+      {profileStatus && profileStatus.completeness < 100 && (
+        <ProfileCompletionBanner
+          completeness={profileStatus.completeness}
+          checklist={profileStatus.checklist}
+        />
+      )}
 
       {/* Stats Grid - Moved up and improved spacing */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">

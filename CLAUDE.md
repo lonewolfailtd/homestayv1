@@ -374,7 +374,7 @@ app/
 - **Production URL**: https://booking.100percentk9.co.nz/
 - **DNS Setup**: CNAME record pointing `booking.100percentk9.co.nz` to `cname.vercel-dns.com`
 
-## Recent Updates (Oct 17, 2025)
+## Recent Updates (Oct 19, 2025)
 - 🎨 **Brand Consistency**: All purple references removed, proper K9 colors implemented
 - 🚀 **Quick Rebooking**: Repeat customers can book in 3 clicks with saved dogs
 - 📁 **File Uploads**: Secure document management for vet records and photos
@@ -384,6 +384,9 @@ app/
 - 💾 **File Storage**: Organized user-specific file storage with proper cleanup
 - 🔗 **Enhanced APIs**: New endpoints for rebooking, file management, and profiles
 - 📐 **Dashboard Layout**: Optimized positioning and responsive design
+- 🗂️ **Separate File Tabs**: Photos and vaccinations now properly separated with context-aware categorization
+- 📋 **Profile Progress Modal**: Click-outside to close functionality added
+- ✅ **Profile Completeness**: Real-time tracking with on-demand progress checking
 
 ## Dashboard Layout Configuration
 
@@ -403,3 +406,33 @@ app/
 **IMPORTANT**: The `-mt-[33rem]` value is precisely calibrated to align the dashboard header with the sidebar logo. Any changes to sidebar height or logo size require recalibrating this value.
 - 🎯 **Horizontal Logo**: 100% K9 branding implemented across all pages
 - 🔧 **Build Fixes**: Resolved all Vercel deployment errors for production release
+
+## File Categorization System (Oct 19, 2025)
+
+### Context-Aware File Upload
+Files are automatically categorized based on which tab they're uploaded from:
+- **Photos Tab** (activeTab='files'): All uploads → `fileCategory: 'photo'`
+- **Vaccinations Tab** (activeTab='vaccinations'): All uploads → `fileCategory: 'vaccination'`
+- **Medical & Vet Tab**: Auto-detection based on filename/type
+
+### Category Display Logic
+- **Photos Tab**: Only displays files where `fileCategory === 'photo'`
+- **Vaccinations Tab**: Only displays files where `fileCategory === 'vaccination'`
+- Each tab is completely isolated from the others
+
+### API Schema Requirements
+The Zod validation schema in `/api/dogs/[id]/route.ts` must include `category: z.string().optional()` in the files array to allow the category field to pass through validation. Without this, Zod strips the category field during validation.
+
+### Auto-Detection Fallback
+If no category is provided (shouldn't happen with context-aware system), the API falls back to:
+1. Images → 'photo'
+2. Filenames with vaccine keywords → 'vaccination'
+3. Filenames with vet keywords → 'vet'
+4. Default → 'other'
+
+### Database Schema
+`DogFile.fileCategory`: String field storing 'photo' | 'vaccination' | 'vet' | 'other'
+
+### Profile Completeness Integration
+- `hasDogPhotos`: Checks for files where `fileCategory === 'photo'`
+- `hasVaccinationRecords`: Checks for files where `fileCategory === 'vaccination'`

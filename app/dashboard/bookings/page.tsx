@@ -160,7 +160,7 @@ export default function BookingsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="-mt-[33rem] pb-[30rem] space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

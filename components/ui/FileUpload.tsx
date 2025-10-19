@@ -138,7 +138,7 @@ export default function FileUpload({
           multiple
           accept={acceptedTypes.join(',')}
           onChange={(e) => handleFiles(e.target.files)}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+          className="hidden"
         />
         
         <Upload className={`h-12 w-12 mx-auto mb-4 ${dragActive ? 'text-cyan-500' : 'text-gray-400'}`} />

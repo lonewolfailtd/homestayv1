@@ -48,12 +48,29 @@
       "Bash(ren:*)",
       "Bash(dir)",
       "Bash(npm run build:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "mcp__playwright__browser_install",
+      "Bash(test -f /mnt/c/Users/Hodgs/homestayv1/.env.local)",
+      "Bash(test -d /mnt/c/Users/Hodgs/homestayv1/node_modules)",
+      "Bash(test -d /mnt/c/Users/Hodgs/homestayv1/prisma)",
+      "Bash(lsof -ti:3000)",
+      "Bash(xargs kill -9)",
+      "Bash(npx playwright install chromium)",
+      "Read(//c/**)",
+      "Bash(git config user.name \"Hodgs\")",
+      "Bash(git config user.email \"hodgs@100percentk9.co.nz\")",
+      "Bash(git config user.email \"contact@lonewolfaisolutions.co.nz\")",
+      "Bash(npx @playwright/test --version)",
+      "Bash(cat .env.local)",
+      "Bash(timeout 10 bash -c 'until curl -s http://localhost:3000 > /dev/null; do sleep 1; done && echo \"\"Server ready\"\"')",
+      "Bash(node scripts/check-file-categories.js)",
+      "Bash(node scriptscheck-file-categories.js)"
     ],
     "deny": [],
     "ask": [],
     "additionalDirectories": [
       "C:\\c\\Users\\Hodgs"
     ]
-  }
+  },
+  "outputStyle": "Learning"
 }

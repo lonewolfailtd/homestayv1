@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useUser, SignInButton } from '@clerk/nextjs';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -78,6 +79,19 @@ const scaleIn = {
 
 export default function Home() {
   const { isSignedIn, user, isLoaded } = useUser();
+  const [showContent, setShowContent] = useState(false);
+
+  // Timeout fallback - show content after 3 seconds even if Clerk hasn't loaded
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (!isLoaded) {
+        console.warn('Clerk loading timeout - showing content anyway');
+        setShowContent(true);
+      }
+    }, 3000);
+
+    return () => clearTimeout(timeout);
+  }, [isLoaded]);
 
   // Structured data for SEO
   const structuredData = {
@@ -123,10 +137,13 @@ export default function Home() {
     ]
   };
 
-  if (!isLoaded) {
+  if (!isLoaded && !showContent) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500 mx-auto mb-4"></div>
+          <p className="text-gray-600 text-sm font-body">Loading...</p>
+        </div>
       </div>
     );
   }

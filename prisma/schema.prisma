@@ -12,19 +12,23 @@ datasource db {
 
 // User model for Clerk authentication
 model User {
-  id            String   @id @default(cuid())
-  clerkId       String   @unique
-  email         String   @unique
-  firstName     String?
-  lastName      String?
-  phone         String?
-  preferences   Json?    // User preferences like notification settings
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  
+  id                      String   @id @default(cuid())
+  clerkId                 String   @unique
+  email                   String   @unique
+  firstName               String?
+  lastName                String?
+  phone                   String?
+  preferences             Json?    // User preferences like notification settings
+  hasCompletedOnboarding  Boolean  @default(false)
+  hasSeenWelcomeModal     Boolean  @default(false)
+  profileCompleteness     Int      @default(0) // 0-100
+  lastOnboardingPrompt    DateTime?
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
   savedDogs     SavedDog[]
   bookingViews  BookingView[]
-  
+
   @@map("users")
 }
 

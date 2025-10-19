@@ -66,13 +66,13 @@ export async function GET() {
 export async function PUT(request: NextRequest) {
   try {
     const { userId } = await auth();
-    
+
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await request.json();
-    const { firstName, lastName, phone, preferences } = body;
+    const { firstName, lastName, phone, address, city, postalCode, preferences } = body;
 
     // Validate required fields
     if (!firstName) {
@@ -100,7 +100,7 @@ export async function PUT(request: NextRequest) {
       };
 
       // Validate communication preference
-      if (validPreferences.communicationPreference && 
+      if (validPreferences.communicationPreference &&
           !['email', 'sms', 'phone'].includes(validPreferences.communicationPreference)) {
         return NextResponse.json(
           { error: 'Invalid communication preference' },
@@ -127,6 +127,28 @@ export async function PUT(request: NextRequest) {
           updatedAt: true,
         },
       });
+
+      // Also update customer record if it exists (for booking form auto-population)
+      const customer = await prisma.customer.findFirst({
+        where: { clerkUserId: userId },
+      });
+
+      if (customer) {
+        await prisma.customer.update({
+          where: { id: customer.id },
+          data: {
+            firstName,
+            lastName,
+            phone,
+            address: address || customer.address,
+            city: city || customer.city,
+            postalCode: postalCode || customer.postalCode,
+            emergencyName: validPreferences.emergencyContact?.name,
+            emergencyPhone: validPreferences.emergencyContact?.phone,
+            emergencyRelation: validPreferences.emergencyContact?.relation,
+          },
+        });
+      }
 
       return NextResponse.json({
         success: true,
@@ -156,6 +178,25 @@ export async function PUT(request: NextRequest) {
         updatedAt: true,
       },
     });
+
+    // Also update customer record if it exists (for booking form auto-population)
+    const customer = await prisma.customer.findFirst({
+      where: { clerkUserId: userId },
+    });
+
+    if (customer) {
+      await prisma.customer.update({
+        where: { id: customer.id },
+        data: {
+          firstName,
+          lastName,
+          phone,
+          address: address || customer.address,
+          city: city || customer.city,
+          postalCode: postalCode || customer.postalCode,
+        },
+      });
+    }
 
     return NextResponse.json({
       success: true,

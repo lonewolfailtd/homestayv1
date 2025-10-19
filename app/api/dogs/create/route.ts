@@ -89,8 +89,18 @@ export async function POST(request: NextRequest) {
       }
     });
 
+    // Automatically add to user's saved dogs
+    await prisma.savedDog.create({
+      data: {
+        userId: user.id,
+        dogId: dog.id,
+        isDefault: false,
+      }
+    });
+
     return NextResponse.json({
       success: true,
+      dogId: dog.id,
       dog: {
         id: dog.id,
         name: dog.name,
