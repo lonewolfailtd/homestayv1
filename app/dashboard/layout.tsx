@@ -69,7 +69,6 @@ export default function DashboardLayout({
                 width={260}
                 height={60}
                 className="h-16 w-auto"
-                priority
               />
             </Link>
             <button

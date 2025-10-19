@@ -61,7 +61,7 @@ export default function SignUpPage() {
                 fontSize: '14px',
               }
             }}
-            redirectUrl="/dashboard"
+            fallbackRedirectUrl="/dashboard"
           />
         </div>
 

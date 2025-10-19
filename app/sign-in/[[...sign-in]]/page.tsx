@@ -60,7 +60,7 @@ export default function SignInPage() {
                 fontSize: '14px',
               }
             }}
-            redirectUrl="/dashboard"
+            fallbackRedirectUrl="/dashboard"
           />
         </div>
 
