@@ -59,6 +59,7 @@ A modern Next.js web application for managing dog boarding bookings with user au
   - Use "re" not "er": centre, metre, litre
   - Use "ise" not "ize": realise, specialise, emphasise
   - Use "ogue" not "og": dialogue, catalogue
+  - **No Oxford comma**: Remove comma before "and" in lists (e.g., "monitoring, exercise and care" not "monitoring, exercise, and care")
   - Date format: DD/MM/YYYY (e.g., 25/12/2025)
   - Common NZ terms: vet (not veterinarian), mum/dad (not mom), mobile (not cell phone)
   - **IMPORTANT**: Apply these standards to ALL user-facing text including:

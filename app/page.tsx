@@ -28,7 +28,7 @@ const features = [
   {
     icon: Star,
     title: 'Premium Service',
-    description: 'Additional services including grooming, training, and adventure walks.'
+    description: 'Additional services including grooming, training and adventure walks.'
   },
   {
     icon: Users,
@@ -62,7 +62,7 @@ export default function Home() {
     "@context": "https://schema.org",
     "@type": "PetBoarding",
     "name": "100% K9 Dog Boarding",
-    "description": "Professional dog boarding and homestay services in Auckland with farm-based exercise, 24/7 monitoring, and personalised care",
+    "description": "Professional dog boarding and homestay services in Auckland with farm-based exercise, 24/7 monitoring and personalised care",
     "url": "https://booking.100percentk9.co.nz",
     "telephone": "+64-XXXX-XXXX",
     "address": {
@@ -185,7 +185,7 @@ export default function Home() {
               Premium Dog Boarding & Homestay in Auckland
             </h1>
             <p className="text-xl md:text-2xl text-white mb-8 max-w-3xl mx-auto font-body drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
-              Auckland's trusted dog boarding service with professional overnight care, full structure, enrichment, and daily exercise on our farm.
+              Auckland's trusted dog boarding service with professional overnight care, full structure, enrichment and daily exercise on our farm.
               Your dog's home away from home.
             </p>
             
@@ -295,7 +295,7 @@ export default function Home() {
               <CheckCircle className="h-12 w-12 text-blue-600 mx-auto mb-4" />
               <h3 className="text-xl font-heading text-black mb-3">Additional Services</h3>
               <p className="text-gray-600 font-body mb-4">
-                Grooming, training, raw meals, and specialized care for your dog.
+                Grooming, training, raw meals and specialised care for your dog.
               </p>
               <div className="text-sm text-gray-500 font-body">Various prices</div>
             </div>
