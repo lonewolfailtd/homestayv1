@@ -221,6 +221,11 @@ GOHIGHLEVEL_LOCATION_ID=your_ghl_location_id
 - Email: HTML notifications sent for each booking (✅ Working)
 
 ## Recent Fixes Completed (Oct 2025)
+- ✅ **Dashboard Layout Fix**: Corrected sidebar positioning for proper content alignment (Oct 19, 2025)
+  - Removed `lg:static` from sidebar - now fixed at all screen sizes
+  - Added proper vertical padding to main content area (`py-6 lg:py-8`)
+  - Removed problematic negative margin approach from dashboard page
+  - Content now starts at top of viewport, properly aligned with sidebar logo
 - ✅ **Multiple Bookings**: Fixed database constraints to allow repeat customers
 - ✅ **GoHighLevel Integration**: Fixed V2 API contact search and update (contact ID: klHqwVP94twjcZDHn0nt)
 - ✅ **Xero Integration**: Smart item code selection based on stay duration with GST-inclusive pricing
@@ -410,19 +415,20 @@ app/
 ## Dashboard Layout Configuration
 
 ### Key Positioning Settings
-- **Main Container**: `-mt-[33rem] pb-[30rem]` - Critical negative margin to align content with sidebar logo level
+- **Sidebar**: `fixed inset-y-0 left-0 w-64` - Fixed positioning at all screen sizes (mobile slides in/out with transform)
+- **Main Content Area**: `lg:pl-64 px-4 py-6 lg:py-8` - Left padding for sidebar width, responsive vertical spacing
+- **Dashboard Container**: `space-y-6` - Simple vertical spacing between sections
 - **Logo Size**: `h-16 w-auto` (260px width, 60px height) - Prominent sidebar branding
-- **Header Padding**: `p-6` - Balanced spacing for welcome section
 - **Grid Spacing**: `gap-4` - Consistent spacing between stat cards and content sections
-- **Content Alignment**: Top of dashboard aligns with logo level in sidebar navigation
 
 ### Layout Architecture
-- **Sidebar**: Fixed 256px width with logo at top (h-16 container)
-- **Main Content**: `lg:pl-64` offset with precise negative margin positioning
-- **Responsive**: Mobile-first design with collapsible sidebar
+- **Sidebar**: Fixed 256px width at all screen sizes, removed from document flow
+- **Main Content**: `lg:pl-64` offset compensates for fixed sidebar width
+- **Responsive**: Mobile sidebar slides in/out with `translateX`, desktop sidebar always visible and fixed
 - **Grid System**: 5-column stats grid on large screens, responsive breakpoints
+- **Vertical Spacing**: Clean padding-based approach (`py-6 lg:py-8`) replaces old negative margin system
 
-**IMPORTANT**: The `-mt-[33rem]` value is precisely calibrated to align the dashboard header with the sidebar logo. Any changes to sidebar height or logo size require recalibrating this value.
+**IMPORTANT**: The sidebar must remain `fixed` at all screen sizes. Do NOT use `lg:static` as it breaks the layout by inserting the sidebar into document flow, pushing content down.
 - 🎯 **Horizontal Logo**: 100% K9 branding implemented across all pages
 - 🔧 **Build Fixes**: Resolved all Vercel deployment errors for production release
 

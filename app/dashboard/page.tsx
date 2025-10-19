@@ -175,7 +175,7 @@ export default function DashboardPage() {
 
   return (
     <DashboardErrorBoundary>
-      <div className="mt-4 md:mt-0 md:-mt-[33rem] pb-8 md:pb-[30rem] space-y-2">
+      <div className="space-y-6">
       {/* Black Header with White Font */}
       <div className="bg-gradient-to-r from-black to-gray-800 rounded-2xl p-4 md:p-6 text-white">
         <div className="flex items-center justify-between">
