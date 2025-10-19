@@ -1,20 +1,21 @@
 'use client';
 
-import { UserButton, useUser } from '@clerk/nextjs';
+import { UserButton, useUser, SignOutButton } from '@clerk/nextjs';
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { 
-  Home, 
-  Calendar, 
-  History, 
-  Dog, 
-  User, 
-  FileText, 
-  Menu, 
+import {
+  Home,
+  Calendar,
+  History,
+  Dog,
+  User,
+  FileText,
+  Menu,
   X,
-  Plus
+  Plus,
+  LogOut
 } from 'lucide-react';
 
 const navigation = [
@@ -106,8 +107,8 @@ export default function DashboardLayout({
 
           {/* User info */}
           <div className="p-4 border-t border-gray-200">
-            <div className="flex items-center">
-              <UserButton 
+            <div className="flex items-center mb-3">
+              <UserButton
                 appearance={{
                   elements: {
                     avatarBox: "h-8 w-8"
@@ -123,6 +124,12 @@ export default function DashboardLayout({
                 </p>
               </div>
             </div>
+            <SignOutButton>
+              <button className="w-full flex items-center justify-center px-3 py-2 text-sm font-button font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
+                <LogOut className="h-4 w-4 mr-2" />
+                Sign Out
+              </button>
+            </SignOutButton>
           </div>
         </div>
       </div>
