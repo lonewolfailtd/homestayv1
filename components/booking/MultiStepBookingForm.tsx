@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUser } from '@clerk/nextjs';
+import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import ProgressIndicator from './ProgressIndicator';
 import StepNavigation from './StepNavigation';
@@ -24,12 +25,31 @@ const STEPS = [
 ];
 
 export default function MultiStepBookingForm() {
+  const searchParams = useSearchParams();
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasCustomerData, setHasCustomerData] = useState(false);
   const [loading, setLoading] = useState(true);
   const { user } = useUser();
+
+  // Handle URL parameters for pre-selected dogs and dates
+  useEffect(() => {
+    const dogIds = searchParams.getAll('dogId');
+    const isMultiDog = searchParams.get('multiDog') === 'true';
+    const checkIn = searchParams.get('checkIn');
+    const checkOut = searchParams.get('checkOut');
+
+    if (dogIds.length > 0 || isMultiDog || checkIn || checkOut) {
+      setFormData(prev => ({
+        ...prev,
+        ...(isMultiDog && { isMultiDogBooking: true }),
+        ...(checkIn && { checkIn }),
+        ...(checkOut && { checkOut }),
+        preSelectedDogIds: dogIds,
+      }));
+    }
+  }, [searchParams]);
 
   // Check if user has complete customer data on mount
   useEffect(() => {

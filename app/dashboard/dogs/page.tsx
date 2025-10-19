@@ -152,15 +152,16 @@ export default function DogsPage() {
       toast.error('Please select at least one dog to book');
       return;
     }
-    
+
     const selectedDogIds = selectedDogs.map(selectedId => {
       const savedDog = savedDogs.find(dog => dog.id === selectedId);
       return savedDog?.dog.id;
     }).filter(Boolean);
-    
-    // Redirect to multi-dog booking page
+
+    // Redirect to main booking page with multi-dog mode enabled
     const dogParams = selectedDogIds.map(id => `dogId=${id}`).join('&');
-    window.location.href = `/book/multi?${dogParams}`;
+    const multiDogParam = selectedDogIds.length > 1 ? '&multiDog=true' : '';
+    window.location.href = `/book?${dogParams}${multiDogParam}`;
   };
 
   const handleBulkDelete = async () => {
