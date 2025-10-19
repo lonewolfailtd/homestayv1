@@ -53,6 +53,21 @@ A modern Next.js web application for managing dog boarding bookings with user au
 - **Follow Existing Patterns**: Match existing code style and architectural patterns
 - **Brand Consistency**: Ensure all UI changes align with 100% K9 brand colors (cyan, black, gray)
 - **Mobile Responsive**: Test all changes on mobile devices
+- **NZ English Standards**: All user-facing text MUST use New Zealand English spelling and grammar
+  - Use "s" not "z": organise, personalise, customise, recognise
+  - Use "our" not "or": colour, favour, honour, behaviour
+  - Use "re" not "er": centre, metre, litre
+  - Use "ise" not "ize": realise, specialise, emphasise
+  - Use "ogue" not "og": dialogue, catalogue
+  - Date format: DD/MM/YYYY (e.g., 25/12/2025)
+  - Common NZ terms: vet (not veterinarian), mum/dad (not mom), mobile (not cell phone)
+  - **IMPORTANT**: Apply these standards to ALL user-facing text including:
+    - UI components, buttons, labels
+    - Form fields and validation messages
+    - Email templates and notifications
+    - Marketing copy and descriptions
+    - Error messages and help text
+    - SEO metadata and page titles
 
 ## Development Commands
 

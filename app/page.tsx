@@ -23,7 +23,7 @@ const features = [
   {
     icon: Heart,
     title: 'Loving Environment',
-    description: 'Home-based boarding with daily exercise and personalized attention.'
+    description: 'Home-based boarding with daily exercise and personalised attention.'
   },
   {
     icon: Star,
@@ -62,7 +62,7 @@ export default function Home() {
     "@context": "https://schema.org",
     "@type": "PetBoarding",
     "name": "100% K9 Dog Boarding",
-    "description": "Professional dog boarding and homestay services in Auckland with farm-based exercise, 24/7 monitoring, and personalized care",
+    "description": "Professional dog boarding and homestay services in Auckland with farm-based exercise, 24/7 monitoring, and personalised care",
     "url": "https://booking.100percentk9.co.nz",
     "telephone": "+64-XXXX-XXXX",
     "address": {

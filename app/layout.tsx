@@ -19,7 +19,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: 'Dog Boarding Auckland | Premium Homestay Services | 100% K9',
-  description: 'Professional dog boarding in Auckland. Premium homestay care with 24/7 monitoring, farm-based exercise, and personalized attention. Book your dog\'s Auckland stay today!',
+  description: 'Professional dog boarding in Auckland. Premium homestay care with 24/7 monitoring, farm-based exercise, and personalised attention. Book your dog\'s Auckland stay today!',
   keywords: ['dog boarding Auckland', 'dog homestay Auckland', 'pet boarding Auckland', 'dog kennels Auckland', 'dog daycare Auckland', 'premium dog care Auckland', 'farm dog boarding', 'dog sitting Auckland'],
   authors: [{ name: '100% K9' }],
   icons: {
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: 'Dog Boarding Auckland | Premium Homestay Services | 100% K9',
-    description: 'Professional dog boarding in Auckland with farm-based exercise, 24/7 care, and personalized attention. Trusted by 500+ happy dog owners.',
+    description: 'Professional dog boarding in Auckland with farm-based exercise, 24/7 care, and personalised attention. Trusted by 500+ happy dog owners.',
     url: 'https://booking.100percentk9.co.nz',
     siteName: '100% K9 Dog Boarding',
     locale: 'en_NZ',
