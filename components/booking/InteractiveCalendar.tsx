@@ -233,7 +233,7 @@ export default function InteractiveCalendar({ selectedDates, onDateChange }: Int
               margin: 0 auto;
               width: 100%;
               max-width: 600px;
-              min-width: 480px;
+              min-width: 320px;
             }
             .rdp-months {
               display: flex;

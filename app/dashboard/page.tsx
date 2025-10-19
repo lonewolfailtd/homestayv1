@@ -175,9 +175,9 @@ export default function DashboardPage() {
 
   return (
     <DashboardErrorBoundary>
-      <div className="-mt-[33rem] pb-[30rem] space-y-2">
+      <div className="mt-4 md:mt-0 md:-mt-[33rem] pb-8 md:pb-[30rem] space-y-2">
       {/* Black Header with White Font */}
-      <div className="bg-gradient-to-r from-black to-gray-800 rounded-2xl p-6 text-white">
+      <div className="bg-gradient-to-r from-black to-gray-800 rounded-2xl p-4 md:p-6 text-white">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-heading text-white mb-1">
@@ -200,27 +200,27 @@ export default function DashboardPage() {
           </div>
           
           {/* Quick Actions */}
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2 md:space-x-3">
             <Link
               href="/book"
-              className="inline-flex items-center bg-white text-black px-4 py-2 rounded-lg font-button font-medium hover:bg-gray-50 transition-colors text-sm"
+              className="inline-flex items-center bg-white text-black px-3 md:px-4 py-2 rounded-lg font-button font-medium hover:bg-gray-50 transition-colors text-xs md:text-sm touch-manipulation min-h-[44px]"
             >
-              <Plus className="h-4 w-4 mr-2" />
-              Book New Stay
+              <Plus className="h-4 w-4 md:mr-2" />
+              <span className="hidden md:inline">Book New Stay</span>
             </Link>
-            
+
             <Link
               href="/dashboard/rebook"
-              className="inline-flex items-center bg-cyan-500 text-white px-4 py-2 rounded-lg font-button font-medium hover:bg-cyan-600 transition-colors text-sm"
+              className="inline-flex items-center bg-cyan-500 text-white px-3 md:px-4 py-2 rounded-lg font-button font-medium hover:bg-cyan-600 transition-colors text-xs md:text-sm touch-manipulation min-h-[44px]"
             >
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Quick Rebook
+              <RefreshCw className="h-4 w-4 md:mr-2" />
+              <span className="hidden md:inline">Quick Rebook</span>
             </Link>
-            
+
             <button
               onClick={fetchDashboardData}
               disabled={loading}
-              className="inline-flex items-center bg-white bg-opacity-20 text-white px-3 py-2 rounded-lg font-button font-medium hover:bg-opacity-30 transition-colors text-sm"
+              className="inline-flex items-center bg-white bg-opacity-20 text-white px-3 py-2 rounded-lg font-button font-medium hover:bg-opacity-30 transition-colors text-xs md:text-sm touch-manipulation min-h-[44px]"
             >
               <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
             </button>

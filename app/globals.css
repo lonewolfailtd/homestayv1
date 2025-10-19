@@ -42,23 +42,27 @@
 /* Brand Component Styles */
 @layer components {
   .btn-primary {
-    @apply bg-black text-white hover:bg-gray-800 font-button font-medium px-6 py-3 rounded-xl transition-colors;
+    @apply bg-black text-white hover:bg-gray-800 font-button font-medium px-6 py-3 rounded-xl transition-colors touch-manipulation;
+    min-height: 44px;
   }
-  
+
   .btn-secondary {
-    @apply bg-white text-black border border-gray-200 hover:bg-gray-50 font-button font-medium px-6 py-3 rounded-xl transition-colors;
+    @apply bg-white text-black border border-gray-200 hover:bg-gray-50 font-button font-medium px-6 py-3 rounded-xl transition-colors touch-manipulation;
+    min-height: 44px;
   }
-  
+
   .btn-accent {
-    @apply bg-cyan-500 text-white hover:bg-cyan-600 font-button font-medium px-6 py-3 rounded-xl transition-colors;
+    @apply bg-cyan-500 text-white hover:bg-cyan-600 font-button font-medium px-6 py-3 rounded-xl transition-colors touch-manipulation;
+    min-height: 44px;
   }
-  
+
   .card {
     @apply bg-white border border-gray-200 rounded-xl shadow-sm;
   }
-  
+
   .input-field {
     @apply w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 font-body;
+    min-height: 44px;
   }
   
   .form-section {
@@ -113,18 +117,21 @@
   }
 }
 
-/* Animations */
+/* Animations - GPU optimized for mobile performance */
 @layer utilities {
   .animate-fade-in {
     animation: fade-in 0.3s ease-in-out;
+    will-change: opacity;
   }
-  
+
   .animate-slide-up {
     animation: slide-up 0.3s ease-out;
+    will-change: transform, opacity;
   }
-  
+
   .animate-scale-in {
     animation: scale-in 0.2s ease-out;
+    will-change: transform, opacity;
   }
 }
 
@@ -140,21 +147,21 @@
 @keyframes slide-up {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(10px) translateZ(0);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) translateZ(0);
   }
 }
 
 @keyframes scale-in {
   from {
     opacity: 0;
-    transform: scale(0.95);
+    transform: scale(0.95) translateZ(0);
   }
   to {
     opacity: 1;
-    transform: scale(1);
+    transform: scale(1) translateZ(0);
   }
 }
