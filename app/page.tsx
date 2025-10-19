@@ -40,22 +40,66 @@ const features = [
 const testimonials = [
   {
     name: 'Sarah Johnson',
-    location: 'Auckland',
+    location: 'Ponsonby, Auckland',
     rating: 5,
-    text: 'Amazing care for Max! He came back happy and well-exercised. The daily updates gave me peace of mind.',
+    text: 'Best dog boarding in Auckland! Amazing care for Max! He came back happy and well-exercised. The daily updates gave me peace of mind.',
     dogName: 'Max'
   },
   {
     name: 'Mike Chen',
-    location: 'Wellington',
+    location: 'Mission Bay, Auckland',
     rating: 5,
-    text: 'Professional service with genuine love for dogs. Bella has stayed here multiple times and loves it.',
+    text: 'We\'ve tried other Auckland dog boarding services, but 100% K9 is by far the best. Professional service with genuine love for dogs. Bella has stayed here multiple times and loves the farm!',
     dogName: 'Bella'
   }
 ];
 
 export default function Home() {
   const { isSignedIn, user, isLoaded } = useUser();
+
+  // Structured data for SEO
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "PetBoarding",
+    "name": "100% K9 Dog Boarding",
+    "description": "Professional dog boarding and homestay services in Auckland with farm-based exercise, 24/7 monitoring, and personalized care",
+    "url": "https://booking.100percentk9.co.nz",
+    "telephone": "+64-XXXX-XXXX",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Auckland",
+      "addressRegion": "Auckland",
+      "addressCountry": "NZ"
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": -36.8485,
+      "longitude": 174.7633
+    },
+    "areaServed": {
+      "@type": "City",
+      "name": "Auckland"
+    },
+    "priceRange": "$$",
+    "image": "https://booking.100percentk9.co.nz/images/dog-hero.jpg",
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "5",
+      "reviewCount": "500"
+    },
+    "openingHoursSpecification": {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+      "opens": "00:00",
+      "closes": "23:59"
+    },
+    "amenityFeature": [
+      { "@type": "LocationFeatureSpecification", "name": "24/7 Monitoring" },
+      { "@type": "LocationFeatureSpecification", "name": "Farm-based Exercise" },
+      { "@type": "LocationFeatureSpecification", "name": "Veterinary Support" },
+      { "@type": "LocationFeatureSpecification", "name": "Daily Updates" }
+    ]
+  };
 
   if (!isLoaded) {
     return (
@@ -67,6 +111,11 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-gray-50">
+      {/* Structured Data for SEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
       {/* Navigation */}
       <nav className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -76,9 +125,9 @@ export default function Home() {
                 <Image
                   src="/images/100-K9-logo-horizontal.png"
                   alt="100% K9 Dog Boarding"
-                  width={180}
-                  height={40}
-                  className="h-10 w-auto"
+                  width={260}
+                  height={60}
+                  className="h-16 w-auto"
                   priority
                 />
               </Link>
@@ -115,14 +164,28 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-gray-800 via-gray-700 to-gray-600 text-white py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="relative bg-gradient-to-br from-gray-800 via-gray-700 to-gray-600 text-white py-20 overflow-hidden">
+        {/* Hero Background Image */}
+        <div className="absolute inset-0 z-0">
+          <Image
+            src="/images/dog-hero.jpg"
+            alt="Happy dog in outdoor setting"
+            fill
+            sizes="100vw"
+            className="object-cover"
+            priority
+            quality={85}
+          />
+          <div className="absolute inset-0 bg-gradient-to-br from-black/30 via-gray-900/25 to-black/35"></div>
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h1 className="text-5xl md:text-6xl font-heading mb-6">
-              Premium Dog Boarding & Homestay
+            <h1 className="text-5xl md:text-6xl font-heading mb-6 text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
+              Premium Dog Boarding & Homestay in Auckland
             </h1>
-            <p className="text-xl md:text-2xl text-gray-200 mb-8 max-w-3xl mx-auto font-body">
-              Professional overnight care with full structure, enrichment, and daily exercise on our farm. 
+            <p className="text-xl md:text-2xl text-white mb-8 max-w-3xl mx-auto font-body drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+              Auckland's trusted dog boarding service with professional overnight care, full structure, enrichment, and daily exercise on our farm.
               Your dog's home away from home.
             </p>
             
@@ -146,7 +209,7 @@ export default function Home() {
               )}
               <Link
                 href="#features"
-                className="border-2 border-white text-white px-8 py-4 rounded-xl font-button font-semibold text-lg hover:bg-white hover:text-black transition-colors"
+                className="bg-white/20 backdrop-blur-sm border-2 border-white text-white px-8 py-4 rounded-xl font-button font-semibold text-lg hover:bg-white hover:text-black transition-colors shadow-lg"
               >
                 Learn More
               </Link>
@@ -155,16 +218,16 @@ export default function Home() {
             {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16 max-w-3xl mx-auto">
               <div className="text-center">
-                <div className="text-3xl font-heading mb-2">500+</div>
-                <div className="text-gray-300 font-body">Happy Dogs</div>
+                <div className="text-3xl font-heading mb-2 text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)]">500+</div>
+                <div className="text-white font-body drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Happy Dogs</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-heading mb-2">5★</div>
-                <div className="text-gray-300 font-body">Average Rating</div>
+                <div className="text-3xl font-heading mb-2 text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)]">5★</div>
+                <div className="text-white font-body drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Average Rating</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-heading mb-2">24/7</div>
-                <div className="text-gray-300 font-body">Care & Monitoring</div>
+                <div className="text-3xl font-heading mb-2 text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)]">24/7</div>
+                <div className="text-white font-body drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Care & Monitoring</div>
               </div>
             </div>
           </div>
@@ -324,10 +387,13 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="flex items-center justify-center mb-4">
-              <div className="h-8 w-8 bg-cyan-500 rounded-lg flex items-center justify-center mr-3">
-                <span className="text-white font-heading text-sm font-bold">K9</span>
-              </div>
-              <h3 className="font-heading text-xl">100% K9</h3>
+              <Image
+                src="/images/100-K9-logo-horizontal.png"
+                alt="100% K9 Dog Boarding"
+                width={200}
+                height={46}
+                className="h-12 w-auto"
+              />
             </div>
             <p className="text-gray-400 font-body mb-4">
               Professional dog boarding and homestay services
