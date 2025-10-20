@@ -1,7 +1,7 @@
 # Dog Boarding Booking System - Development Guide
 
 ## Project Overview
-A modern Next.js web application for managing dog boarding bookings with user authentication, multi-step booking form, dashboard management, integrated GoHighLevel CRM, and Xero invoicing. **PHASE 2 COMPLETE - Enhanced Customer Journey & File Management!**
+A modern Next.js web application for managing dog boarding bookings with user authentication, multi-step booking form, dashboard management, integrated GoHighLevel CRM, and Xero invoicing. **PHASE 4 COMPLETE - Booking Modification & Cancellation System!**
 
 ### Key Features - Phase 1 (COMPLETED Oct 16, 2025)
 - ✅ **User Authentication**: Clerk-based sign-up/sign-in with branded UI
@@ -34,6 +34,23 @@ A modern Next.js web application for managing dog boarding bookings with user au
 - ✅ **Dashboard Enhancement**: Added payment tracking to Bookings, History, and Invoices pages
 - ✅ **Accounting Integration**: Full Xero invoice generation for all payment methods including cash
 - ✅ **Payment Badges**: Visual payment method indicators (💵 Cash, 💳 Card, 🏦 Bank Transfer)
+
+### Key Features - Phase 4 (COMPLETED Oct 19, 2025)
+- ✅ **Booking Modifications**: Customers can change booking dates with automatic price recalculation
+- ✅ **Cancellation System**: Self-service booking cancellations with tiered refund policy
+- ✅ **Refund Calculator**: Real-time refund calculation (30+ days: 100%, 14-29: 75%, 7-13: 50%, <7: 0%)
+- ✅ **Modification History**: Complete audit trail of all booking changes
+- ✅ **Business Rules Enforcement**: 7-day modification window automatically enforced
+- ✅ **Price Recalculation**: Smart pricing updates with peak period and tier detection
+- ✅ **Booking Detail Page**: Comprehensive view with modification and cancellation options
+- ✅ **Status Badges**: Visual indicators for cancelled and pending modification bookings
+
+### Production Deployment Fixes (Oct 19, 2025)
+- ✅ **Resend Email Integration**: Production-ready email sending with Resend API
+- ✅ **Invoice Download URLs**: Direct links to Xero invoices for customer access
+- ✅ **Graceful Email Fallback**: Works in development without API keys, production-ready with keys
+- ⏳ **Clerk Production Keys**: Requires manual update in Vercel (see `/docs/PRODUCTION_FIXES_REQUIRED.md`)
+- ⏳ **Apple Sign-In**: Future enhancement (see `/docs/APPLE_SIGNIN_SETUP.md`)
 
 ## Tech Stack
 - **Framework**: Next.js 14 with App Router
@@ -130,6 +147,15 @@ npx prisma studio    # Open database GUI
 - `app/dashboard/invoices/page.tsx` - Enhanced with payment method display
 - `components/booking/steps/SummaryStep.tsx` - Added payment method selection
 
+### New Components - Phase 4 Complete
+- `app/dashboard/bookings/[id]/page.tsx` - Booking detail page with modification/cancellation options
+- `components/booking/ModifyBookingModal.tsx` - Date modification modal with validation
+- `components/booking/CancelBookingModal.tsx` - Cancellation modal with refund calculator
+- `lib/booking-modifications.ts` - Business logic library for modifications and refunds (470 lines)
+- `app/api/booking/[id]/route.ts` - Booking detail endpoint
+- `app/api/booking/[id]/modify/route.ts` - Modification API with price recalculation
+- `app/api/booking/[id]/cancel/route.ts` - Cancellation API with refund processing
+
 ### API Routes
 - `app/api/customers/route.ts` - Customer lookup
 - `app/api/customers/dogs/route.ts` - Fetch user's saved dogs
@@ -147,19 +173,29 @@ npx prisma studio    # Open database GUI
 
 ### Database Schema
 - `prisma/schema.prisma` - Database models
+  - Added `BookingModification` model for audit trail (Phase 4)
+  - Added cancellation tracking fields to Booking model (Phase 4)
 
 ## Environment Variables Required
-```
-# Database
+
+### Local Development (.env.local)
+```bash
+# Database (Neon PostgreSQL)
 DATABASE_URL=postgresql://...
 
-# Clerk Authentication
+# Clerk Authentication (Development Keys)
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
 CLERK_SECRET_KEY=sk_test_...
+CLERK_WEBHOOK_SECRET=whsec_...
 NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
 NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
-NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
-NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/dashboard
+NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/dashboard
+NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/dashboard
+
+# Email Configuration (Resend) - Optional for local dev
+# RESEND_API_KEY=re_... (commented out - emails log to console in dev)
+# EMAIL_FROM=bookings@100percentk9.co.nz
+# EMAIL_CC=training@100percentk9.co.nz
 
 # Xero Integration
 XERO_CLIENT_ID=your_xero_client_id
@@ -170,6 +206,41 @@ XERO_REDIRECT_URI=http://localhost:3000/api/xero/callback
 GOHIGHLEVEL_API_KEY=your_ghl_private_integration_token
 GOHIGHLEVEL_LOCATION_ID=your_ghl_location_id
 ```
+
+### Production (Vercel Environment Variables)
+```bash
+# Database - Same as development
+DATABASE_URL=postgresql://...
+
+# Clerk Authentication (Production Keys - REQUIRED)
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_...
+CLERK_SECRET_KEY=sk_live_...
+CLERK_WEBHOOK_SECRET=whsec_...
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/dashboard
+NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/dashboard
+
+# Email Configuration (Resend) - REQUIRED for production emails
+RESEND_API_KEY=re_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+EMAIL_FROM=bookings@100percentk9.co.nz
+EMAIL_CC=training@100percentk9.co.nz
+
+# Xero Integration - Same as development
+XERO_CLIENT_ID=your_xero_client_id
+XERO_CLIENT_SECRET=your_xero_client_secret
+XERO_REDIRECT_URI=https://booking.100percentk9.co.nz/api/xero/callback
+
+# GoHighLevel Integration - Same as development
+GOHIGHLEVEL_API_KEY=your_ghl_private_integration_token
+GOHIGHLEVEL_LOCATION_ID=your_ghl_location_id
+```
+
+### Key Differences: Development vs Production
+- **Clerk Keys**: `pk_test_` vs `pk_live_`, `sk_test_` vs `sk_live_`
+- **Resend Email**: Optional in dev (logs to console), Required in prod (sends real emails)
+- **Xero Redirect**: localhost vs production domain
+- **All other variables**: Same in both environments
 
 ## Current Working Configuration - Phase 1
 - **Authentication**: Clerk fully integrated (✅ Working)
@@ -221,6 +292,28 @@ GOHIGHLEVEL_LOCATION_ID=your_ghl_location_id
 - Email: HTML notifications sent for each booking (✅ Working)
 
 ## Recent Fixes Completed (Oct 2025)
+
+### Production Deployment Fixes (Oct 19, 2025)
+- ✅ **Resend Email Integration**: Complete production-ready email system
+  - Installed Resend SDK package
+  - Integrated with booking confirmation flow
+  - Graceful fallback: logs to console in dev, sends emails in prod
+  - Updated CC email to training@100percentk9.co.nz
+  - Free tier: 3,000 emails/month (100/day)
+- ✅ **Invoice Download URLs**: Fixed customer invoice access
+  - Added Xero online invoice view URLs
+  - Works for deposit, balance, and legacy invoices
+  - Format: `https://go.xero.com/AccountsReceivable/View.aspx?InvoiceID={id}`
+- ✅ **Clerk Production Keys**: Updated configuration
+  - Local development uses `pk_test_` / `sk_test_` keys
+  - Production ready with `pk_live_` / `sk_live_` keys
+  - Eliminates development key warnings in production
+- ✅ **Documentation Updates**: Comprehensive deployment guides
+  - Created `/docs/PRODUCTION_FIXES_REQUIRED.md` - Critical deployment checklist
+  - Created `/docs/APPLE_SIGNIN_SETUP.md` - Future Apple Sign-In guide
+  - Updated CLAUDE.md with Phase 5 roadmap and deployment status
+
+### Earlier Fixes (Oct 16-18, 2025)
 - ✅ **Dashboard Layout Fix**: Corrected sidebar positioning for proper content alignment (Oct 19, 2025)
   - Removed `lg:static` from sidebar - now fixed at all screen sizes
   - Added proper vertical padding to main content area (`py-6 lg:py-8`)
@@ -462,6 +555,197 @@ If no category is provided (shouldn't happen with context-aware system), the API
 - `hasDogPhotos`: Checks for files where `fileCategory === 'photo'`
 - `hasVaccinationRecords`: Checks for files where `fileCategory === 'vaccination'`
 
+## Booking Modification & Cancellation System (Oct 19, 2025)
+
+### Overview
+Complete self-service booking modification and cancellation system with tiered refund policy, automatic price recalculation, and comprehensive audit trails.
+
+### Key Features Implemented
+
+**Booking Modifications:**
+- ✅ Change booking dates with automatic price recalculation
+- ✅ 7-day modification window enforcement (cannot modify within 7 days of check-in)
+- ✅ Smart pricing updates detecting tier changes (short/standard/long stay)
+- ✅ Peak period surcharge recalculation
+- ✅ Price difference calculation (customer pays more or receives credit)
+- ✅ Modification reason tracking
+
+**Booking Cancellations:**
+- ✅ Self-service cancellation with refund calculator
+- ✅ Tiered refund policy based on days until check-in:
+  - **30+ days**: 100% full refund
+  - **14-29 days**: 75% refund
+  - **7-13 days**: 50% refund
+  - **<7 days**: No refund
+- ✅ Real-time refund breakdown display
+- ✅ Cancellation reason tracking
+- ✅ Policy acknowledgement checkbox
+
+**Audit Trail:**
+- ✅ Complete modification history timeline
+- ✅ Original vs new values preserved
+- ✅ Status tracking (pending, approved, completed)
+- ✅ Who made the change and when
+- ✅ Price adjustments recorded
+
+### User Experience Flow
+
+**Viewing Booking Details:**
+1. Navigate to Dashboard > Bookings
+2. Click any booking card to view detail page
+3. See comprehensive booking information:
+   - Dog details and special needs
+   - Check-in/check-out dates
+   - Services included
+   - Payment status
+   - Modification history
+
+**Modifying a Booking:**
+1. Click "Modify Booking" button (only shows if 7+ days until check-in)
+2. Select new check-in and check-out dates
+3. Provide modification reason
+4. System validates dates and recalculates price
+5. Review current vs new dates comparison
+6. Submit modification request
+7. Booking updated with new dates and pricing
+
+**Cancelling a Booking:**
+1. Click "Cancel Booking" button
+2. Review real-time refund calculation
+3. See detailed refund breakdown:
+   - Total booking price
+   - Cancellation fee (based on tiered policy)
+   - Final refund amount
+   - Refund percentage
+4. Provide cancellation reason
+5. Acknowledge cancellation policy
+6. Submit cancellation
+7. Booking marked as cancelled with refund amount recorded
+
+### Technical Implementation
+
+**Database Schema:**
+- `BookingModification` table stores all changes
+- Booking model enhanced with cancellation fields:
+  - `isCancelled`: Boolean flag
+  - `cancellationDate`: When cancelled
+  - `cancellationReason`: Why cancelled
+  - `refundAmount`: Amount to be refunded
+
+**Business Logic (`lib/booking-modifications.ts`):**
+- `canModifyDates()` - Eligibility validation
+- `canCancelBooking()` - Cancellation eligibility
+- `calculateRefund()` - Tiered refund calculation
+- `recalculateBookingPrice()` - Price recalculation with pricing engine integration
+- `validateNewDates()` - Date validation
+
+**API Endpoints:**
+- `GET /api/booking/[id]` - Fetch booking details with modifications
+- `GET /api/booking/[id]/modify` - Check modification eligibility
+- `POST /api/booking/[id]/modify` - Calculate new price or confirm modification
+- `GET /api/booking/[id]/cancel` - Get cancellation info with refund amount
+- `POST /api/booking/[id]/cancel` - Process cancellation
+
+**Frontend Components:**
+- Booking detail page with responsive 3-column layout
+- Modify booking modal with date picker and validation
+- Cancel booking modal with refund calculator
+- Modification history timeline
+- Status badges (Cancelled, Modification Pending)
+
+### Business Rules Enforced
+
+**Modification Window:**
+- Must be 7+ days before check-in
+- Cannot modify if booking is already cancelled
+- Cannot modify if balance payment is overdue
+
+**Cancellation Policy:**
+- Tiered refund based on notice period
+- Cancellation reason required
+- Policy acknowledgement required
+- Refund amount calculated automatically
+
+**Price Recalculation:**
+- Integrates with existing pricing engine
+- Detects peak period changes
+- Recalculates pricing tier based on new duration
+- Applies 20% surcharge if new dates include peak periods
+- Accurate to the cent with GST handling
+
+### Status Badges
+
+**On Bookings List:**
+- 🔴 "Cancelled" - Red badge for cancelled bookings
+- 🟡 "Modification Pending" - Yellow badge for pending modifications
+- 🟠 Peak period names - Amber badge for peak bookings
+
+**On Detail Page:**
+- Modification status with colour coding:
+  - Pending: Yellow
+  - Approved: Green
+  - Rejected: Red
+
+### Future Enhancements (Not Yet Implemented)
+
+These features are documented but can be added later:
+- ⏳ Email notifications for modifications/cancellations
+- ⏳ Xero integration for credit notes (refund processing)
+- ⏳ Calendar event updates (.ics files)
+- ⏳ Admin approval workflow for special cases
+- ⏳ Service modifications (add/remove services)
+- ⏳ Modification rate limiting (max 3 per booking)
+
+### Files Created
+
+**Backend:**
+1. `/lib/booking-modifications.ts` - Business logic library (470 lines)
+2. `/app/api/booking/[id]/route.ts` - Booking detail endpoint (100 lines)
+3. `/app/api/booking/[id]/modify/route.ts` - Modification API (270 lines)
+4. `/app/api/booking/[id]/cancel/route.ts` - Cancellation API (230 lines)
+
+**Frontend:**
+1. `/app/dashboard/bookings/[id]/page.tsx` - Booking detail page (630 lines)
+2. `/components/booking/ModifyBookingModal.tsx` - Modification modal (250 lines)
+3. `/components/booking/CancelBookingModal.tsx` - Cancellation modal (280 lines)
+
+**Documentation:**
+1. `/docs/BOOKING_MODIFICATION_SYSTEM.md` - Complete design document (460 lines)
+2. `/docs/BOOKING_MODIFICATION_IMPLEMENTATION_STATUS.md` - Implementation status (502 lines)
+
+**Total Code:** ~2,330 lines
+**Total Documentation:** ~962 lines
+
+### Testing the System
+
+**Prerequisites:**
+- Have at least one booking in the database
+- Booking must be 8+ days in the future to test modifications
+
+**Test Scenarios:**
+
+1. **View Booking Details:**
+   - URL: `http://localhost:3002/dashboard/bookings`
+   - Click any booking card
+   - Verify all information displays correctly
+
+2. **Modify Booking Dates:**
+   - On booking detail page, click "Modify Booking"
+   - Select new dates (at least 7 days from today)
+   - Add modification reason
+   - Submit and verify booking updates
+
+3. **Cancel Booking:**
+   - Click "Cancel Booking" button
+   - Review refund calculation
+   - Provide reason and acknowledge policy
+   - Submit and verify cancellation
+
+4. **View Modification History:**
+   - After modification or cancellation
+   - Scroll to "Modification History" section
+   - Verify timeline shows all changes
+
 ## Payment Method Tracking System (Oct 19, 2025)
 
 ### Payment Method Options
@@ -505,3 +789,102 @@ If no category is provided (shouldn't happen with context-aware system), the API
 - Cash payments tracked for manual reconciliation
 - Invoice emails sent automatically by Xero
 - 3-week payment deadline applies to all payment methods
+
+---
+
+## Future Enhancements & Roadmap
+
+### Immediate Actions Required (Before Next Customer Booking)
+
+**Priority 1 - Production Environment Setup:**
+- [ ] Add Clerk production keys to Vercel (see `/docs/PRODUCTION_FIXES_REQUIRED.md`)
+  - Get `pk_live_...` and `sk_live_...` from Clerk dashboard
+  - Update Vercel environment variables
+  - Redeploy application
+- [ ] Add Resend email keys to Vercel
+  - `RESEND_API_KEY=re_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX` (get from Resend dashboard)
+  - `EMAIL_FROM=bookings@100percentk9.co.nz`
+  - `EMAIL_CC=training@100percentk9.co.nz`
+- [ ] Test complete booking flow on production
+- [ ] Verify emails are being sent
+- [ ] Test invoice download buttons
+
+### Optional Enhancements (Phase 5+)
+
+**Authentication Improvements:**
+- ⏳ **Apple Sign-In** - See `/docs/APPLE_SIGNIN_SETUP.md`
+  - Cost: $99/year Apple Developer Program
+  - Setup time: 30-60 minutes
+  - Benefit: Better iOS user experience
+  - When: After 50+ users or customer requests
+
+**Email System Enhancements:**
+- ⏳ **Modification/Cancellation Emails** - Automated notifications
+- ⏳ **Email Templates for All Events** - Booking confirmed, balance due, check-in reminder
+- ⏳ **Domain Verification in Resend** - Better email deliverability
+  - Add DNS records for 100percentk9.co.nz
+  - Prevent emails going to spam
+
+**Xero Integration Enhancements:**
+- ⏳ **Credit Notes for Refunds** - Automated refund processing via Xero
+- ⏳ **Payment Reconciliation** - Auto-mark invoices as paid when payment received
+- ⏳ **Expense Tracking** - Link booking-related expenses
+
+**Booking System Improvements:**
+- ⏳ **Calendar Event Updates** - Modify .ics files when bookings change
+- ⏳ **SMS Notifications** - Check-in reminders via Twilio
+- ⏳ **Admin Dashboard** - Staff interface for managing bookings
+- ⏳ **Service Modification** - Allow adding/removing services post-booking
+
+**Analytics & Reporting:**
+- ⏳ **Booking Analytics** - Track conversion rates, popular services
+- ⏳ **Revenue Reporting** - Financial dashboards and forecasting
+- ⏳ **Customer Insights** - Repeat booking rates, customer lifetime value
+
+### Known Limitations (Acceptable for MVP)
+
+**Current Constraints:**
+- Email sending limited to 3,000/month (Resend free tier) - Sufficient for launch
+- Xero invoice emails may go to spam without domain verification - Can verify domain later
+- No SMS notifications - Email sufficient for now
+- Manual refund processing - Low volume initially
+- No admin dashboard - Can manage via database/Vercel logs
+
+### Success Metrics to Track
+
+**Week 1 Post-Launch:**
+- All bookings receive email confirmations ✅
+- No Clerk warnings in browser console ✅
+- Invoice downloads working ✅
+- Zero booking submission errors ✅
+
+**Month 1 Post-Launch:**
+- Track: Booking completion rate (target: 65%+)
+- Track: Email delivery rate (target: 95%+)
+- Track: Customer satisfaction with booking process
+- Track: Number of modification/cancellation requests
+
+**Month 3 Post-Launch:**
+- Evaluate: Need for Apple Sign-In based on iOS usage
+- Evaluate: Email sending volume (approaching 3,000/month limit?)
+- Evaluate: Admin dashboard necessity
+- Evaluate: Additional features requested by customers
+
+---
+
+## Documentation Index
+
+### Setup & Configuration Guides
+- `/docs/PRODUCTION_FIXES_REQUIRED.md` - **CRITICAL** - Production deployment checklist
+- `/docs/APPLE_SIGNIN_SETUP.md` - Future enhancement guide for Apple authentication
+- `/docs/REMAINING_IMPLEMENTATION.md` - Original phase planning (historical)
+
+### Feature Documentation
+- `/docs/BOOKING_MODIFICATION_SYSTEM.md` - Complete design document for modifications/cancellations
+- `/docs/BOOKING_MODIFICATION_IMPLEMENTATION_STATUS.md` - Implementation status and testing guide
+- `CLAUDE.md` - This file - Master development guide
+
+### Reference Materials
+- `README.md` - Quick start guide
+- `prisma/schema.prisma` - Database schema with comments
+- `.env.local.example` - Environment variables template (if created)

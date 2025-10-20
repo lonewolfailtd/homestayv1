@@ -71,7 +71,9 @@ export async function GET(_request: NextRequest) {
           checkOutDate: booking.checkOut.toISOString(),
           xeroInvoiceId: booking.depositInvoiceId,
           paymentMethod: booking.paymentMethod,
-          downloadUrl: undefined // TODO: Add Xero invoice download URL when available
+          downloadUrl: booking.depositInvoiceId
+            ? `https://go.xero.com/AccountsReceivable/View.aspx?InvoiceID=${booking.depositInvoiceId}`
+            : undefined
         });
       }
 
@@ -94,7 +96,9 @@ export async function GET(_request: NextRequest) {
           checkOutDate: booking.checkOut.toISOString(),
           xeroInvoiceId: booking.balanceInvoiceId,
           paymentMethod: booking.paymentMethod,
-          downloadUrl: undefined // TODO: Add Xero invoice download URL when available
+          downloadUrl: booking.balanceInvoiceId
+            ? `https://go.xero.com/AccountsReceivable/View.aspx?InvoiceID=${booking.balanceInvoiceId}`
+            : undefined
         });
       }
 
@@ -116,7 +120,9 @@ export async function GET(_request: NextRequest) {
           checkInDate: booking.checkIn.toISOString(),
           checkOutDate: booking.checkOut.toISOString(),
           xeroInvoiceId: booking.xeroInvoiceId,
-          downloadUrl: undefined
+          downloadUrl: booking.xeroInvoiceId
+            ? `https://go.xero.com/AccountsReceivable/View.aspx?InvoiceID=${booking.xeroInvoiceId}`
+            : undefined
         });
       }
     }

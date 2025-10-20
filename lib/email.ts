@@ -1,5 +1,8 @@
-// import nodemailer from 'nodemailer'; // Future email implementation
+import { Resend } from 'resend';
 import { generateAllCalendarLinks } from './calendar';
+
+// Initialize Resend with API key from environment
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 interface BookingEmailData {
   customerName: string;
@@ -271,21 +274,42 @@ export async function sendBookingConfirmation(bookingData: BookingEmailData) {
       </html>
     `;
 
-    // For development, we'll use a simple approach
-    // In production, you'd want to use proper SMTP credentials
-    console.log('📧 Email would be sent to:', bookingData.customerEmail);
-    console.log('📧 CC to owner:', 'hodgson_tane93@outlook.com');
-    console.log('📧 Email content:', emailHtml);
+    // Check if Resend is configured
+    if (!resend) {
+      // Development mode - just log
+      console.log('📧 Email would be sent to:', bookingData.customerEmail);
+      console.log('📧 CC to owner:', process.env.EMAIL_CC || 'training@100percentk9.co.nz');
+      console.log('📧 RESEND_API_KEY not configured - running in development mode');
 
-    // For now, we'll just log the email. To actually send emails, you'd need:
-    // 1. SMTP credentials (Gmail, SendGrid, etc.)
-    // 2. App passwords or OAuth setup
-    // 3. Proper environment variables
+      return {
+        success: true,
+        message: 'Email notification logged (development mode - no RESEND_API_KEY)',
+        emailContent: emailHtml
+      };
+    }
 
+    // Production mode - send actual email with Resend
+    const { data, error } = await resend.emails.send({
+      from: process.env.EMAIL_FROM || 'bookings@100percentk9.co.nz',
+      to: [bookingData.customerEmail],
+      cc: [process.env.EMAIL_CC || 'training@100percentk9.co.nz'],
+      subject: `Booking Confirmation - ${bookingData.dogName} at 100% K9`,
+      html: emailHtml,
+    });
+
+    if (error) {
+      console.error('❌ Resend error:', error);
+      return {
+        success: false,
+        error: error.message || 'Failed to send email'
+      };
+    }
+
+    console.log('✅ Email sent successfully via Resend:', data);
     return {
       success: true,
-      message: 'Email notification logged (development mode)',
-      emailContent: emailHtml
+      emailId: data?.id,
+      message: 'Email sent successfully'
     };
 
   } catch (error) {
@@ -295,24 +319,4 @@ export async function sendBookingConfirmation(bookingData: BookingEmailData) {
       error: error instanceof Error ? error.message : 'Unknown email error'
     };
   }
-}
-
-// For production use when you have SMTP credentials:
-export async function sendEmailWithSMTP(bookingData: BookingEmailData) {
-  // This would require SMTP setup:
-  // const transporter = nodemailer.createTransporter({
-  //   service: 'gmail',
-  //   auth: {
-  //     user: process.env.EMAIL_USER,
-  //     pass: process.env.EMAIL_APP_PASSWORD
-  //   }
-  // });
-  
-  // return await transporter.sendMail({
-  //   from: process.env.EMAIL_USER,
-  //   to: bookingData.customerEmail,
-  //   cc: 'hodgson_tane93@outlook.com',
-  //   subject: `Booking Confirmation - ${bookingData.dogName}`,
-  //   html: emailHtml
-  // });
 }
